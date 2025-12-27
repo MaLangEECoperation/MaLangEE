@@ -404,8 +404,8 @@ psql -h localhost -U malangee_user -d malangee
 
 더 자세한 정보는 다음 문서를 참고하세요:
 
-- **[README.md](README.md)** - 프로젝트 개요
-- **[docs/SERVER_DEPLOYMENT_INFO.md](docs/SERVER_DEPLOYMENT_INFO.md)** - 배포 관리 & 모니터링
+- **[../../README.md](../../README.md)** - 프로젝트 개요
+- **[02-DEPLOYMENT_GUIDE.md](02-DEPLOYMENT_GUIDE.md)** - 배포 관리 & 모니터링
 
 ---
 

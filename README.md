@@ -2,7 +2,9 @@
 
 AI 기반 언어 학습 플랫폼으로, 자동 배포 기능과 완전한 개발 환경이 적용된 엔터프라이즈 프로젝트입니다.
 
-> 📖 **[상세 설치 가이드는 SETUP_GUIDE.md를 참고하세요!](SETUP_GUIDE.md)**
+> 📖 **설치 가이드 선택**
+> - 🐧 **Ubuntu/Linux 서버**: [docs/01-SETUP_GUIDE.md](docs/01-SETUP_GUIDE.md)
+> - 🪟 **Windows 11 로컬 개발**: [docs/10-WINDOWS_SETUP_GUIDE.md](docs/10-WINDOWS_SETUP_GUIDE.md)
 
 ---
 
@@ -138,15 +140,17 @@ MaLangEE/
 ├── database/                    # PostgreSQL 데이터베이스
 │   ├── data/                   # 데이터베이스 데이터
 │   └── ...
-├── docs/                        # 문서
-│   └── SERVER_DEPLOYMENT_INFO.md
+├── docs/                        # 📚 문서 모음
+│   ├── 01-SETUP_GUIDE.md        # 🐧 Ubuntu 서버 배포 가이드 (단계별)
+│   ├── 02-DEPLOYMENT_GUIDE.md   # 배포 관리 & 모니터링
+│   └── 10-WINDOWS_SETUP_GUIDE.md # 🪟 Windows 로컬 개발 가이드
 ├── scripts/                     # 배포 및 설정 스크립트 (단계별 실행)
 │   ├── config.sh               # 공통 설정 파일 (중앙 관리)
 │   ├── 1-init_server.sh        # 1️⃣ Ubuntu 서버 초기화
 │   ├── 2-setup_env.sh          # 2️⃣ 개발 환경 설치
 │   ├── 3-setup_web.sh          # 3️⃣ Nginx 웹 서버 설정
 │   └── deploy.sh               # 배포 스크립트 (Cron 실행)
-└── README.md                    # 프로젝트 소개
+└── README.md                    # 프로젝트 소개 (이 파일)
 ```
 
 ---
@@ -259,7 +263,7 @@ psql -U postgres -d malangee -f database/init.sql
 
 | 문서 | 목적 |
 |------|------|
-| [docs/SERVER_DEPLOYMENT_INFO.md](docs/SERVER_DEPLOYMENT_INFO.md) | 🚀 배포 관리 & 모니터링 |
+| [docs/02-DEPLOYMENT_GUIDE.md](docs/02-DEPLOYMENT_GUIDE.md) | 🚀 배포 관리 & 모니터링 |
 
 ---
 
@@ -498,8 +502,8 @@ cd /home/aimaster/projects/MaLangEE && git log --oneline -1
 
 ## 🔗 관련 링크
 
--  **[docs/SERVER_DEPLOYMENT_INFO.md](docs/SERVER_DEPLOYMENT_INFO.md)** - 서버 설정 & 배포 관리
-- 🔧 **[scripts/init_ubuntu_server.sh](scripts/init_ubuntu_server.sh)** - 서버 초기화 스크립트
+-  **[docs/02-DEPLOYMENT_GUIDE.md](docs/02-DEPLOYMENT_GUIDE.md)** - 서버 설정 & 배포 관리
+- 🔧 **[scripts/1-init_server.sh](scripts/1-init_server.sh)** - 서버 초기화 스크립트
 
 ---
 
@@ -509,7 +513,7 @@ cd /home/aimaster/projects/MaLangEE && git log --oneline -1
 
 1. **배포 로그 확인**: `/var/log/MaLangEE_deploy.log`
 2. **Cron 상태 확인**: `sudo systemctl status cron`
-3. **[docs/SERVER_DEPLOYMENT_INFO.md](docs/SERVER_DEPLOYMENT_INFO.md) - 문제 해결** 섹션 참고
+3. **[docs/02-DEPLOYMENT_GUIDE.md](docs/02-DEPLOYMENT_GUIDE.md) - 문제 해결** 섹션 참고
 4. **수동 배포 테스트**: `/home/aimaster/deploy.sh`
 
 ---
