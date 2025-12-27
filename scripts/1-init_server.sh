@@ -2,8 +2,8 @@
 
 ###############################################
 #  Ubuntu 서버 초기 세팅 올인원 스크립트
-#  실행 방법: sudo bash init_ubuntu_server.sh
-#  또는: sudo ./init_ubuntu_server.sh
+#  실행 방법: sudo bash 1-init_server.sh
+#  또는: sudo ./1-init_server.sh
 #
 #  권한: root 권한 필요 (시스템 초기화 작업용)
 #  ├─ 시스템 업데이트 (필수)
@@ -20,39 +20,42 @@
 
 ###############################################
 
+# 공통 설정 로드
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/config.sh"
+
 # root 권한 확인
 if [[ $EUID -ne 0 ]]; then
-    echo "❌ 이 스크립트는 root 권한으로 실행되어야 합니다."
+    print_error "이 스크립트는 root 권한으로 실행되어야 합니다."
     echo ""
     echo "실행 방법:"
-    echo "  sudo bash $0"
+    echo "  sudo bash 1-init_server.sh"
     echo "  또는"
-    echo "  sudo $0"
+    echo "  sudo ./1-init_server.sh"
     exit 1
 fi
 
-echo "======================================"
-echo "   Ubuntu 서버 초기 세팅 올인원 스크립트"
-echo "======================================"
-echo ""
+print_header "Ubuntu 서버 초기 세팅"
 echo "현재 사용자: $(whoami) (root)"
-echo ""
 echo ""
 
 # 사용자 입력받기
-read -p "생성할 사용자명을 입력하세요 (기본값: aimaster): " -r USERNAME
-USERNAME=${USERNAME:-"aimaster"}
+read -p "생성할 사용자명 (기본값: $DEPLOY_USER): " -r USERNAME
+USERNAME=${USERNAME:-"$DEPLOY_USER"}
 
-read -p "GitHub 저장소 URL을 입력하세요 (예: https://github.com/user/repo.git): " -r GITHUB_REPO
+read -p "GitHub 저장소 URL (기본값: $GITHUB_REPO): " -r GITHUB_REPO
+GITHUB_REPO=${GITHUB_REPO:-"$GITHUB_REPO"}
 
-read -p "GitHub 브랜치를 입력하세요 (기본값: main): " -r GITHUB_BRANCH
-GITHUB_BRANCH=${GITHUB_BRANCH:-"main"}
+read -p "GitHub 브랜치 (기본값: $GITHUB_BRANCH): " -r GITHUB_BRANCH
+GITHUB_BRANCH=${GITHUB_BRANCH:-"$GITHUB_BRANCH"}
 
-# GitHub 저장소에서 저장소 이름 자동 추출
-REPO_NAME=$(basename "$GITHUB_REPO" .git)
+# 저장소 이름 자동 추출 (config.sh 함수 사용)
+REPO_NAME=$(get_repo_name "$GITHUB_REPO")
 
 echo ""
-echo "설정 정보:"
+echo -e "${YELLOW}설정 정보:${NC}"
+echo "  • 프로젝트명: $PROJECT_NAME"
+echo "  • 서비스명: $SERVICE_NAME"
 echo "  • 사용자명: $USERNAME"
 echo "  • GitHub 저장소: $GITHUB_REPO"
 echo "  • 브랜치: $GITHUB_BRANCH"
@@ -66,38 +69,34 @@ if [[ ! $CONFIRM =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-echo ""
-echo "======================================"
-echo "   Ubuntu 서버 초기 세팅 시작"
-echo "======================================"
-echo ""
+print_header "Ubuntu 서버 초기 세팅 시작"
 
 USERHOME="/home/$USERNAME"
 PROJECT_ROOT="$USERHOME/projects"
 REPO_PATH="$PROJECT_ROOT/$REPO_NAME"
 DEPLOY_SCRIPT="$USERHOME/deploy.sh"
-LOG_FILE="/var/log/${REPO_NAME}_deploy.log"
+LOG_FILE="${LOG_DIR}/${PROJECT_NAME}_deploy.log"
 
 ### 0) 자동 업데이트
-echo "=== 0) 시스템 자동 업데이트 ==="
+print_header "0️⃣ 시스템 자동 업데이트"
 apt-get update -y && apt-get upgrade -y
-echo "✓ 시스템 업데이트 완료."
+print_success "시스템 업데이트 완료"
 echo ""
 
 ### 1) 사용자 생성 + sudo 권한 + SSH 설정
-echo "=== 1) 사용자 생성 및 SSH 설정 ==="
+print_header "1️⃣ 사용자 생성 및 SSH 설정"
 
 # 사용자 생성
 if id "$USERNAME" &>/dev/null; then
-    echo "✓ 사용자 '$USERNAME' 이미 존재함."
+    print_success "사용자 '$USERNAME' 이미 존재함"
 else
     adduser --disabled-password --gecos "" "$USERNAME"
-    echo "✓ 사용자 '$USERNAME' 생성 완료."
+    print_success "사용자 '$USERNAME' 생성 완료"
 fi
 
 # sudo 권한 부여
 usermod -aG sudo "$USERNAME"
-echo "✓ sudo 권한 부여 완료."
+print_success "sudo 권한 부여 완료"
 
 # SSH 설정
 mkdir -p "$USERHOME/.ssh"
@@ -105,43 +104,43 @@ touch "$USERHOME/.ssh/authorized_keys"
 chmod 700 "$USERHOME/.ssh"
 chmod 600 "$USERHOME/.ssh/authorized_keys"
 chown -R "$USERNAME:$USERNAME" "$USERHOME/.ssh"
-echo "✓ SSH 설정 완료."
+print_success "SSH 설정 완료"
 
 # 프로젝트 폴더 생성 및 권한 설정
 mkdir -p "$PROJECT_ROOT"
 chown -R "$USERNAME:$USERNAME" "$PROJECT_ROOT"
-echo "✓ 프로젝트 폴더 생성 및 권한 설정 완료."
+print_success "프로젝트 폴더 생성 및 권한 설정 완료"
 echo ""
 
 ### 2) Git 설치
-echo "=== 2) Git 설치 ==="
+print_header "2️⃣ Git 설치"
 
 if ! command -v git &> /dev/null; then
     apt-get install -y git
-    echo "✓ Git 설치 완료."
+    print_success "Git 설치 완료"
 else
-    echo "✓ Git 이미 설치됨."
+    print_success "Git 이미 설치됨"
 fi
 echo ""
 
 ### 3) GitHub 저장소 클론
-echo "=== 3) GitHub 저장소 클론 ==="
+print_header "3️⃣ GitHub 저장소 클론"
 
 if [ -d "$REPO_PATH" ]; then
-    echo "저장소가 이미 존재합니다: $REPO_PATH"
+    print_info "저장소가 이미 존재합니다: $REPO_PATH"
     cd "$REPO_PATH"
     sudo -u "$USERNAME" git pull origin "$GITHUB_BRANCH"
-    echo "✓ 저장소 업데이트 완료."
+    print_success "저장소 업데이트 완료"
 else
     # 저장소 디렉토리에서 클론 (사용자 권한으로)
     cd "$PROJECT_ROOT"
     sudo -u "$USERNAME" git clone -b "$GITHUB_BRANCH" "$GITHUB_REPO"
-    echo "✓ 저장소 클론 완료: $REPO_PATH"
+    print_success "저장소 클론 완료: $REPO_PATH"
 fi
 echo ""
 
 ### 4) 자동 배포 스크립트 생성
-echo "=== 4) 자동 배포 스크립트 생성 ==="
+print_header "4️⃣ 자동 배포 스크립트 생성"
 
 tee "$DEPLOY_SCRIPT" > /dev/null << 'EOF'
 #!/bin/bash
@@ -165,11 +164,11 @@ sed -i "s|__LOG_FILE__|$LOG_FILE|g" "$DEPLOY_SCRIPT"
 
 chmod +x "$DEPLOY_SCRIPT"
 chown "$USERNAME:$USERNAME" "$DEPLOY_SCRIPT"
-echo "✓ 배포 스크립트 생성: $DEPLOY_SCRIPT"
+print_success "배포 스크립트 생성: $DEPLOY_SCRIPT"
 echo ""
 
 ### 5) Cron 자동 배포 설정
-echo "=== 5) Cron 자동 배포 설정 ==="
+print_header "5️⃣ Cron 자동 배포 설정"
 
 CRON_FILE="/tmp/crontab_$USERNAME"
 
@@ -180,25 +179,25 @@ sudo -u "$USERNAME" crontab -l > "$CRON_FILE" 2>/dev/null || true
 if ! grep -q "deploy.sh" "$CRON_FILE" 2>/dev/null; then
     echo "*/10 * * * * $DEPLOY_SCRIPT >> $LOG_FILE 2>&1" >> "$CRON_FILE"
     sudo -u "$USERNAME" crontab "$CRON_FILE"
-    echo "✓ Cron 설정 완료 (10분마다 배포 체크)"
+    print_success "Cron 설정 완료 (10분마다 배포 체크)"
 else
-    echo "✓ Cron이 이미 설정되어 있습니다."
+    print_success "Cron이 이미 설정되어 있습니다"
 fi
 
 rm -f "$CRON_FILE"
 echo ""
 
 ### 6) 배포 로그 디렉토리 생성
-echo "=== 6) 배포 로그 디렉토리 생성 ==="
+print_header "6️⃣ 배포 로그 디렉토리 생성"
 
 mkdir -p "$(dirname "$LOG_FILE")"
 touch "$LOG_FILE"
 chown "$USERNAME:$USERNAME" "$LOG_FILE"
-echo "✓ 배포 로그 디렉토리 생성: $(dirname "$LOG_FILE")"
+print_success "배포 로그 디렉토리 생성: $(dirname "$LOG_FILE")"
 echo ""
 
 ### 7) 최종 확인
-echo "=== 7) 최종 설정 확인 ==="
+print_header "7️⃣ 최종 설정 확인"
 
 echo "사용자 정보:"
 id "$USERNAME"
@@ -212,11 +211,9 @@ echo "프로젝트 경로:"
 ls -la "$PROJECT_ROOT"
 echo ""
 
-echo "======================================"
-echo "   ✓ 모든 작업 완료!"
-echo "======================================"
+print_header "✓ 모든 작업 완료!"
 echo ""
-echo "✅ 초기화 요약:"
+echo -e "${GREEN}✅ 초기화 요약:${NC}"
 echo "  • 실행 사용자: root (필수)"
 echo "  • 생성된 배포 사용자: $USERNAME"
 echo "  • 배포 방식: Cron 자동 배포 (10분마다)"
