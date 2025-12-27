@@ -384,7 +384,7 @@ tail -1 /var/log/MaLangEE_deploy.log
 
 ## 🔗 관련 문서
 
-현재 문서: `SERVER_DEPLOYMENT_INFO.md` (배포 관리 가이드)
+현재 문서: `02-DEPLOYMENT_GUIDE.md` (배포 관리 가이드)
 
 ---
 
