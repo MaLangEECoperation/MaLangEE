@@ -1,6 +1,46 @@
 # MaLangEE
 
-자동 배포 기능이 적용된 AI 프로젝트입니다.
+AI 기반 언어 학습 플랫폼으로, 자동 배포 기능과 완전한 개발 환경이 적용된 엔터프라이즈 프로젝트입니다.
+
+> 📖 **[상세 설치 가이드는 SETUP_GUIDE.md를 참고하세요!](SETUP_GUIDE.md)**
+
+---
+
+## 📋 공통 설정 파일 (config.sh)
+
+모든 설치/배포 스크립트는 **중앙 집중식 설정 파일**을 사용합니다.
+
+**설정 파일 위치**: `scripts/config.sh`
+
+**주요 설정 항목**:
+```bash
+# 프로젝트 정보
+PROJECT_NAME="MaLangEE"
+SERVICE_NAME="malangee"
+GITHUB_REPO="https://github.com/MaLangEECoperation/MaLangEE.git"
+
+# 배포 사용자
+DEPLOY_USER="aimaster"
+
+# 웹 서버 (Nginx)
+DOMAIN_NAME="localhost"
+PROJECT_PATH="/"
+FRONTEND_HOST="localhost"
+FRONTEND_PORT="5173"
+BACKEND_HOST="localhost"
+BACKEND_PORT="8080"
+
+# 데이터베이스
+DB_NAME="malangee"
+DB_USER="malangee_user"
+DB_PASSWORD="malangee_password"
+```
+
+**장점**:
+- 🎯 한 곳에서 모든 설정 관리
+- 🔄 일관성 있는 설정 값 사용
+- 🚀 새로운 환경 설정 시 빠른 적용
+- 📝 설정 변경 시 스크립트 수정 없음
 
 ---
 
@@ -8,24 +48,56 @@
 
 - ✅ **자동 배포**: 10분마다 GitHub 코드 자동 동기화
 - ✅ **Cron 기반**: 별도 설정 없이 자동 실행
+- ✅ **멀티스택 개발**: Java, Node.js, Python 지원
+- ✅ **PostgreSQL**: 강력한 데이터베이스
+- ✅ **AI 엔진**: 기계학습 기반 언어 학습 분석
+- ✅ **중앙 설정 관리**: 공통 설정 파일로 일관성 유지
 - ⏸️ **GitHub Actions**: 선택사항 (빠른 배포 원할 시 추가 설정)
 
 ---
 
 ## 🚀 빠른 시작
 
-### 1️⃣ 배포 상태 확인
+### 1️⃣ 서버 초기화 (Ubuntu - 처음 한 번만)
+```bash
+# Ubuntu 서버 초기 설정 (사용자, Git, Cron 자동 배포)
+sudo bash scripts/1-init_server.sh
+```
+
+### 2️⃣ 개발 환경 설치 (로컬 또는 서버)
+```bash
+# 개발 환경 자동 설치 (Java, Node.js, Python, PostgreSQL)
+bash scripts/2-setup_env.sh
+```
+
+### 3️⃣ 웹 서버 설정 (선택사항 - 웹 접속 시)
+```bash
+# Frontend와 Backend를 웹(포트 80)으로 접속 가능하게 설정
+sudo bash scripts/3-setup_web.sh
+
+# 대화형 설정:
+# - Frontend 포트 (기본값: 5173)
+# - Backend 포트 (기본값: 8080)
+# - 도메인/IP (기본값: localhost)
+# - 프로젝트 경로 (기본값: /) 예: /malangee
+
+# 공인 IP 49.50.137.35에 /malangee 경로로 설정한 경우:
+# - Frontend: http://49.50.137.35/malangee
+# - Backend API: http://49.50.137.35/malangee/api
+```
+
+### 4️⃣ 배포 상태 확인
 ```bash
 # 배포 로그 실시간 확인
 tail -f /var/log/MaLangEE_deploy.log
 ```
 
-### 2️⃣ 저장소 상태 확인
+### 5️⃣ 저장소 상태 확인
 ```bash
 cd /home/aimaster/projects/MaLangEE && git status
 ```
 
-### 3️⃣ 배포 수동 실행 (지금 바로)
+### 6️⃣ 배포 수동 실행
 ```bash
 /home/aimaster/deploy.sh
 ```
@@ -46,7 +118,81 @@ cd /home/aimaster/projects/MaLangEE && git status
 
 ---
 
-## 📋 Cron 자동 배포
+## 📁 프로젝트 구조
+
+```
+MaLangEE/
+├── frontend/                    # React/Vue 프론트엔드 애플리케이션
+│   ├── index.html              # 프론트엔드 상태 페이지
+│   ├── node_modules/           # npm 의존성
+│   └── ...
+├── backend/                     # Java Spring Boot REST API 서버
+│   ├── index.html              # API 문서 페이지
+│   ├── pom.xml                 # Maven 설정
+│   ├── src/                    # Java 소스코드
+│   ├── target/                 # Build 결과물
+│   └── ...
+├── ai-engine/                   # Python 기반 AI 학습 엔진
+│   ├── venv/                   # Python 가상환경
+│   └── ...
+├── database/                    # PostgreSQL 데이터베이스
+│   ├── data/                   # 데이터베이스 데이터
+│   └── ...
+├── docs/                        # 문서
+│   └── SERVER_DEPLOYMENT_INFO.md
+├── scripts/                     # 배포 및 설정 스크립트 (단계별 실행)
+│   ├── config.sh               # 공통 설정 파일 (중앙 관리)
+│   ├── 1-init_server.sh        # 1️⃣ Ubuntu 서버 초기화
+│   ├── 2-setup_env.sh          # 2️⃣ 개발 환경 설치
+│   ├── 3-setup_web.sh          # 3️⃣ Nginx 웹 서버 설정
+│   └── deploy.sh               # 배포 스크립트 (Cron 실행)
+└── README.md                    # 프로젝트 소개
+```
+
+---
+
+## ⚙️ 설정 파일 수정 (config.sh)
+
+기본값이 아닌 다른 환경에서 실행할 경우, `scripts/config.sh`를 수정하세요.
+
+### 예: 공인 IP와 프로젝트 경로 설정
+
+```bash
+# scripts/config.sh 수정
+export DOMAIN_NAME="49.50.137.35"
+export PROJECT_PATH="/malangee"
+export DEPLOY_USER="your_username"  # 필요시
+```
+
+### 예: 다른 데이터베이스 계정
+
+```bash
+# scripts/config.sh 수정
+export DB_NAME="custom_db"
+export DB_USER="custom_user"
+export DB_PASSWORD="secure_password"
+```
+
+**주의**: 각 스크립트는 대화형으로 실행 중 사용자 입력을 받으므로,  
+설정 파일의 기본값은 단순히 제안값으로 사용됩니다.
+
+---
+
+## 🛠️ 개발 환경 요구사항
+
+| 도구 | 버전 | 용도 |
+|------|------|------|
+| **Java** | 17+ | Spring Boot Backend |
+| **Node.js** | 18+ | Frontend |
+| **npm** | 9+ | 패키지 관리 (Frontend) |
+| **Maven** | 3.8+ | 패키지 관리 (Backend) |
+| **Python** | 3.9+ | AI Engine |
+| **PostgreSQL** | 13+ | 데이터베이스 |
+| **Git** | 2.30+ | 버전 관리 |
+
+---
+
+## �📋 Cron 자동 배포
 
 ### 작동 방식
 ```
@@ -67,11 +213,97 @@ crontab -u aimaster -l
 
 ---
 
+## ⚙️ 개발 환경 설치 및 설정
+
+### 1️⃣ 자동 설치 (권장)
+
+```bash
+# 모든 개발 환경을 자동으로 설치합니다 (Java, Node.js, Python, PostgreSQL)
+bash scripts/2-setup_env.sh
+```
+
+### 2️⃣ 의존성 설치
+
+```bash
+# Frontend 설치
+cd frontend
+npm install
+
+# Backend 설치 (Maven)
+cd ../backend
+mvn clean install
+
+# AI Engine 설치 (Python)
+cd ../ai-engine
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 3️⃣ 데이터베이스 초기화
+
+```bash
+# PostgreSQL 접속
+psql -U postgres
+
+# 데이터베이스 생성 (필요시)
+CREATE DATABASE malangee;
+
+# 초기 SQL 스크립트 실행
+psql -U postgres -d malangee -f database/init.sql
+```
+
+---
+
 ## 📚 상세 가이드
 
 | 문서 | 목적 |
 |------|------|
 | [docs/SERVER_DEPLOYMENT_INFO.md](docs/SERVER_DEPLOYMENT_INFO.md) | 🚀 배포 관리 & 모니터링 |
+
+---
+
+### 웹 서버 설정 (Nginx)
+
+Frontend와 Backend를 Nginx를 통해 웹(포트 80)으로 접속 가능하게 설정:
+
+```bash
+# Nginx 설치 및 설정 (대화형)
+sudo bash scripts/3-setup_web.sh
+```
+
+**설정 예시 (공인 IP 49.50.137.35, 프로젝트 경로 /malangee):**
+
+```
+Frontend:    http://49.50.137.35/malangee
+Backend API: http://49.50.137.35/malangee/api
+```
+
+**설정 단계:**
+1. `Frontend 포트`: 5173 (기본)
+2. `Backend 포트`: 8080 (기본)
+3. `도메인/IP`: 49.50.137.35
+4. `프로젝트 경로`: malangee (또는 /malangee)
+
+### Nginx 기본 명령어
+
+```bash
+# Nginx 상태 확인
+sudo systemctl status nginx
+
+# Nginx 재시작
+sudo systemctl restart nginx
+
+# 설정 검증
+sudo nginx -t
+
+# 로그 확인
+sudo tail -f /var/log/nginx/access.log
+sudo tail -f /var/log/nginx/error.log
+
+# 설정 파일 수정
+sudo nano /etc/nginx/sites-available/malangee
+```
 
 ---
 
@@ -137,6 +369,45 @@ sudo systemctl status cron
 2. git fetch + reset --hard 실행
    ↓
 3. 배포 완료
+```
+
+---
+
+## 🚀 개발 모드 실행
+
+### 로컬 개발 환경에서 실행
+
+**터미널 1 - Frontend:**
+```bash
+cd frontend
+npm run dev
+# 접속: http://localhost:5173
+```
+
+**터미널 2 - Backend (Spring Boot):**
+```bash
+cd backend
+mvn spring-boot:run
+# 접속: http://localhost:8080/api
+```
+
+**터미널 3 - AI Engine (선택):**
+```bash
+cd ai-engine
+source venv/bin/activate
+python main.py
+```
+
+### Nginx를 통한 통합 접속
+
+```bash
+# 위의 터미널 1, 2를 먼저 실행한 후
+# 별도 터미널에서:
+sudo systemctl start nginx
+
+# 웹 접속
+http://localhost/        # Frontend
+http://localhost/api     # Backend API
 ```
 
 ---
