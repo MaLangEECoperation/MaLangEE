@@ -20,7 +20,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/config.sh"
 
 # 프로젝트 경로
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+PROJECT_ROOT=$(get_project_path "$DEPLOY_USER" "$GITHUB_REPO")
 
 echo ""
 echo -e "${CYAN}"
@@ -158,11 +158,6 @@ server {
 
     # Frontend 요청
     location PROJECT_PATH {
-        # root로 PROJECT_PATH를 기준점으로 설정
-        alias FRONTEND_ROOT;
-        
-        try_files $uri $uri/ PROJECT_PATH/index.html;
-        
         proxy_pass http://frontend_upstream;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
@@ -174,8 +169,8 @@ server {
         proxy_set_header X-Script-Name PROJECT_PATH;
         proxy_cache_bypass $http_upgrade;
         
-        # SPA 라우팅 지원
-        error_page 404 PROJECT_PATH/index.html;
+        # SPA 라우팅 지원 (Backend/Frontend Dev Server가 처리)
+        # error_page 404 PROJECT_PATH/index.html;
     }
 
     # 정적 파일 캐싱 (선택사항)
