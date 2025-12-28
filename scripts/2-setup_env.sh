@@ -19,7 +19,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/config.sh"
 
 # 프로젝트 경로
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+PROJECT_ROOT=$(get_project_path "$DEPLOY_USER" "$GITHUB_REPO")
 ENV_DIR="$PROJECT_ROOT"
 
 echo ""
@@ -32,13 +32,20 @@ echo -e "${NC}"
 # 1) 프로젝트 디렉토리 생성
 print_header "1️⃣ 프로젝트 디렉토리 생성"
 
+# 프로젝트 루트 디렉토리 생성
+if [ ! -d "$PROJECT_ROOT" ]; then
+    mkdir -p "$PROJECT_ROOT"
+    print_success "프로젝트 루트 디렉토리 생성: $PROJECT_ROOT"
+else
+    print_info "프로젝트 루트 디렉토리 이미 존재: $PROJECT_ROOT"
+fi
 
+# 하위 프로젝트 디렉토리 생성
 PROJECT_DIRS=(
-    "$PROJECT_ROOT/frontend/node_modules"
-    "$PROJECT_ROOT/backend/target"
-    "$PROJECT_ROOT/backend/build"
-    "$PROJECT_ROOT/ai-engine/venv"
-    "$PROJECT_ROOT/database/data"
+    "$PROJECT_ROOT/frontend"
+    "$PROJECT_ROOT/backend"
+    "$PROJECT_ROOT/ai-engine"
+    "$PROJECT_ROOT/database"
 )
 
 for dir in "${PROJECT_DIRS[@]}"; do
@@ -49,6 +56,12 @@ for dir in "${PROJECT_DIRS[@]}"; do
         print_info "디렉토리 이미 존재: $dir"
     fi
 done
+
+# 소유권 설정 (현재 사용자가 root일 경우, aimaster에게 권한 부여)
+if [ "$EUID" -eq 0 ]; then
+    chown -R "$DEPLOY_USER:$DEPLOY_USER" "$PROJECT_ROOT"
+    print_success "디렉토리 소유권 설정: $DEPLOY_USER"
+fi
 
 # 2) 시스템 패키지 업데이트
 print_header "2️⃣ 시스템 패키지 업데이트"
@@ -94,35 +107,56 @@ else
     fi
 fi
 
-# 5) Python 설치
-print_header "5️⃣ Python 설치"
+# 5) Python 설치 (3.10 이상)
+print_header "5️⃣ Python 설치 (3.10+)"
 
 if command -v python3 &> /dev/null; then
     PYTHON_VERSION=$(python3 --version)
     print_success "Python 이미 설치됨: $PYTHON_VERSION"
+    echo "  ℹ️  필수 설정 안내: 가상 환경(venv)을 생성하여 프로젝트별 의존성을 관리하는 것이 좋습니다."
+    echo "     예: python3 -m venv venv && source venv/bin/activate"
 else
-    print_info "Python 설치 중..."
+    print_info "Python 3.10 이상 설치 중..."
     if command -v sudo &> /dev/null; then
-        sudo apt-get install -y python3 python3-venv python3-pip &>/dev/null
-        print_success "Python 설치 완료"
+        # deadsnakes PPA 추가 (최신 파이썬 버전을 위해)
+        sudo apt-get install -y software-properties-common &>/dev/null
+        sudo add-apt-repository -y ppa:deadsnakes/ppa &>/dev/null
+        sudo apt-get update -y &>/dev/null
+        
+        # Python 3.10 설치
+        sudo apt-get install -y python3.10 python3.10-venv python3.10-dev python3-pip &>/dev/null
+        
+        # python3 명령어가 python3.10을 가리키도록 설정 (선택사항, 여기서는 update-alternatives 사용 안함)
+        
+        print_success "Python 3.10 설치 완료"
+        echo "  ℹ️  필수 설정 안내: 프로젝트 루트에서 가상 환경을 생성하세요."
+        echo "     명령어: python3.10 -m venv venv"
     else
         print_warning "Python 설치를 위해서는 sudo 권한이 필요합니다"
     fi
 fi
 
-# 6) PostgreSQL 설치
-print_header "6️⃣ PostgreSQL 설치"
+# 6) PostgreSQL 설치 (15 이상)
+print_header "6️⃣ PostgreSQL 설치 (15+)"
 
 if command -v psql &> /dev/null; then
     POSTGRES_VERSION=$(psql --version)
     print_success "PostgreSQL 이미 설치됨: $POSTGRES_VERSION"
+    echo "  ℹ️  필수 설정 안내: /etc/postgresql/{version}/main/pg_hba.conf 파일에서 접속 권한을 설정해야 할 수 있습니다."
 else
-    print_info "PostgreSQL 설치 중..."
+    print_info "PostgreSQL 15 이상 설치 중..."
     if command -v sudo &> /dev/null; then
-        sudo apt-get install -y postgresql postgresql-contrib &>/dev/null
+        # PostgreSQL 공식 저장소 추가
+        sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+        wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+        sudo apt-get update -y &>/dev/null
+        
+        # PostgreSQL 15 설치
+        sudo apt-get install -y postgresql-15 postgresql-contrib-15 &>/dev/null
         sudo systemctl start postgresql
         sudo systemctl enable postgresql
-        print_success "PostgreSQL 설치 및 시작 완료"
+        print_success "PostgreSQL 15 설치 및 시작 완료"
+        echo "  ℹ️  필수 설정 안내: 기본적으로 로컬 접속만 허용됩니다. 외부 접속이 필요하면 postgresql.conf의 listen_addresses를 수정하세요."
     else
         print_warning "PostgreSQL 설치를 위해서는 sudo 권한이 필요합니다"
     fi
@@ -141,26 +175,41 @@ if command -v psql &> /dev/null; then
     read -p "데이터베이스 사용자명 (기본값: $DB_USER): " DB_USER_INPUT
     DB_USER=${DB_USER_INPUT:-"$DB_USER"}
     
-    read -sp "데이터베이스 사용자 비밀번호 (기본값: $DB_PASSWORD): " DB_PASSWORD_INPUT
-    DB_PASSWORD=${DB_PASSWORD_INPUT:-"$DB_PASSWORD"}
-    echo ""
+    # 기존 데이터베이스 확인
+    DB_EXISTS=$(sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = '$DB_NAME'" 2>/dev/null | grep -q 1 && echo "yes" || echo "no")
     
-    # 입력 확인
-    echo ""
-    echo -e "${YELLOW}설정 정보:${NC}"
-    echo "  • 데이터베이스명: $DB_NAME"
-    echo "  • 사용자명: $DB_USER"
-    echo "  • 비밀번호: ****** (입력됨)"
-    echo ""
-    
-    read -p "위의 설정으로 진행하시겠습니까? (y/n): " CONFIRM
-    
-    if [[ $CONFIRM =~ ^[Yy]$ ]]; then
-        # PostgreSQL 사용자와 데이터베이스 생성
-        print_info "PostgreSQL 데이터베이스 및 사용자 생성 중..."
+    if [ "$DB_EXISTS" = "yes" ]; then
+        print_success "PostgreSQL 데이터베이스가 이미 존재합니다: $DB_NAME"
+        echo ""
+        echo -e "${CYAN}기존 데이터베이스 정보:${NC}"
+        echo "  • Database: $DB_NAME"
         
-        # sudo -u postgres로 실행하여 데이터베이스 생성
-        sudo -u postgres psql << EOFPSQL
+        # 기존 데이터베이스의 소유자 확인
+        DB_OWNER=$(sudo -u postgres psql -tc "SELECT pg_catalog.pg_get_userbyid(d.datdba) FROM pg_database d WHERE datname = '$DB_NAME'" 2>/dev/null | xargs)
+        echo "  • Owner: $DB_OWNER"
+        echo ""
+        print_warning "데이터베이스 생성을 건너뜁니다."
+    else
+        read -sp "데이터베이스 사용자 비밀번호 (기본값: $DB_PASSWORD): " DB_PASSWORD_INPUT
+        DB_PASSWORD=${DB_PASSWORD_INPUT:-"$DB_PASSWORD"}
+        echo ""
+        
+        # 입력 확인
+        echo ""
+        echo -e "${YELLOW}설정 정보:${NC}"
+        echo "  • 데이터베이스명: $DB_NAME"
+        echo "  • 사용자명: $DB_USER"
+        echo "  • 비밀번호: ****** (입력됨)"
+        echo ""
+        
+        read -p "위의 설정으로 진행하시겠습니까? (y/n): " CONFIRM
+        
+        if [[ $CONFIRM =~ ^[Yy]$ ]]; then
+            # PostgreSQL 사용자와 데이터베이스 생성
+            print_info "PostgreSQL 데이터베이스 및 사용자 생성 중..."
+            
+            # sudo -u postgres로 실행하여 데이터베이스 생성
+            sudo -u postgres psql << EOFPSQL
 -- 기존 사용자 삭제 (있으면)
 DROP USER IF EXISTS "$DB_USER" CASCADE;
 
@@ -184,25 +233,26 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO "$DB_USER";
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO "$DB_USER";
 EOFPSQL
         
-        if [ $? -eq 0 ]; then
-            print_success "PostgreSQL 데이터베이스 및 사용자 생성 완료"
-            echo ""
-            echo -e "${CYAN}데이터베이스 연결 정보:${NC}"
-            echo "  • Host: localhost"
-            echo "  • Port: 5432"
-            echo "  • Database: $DB_NAME"
-            echo "  • User: $DB_USER"
-            echo "  • Password: ****** (입력하신 비밀번호)"
-            echo ""
-            echo -e "${CYAN}연결 테스트:${NC}"
-            echo "  psql -h localhost -U $DB_USER -d $DB_NAME"
+            if [ $? -eq 0 ]; then
+                print_success "PostgreSQL 데이터베이스 및 사용자 생성 완료"
+                echo ""
+                echo -e "${CYAN}데이터베이스 연결 정보:${NC}"
+                echo "  • Host: localhost"
+                echo "  • Port: 5432"
+                echo "  • Database: $DB_NAME"
+                echo "  • User: $DB_USER"
+                echo "  • Password: ****** (입력하신 비밀번호)"
+                echo ""
+                echo -e "${CYAN}연결 테스트:${NC}"
+                echo "  psql -h localhost -U $DB_USER -d $DB_NAME"
+            else
+                print_error "PostgreSQL 데이터베이스 생성 실패"
+            fi
         else
-            print_error "PostgreSQL 데이터베이스 생성 실패"
+            print_warning "PostgreSQL 데이터베이스 생성을 건너뛰었습니다."
+            echo "  나중에 수동으로 설정하려면:"
+            echo "  sudo -u postgres psql"
         fi
-    else
-        print_warning "PostgreSQL 설정을 건너뛰었습니다."
-        echo "  나중에 수동으로 설정하려면:"
-        echo "  sudo -u postgres psql"
     fi
 else
     print_warning "PostgreSQL이 설치되지 않았습니다."
@@ -248,12 +298,10 @@ fi
 
 echo ""
 echo -e "${CYAN}📁 생성된 디렉토리:${NC}"
-echo "  • frontend/node_modules"
-echo "  • backend/target (Build 결과물)"
-echo "  • backend/build (Build 결과물)"
-echo "  • ai-engine/venv"
-echo "  • database/data"
-
+echo "  • frontend"
+echo "  • backend"
+echo "  • ai-engine"
+echo "  • database"
 echo ""
 echo -e "${CYAN}🚀 다음 단계:${NC}"
 echo ""

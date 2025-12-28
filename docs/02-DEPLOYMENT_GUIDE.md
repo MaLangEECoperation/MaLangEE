@@ -388,7 +388,73 @@ tail -1 /var/log/MaLangEE_deploy.log
 
 ---
 
-## 📞 지원
+---
+
+## � 문제 해결
+
+### PostgreSQL 연결 오류: "connection refused"
+
+#### 증상
+```
+psql: error: connection to server at "localhost" (127.0.0.1), port 5432 failed
+Is the server running on that host and accepting TCP/IP connections?
+```
+
+#### 원인
+1. **PostgreSQL 서비스 미실행**
+2. **pg_hba.conf 파일 손상**
+3. **포트 바인딩 실패**
+
+#### 진단 명령
+```bash
+# 서비스 상태 확인
+sudo systemctl status postgresql
+
+# 클러스터 상태 확인
+sudo pg_lsclusters
+
+# 로그 확인
+sudo tail -50 /var/log/postgresql/postgresql-*.log
+
+# 프로세스 확인
+sudo ps aux | grep '[p]ostgres'
+```
+
+#### 해결 방법
+
+**1️⃣ pg_hba.conf 파일 손상 시**
+```bash
+# 손상된 줄 제거
+sudo sed -i '123d' /etc/postgresql/16/main/pg_hba.conf
+
+# 또는 샘플 파일로 복구
+sudo cp /usr/share/postgresql/16/pg_hba.conf.sample /etc/postgresql/16/main/pg_hba.conf
+
+# 권한 설정
+sudo chmod 640 /etc/postgresql/16/main/pg_hba.conf
+sudo chown postgres:postgres /etc/postgresql/16/main/pg_hba.conf
+
+# 재시작
+sudo systemctl restart postgresql
+```
+
+**2️⃣ 서비스 시작**
+```bash
+sudo systemctl start postgresql
+sudo systemctl enable postgresql  # 부팅 시 자동 시작
+```
+
+**3️⃣ 클러스터 재초기화 (마지막 수단)**
+```bash
+# ⚠️ 모든 데이터가 삭제됩니다!
+sudo pg_dropcluster 16 main --stop
+sudo pg_createcluster 16 main
+sudo systemctl start postgresql
+```
+
+---
+
+## �📞 지원
 
 배포에 문제가 발생하면:
 
@@ -397,4 +463,4 @@ tail -1 /var/log/MaLangEE_deploy.log
 3. 저장소 상태 확인: `cd /home/aimaster/projects/MaLangEE && git status`
 4. 수동 배포 테스트: `/home/aimaster/deploy.sh`
 
-이 문서의 **문제 해결** 섹션을 참고하세요.
+위의 **문제 해결** 섹션을 먼저 확인하세요.

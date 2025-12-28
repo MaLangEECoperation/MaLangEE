@@ -12,9 +12,36 @@
 1️⃣ 1-init_server.sh    → Ubuntu 서버 초기화 (처음 한 번만, root 권한)
    ↓
 2️⃣ 2-setup_env.sh      → 개발 환경 설치 (로컬 또는 서버)
-   ↓
-3️⃣ 3-setup_web.sh      → Nginx 웹 서버 설정 (선택사항, root 권한)
 ```
+
+---
+
+## 🖥️ 현재 서버 구성 정보 (Reference)
+
+**서버 정보**
+- **OS**: Ubuntu 24.04 LTS
+- **IP**: 49.50.137.35
+- **기본 경로**: `/home/aimaster`
+- **배포 경로**: `/home/aimaster/projects/MaLangEE`
+
+**설치된 도구 버전 및 경로**
+- **Java**: OpenJDK 17.0.17
+- **Node.js**: v18.20.8 (`/usr/bin/node`)
+- **npm**: 10.8.2 (`/usr/bin/npm`)
+- **Python**: 3.12.3 (`/usr/bin/python3`)
+- **Maven**: (`/usr/bin/mvn`)
+- **PostgreSQL**: 15.15
+
+**데이터베이스 정보**
+- **Host**: 49.50.137.35
+- **Port**: 5432
+- **Database**: malangee
+- **User**: aimaster
+
+**서비스 접속 URL**
+- **Frontend**: http://49.50.137.35:5173
+- **AI Engine**: http://49.50.137.35:5000
+- **Backend**: http://49.50.137.35:8080/api/health
 
 ---
 
@@ -89,10 +116,10 @@ bash scripts/2-setup_env.sh
 
 다음 도구들이 자동으로 설치됩니다:
 
-- ✅ **Java** (JDK 17+) - Spring Boot Backend
-- ✅ **Node.js** (v18+) - Frontend
-- ✅ **Python** (3.9+) - AI Engine
-- ✅ **PostgreSQL** (13+) - 데이터베이스
+- ✅ **Java** (JDK 17.0.17) - Spring Boot Backend
+- ✅ **Node.js** (v18.20.8) - Frontend
+- ✅ **Python** (3.12.3) - AI Engine
+- ✅ **PostgreSQL** (15.15) - 데이터베이스
 
 ### 대화형 설정
 
@@ -102,12 +129,12 @@ PostgreSQL 설정 시 다음을 입력받습니다:
 PostgreSQL 설정을 진행합니다.
 
 데이터베이스명 (기본값: malangee): [엔터]
-데이터베이스 사용자명 (기본값: malangee_user): [엔터]
+데이터베이스 사용자명 (기본값: aimaster): [엔터]
 데이터베이스 사용자 비밀번호 (기본값: malangee_password): [비밀번호 입력]
 
 설정 정보:
   • 데이터베이스명: malangee
-  • 사용자명: malangee_user
+  • 사용자명: aimaster
   • 비밀번호: ****** (입력됨)
 
 위의 설정으로 진행하시겠습니까? (y/n): y
@@ -129,85 +156,7 @@ python3 --version
 psql --version
 
 # PostgreSQL 접속 테스트
-psql -h localhost -U malangee_user -d malangee
-```
-
----
-
-## 🌐 3단계: Nginx 웹 서버 설정 (선택사항)
-
-**목적**: Frontend와 Backend를 웹 포트 80으로 접속 가능하게 설정
-
-**실행 환경**: 웹 서버가 필요한 경우만
-
-**권한**: Root 권한 필요 (`sudo`)
-
-### 실행 방법
-
-```bash
-# 프로젝트 디렉토리로 이동
-cd /path/to/MaLangEE
-
-# 스크립트 실행
-sudo bash scripts/3-setup_web.sh
-```
-
-### 대화형 설정
-
-Nginx 설정 시 다음을 입력받습니다:
-
-```
-로컬에서 실행 중인 서버 정보를 입력하세요.
-
-Frontend 포트 (기본값: 5173): [엔터]
-Frontend 호스트 (기본값: localhost): [엔터]
-Backend 포트 (기본값: 8080): [엔터]
-Backend 호스트 (기본값: localhost): [엔터]
-도메인/IP (기본값: localhost): [도메인 또는 IP 입력]
-프로젝트 경로 (기본값: /) - 예: /malangee : [경로 입력]
-```
-
-### 설정 예시
-
-#### 로컬 개발 환경 (기본값 사용)
-
-```bash
-# 모두 [엔터]로 진행
-Frontend 포트: [엔터] → 5173
-Backend 포트: [엔터] → 8080
-도메인/IP: [엔터] → localhost
-프로젝트 경로: [엔터] → /
-
-# 접속 주소:
-# Frontend: http://localhost
-# Backend API: http://localhost/api
-```
-
-#### 공인 IP + 프로젝트 경로 설정
-
-```bash
-Frontend 포트: [엔터] → 5173
-Backend 포트: [엔터] → 8080
-도메인/IP: 49.50.137.35
-프로젝트 경로: malangee
-
-# 접속 주소:
-# Frontend: http://49.50.137.35/malangee
-# Backend API: http://49.50.137.35/malangee/api
-```
-
-### 완료 후 확인
-
-```bash
-# Nginx 상태 확인
-sudo systemctl status nginx
-
-# Nginx 설정 검증
-sudo nginx -t
-
-# 접속 테스트
-curl http://localhost/         # Frontend
-curl http://localhost/api/     # Backend API
+psql -h 49.50.137.35 -U aimaster -d malangee
 ```
 
 ---
@@ -244,19 +193,6 @@ python3 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 python main.py
-```
-
-### Nginx를 통한 통합 접속
-
-```bash
-# Frontend와 Backend가 이미 실행 중일 때
-
-# Nginx 실행
-sudo systemctl start nginx
-
-# 웹 접속
-http://localhost           # Frontend
-http://localhost/api       # Backend API
 ```
 
 ---
@@ -350,14 +286,6 @@ sudo bash scripts/1-init_server.sh
 # 수동으로 설치하거나 OS 변경 필요
 ```
 
-### 3단계 에러: "nginx not found"
-
-```bash
-# Nginx가 설치되지 않았습니다
-# 3-setup_web.sh를 다시 실행하세요
-sudo bash scripts/3-setup_web.sh
-```
-
 ### PostgreSQL 연결 오류
 
 ```bash
@@ -389,14 +317,7 @@ psql -h localhost -U malangee_user -d malangee
 - [ ] Node.js 설치 확인: `node -v`
 - [ ] Python 설치 확인: `python3 --version`
 - [ ] PostgreSQL 설치 확인: `psql --version`
-- [ ] PostgreSQL 접속 가능: `psql -U malangee_user -d malangee`
-
-### 3단계 완료 확인
-
-- [ ] Nginx 설치됨: `sudo systemctl status nginx`
-- [ ] Nginx 설정 검증 통과: `sudo nginx -t`
-- [ ] Frontend 접속 가능: `curl http://localhost`
-- [ ] Backend 접속 가능: `curl http://localhost/api`
+- [ ] PostgreSQL 접속 가능: `psql -h 49.50.137.35 -U aimaster -d malangee`
 
 ---
 
@@ -414,4 +335,3 @@ psql -h localhost -U malangee_user -d malangee
 이제 다음 단계로 진행하세요:
 1. Frontend 개발: `cd frontend && npm run dev`
 2. Backend 개발: `cd backend && mvn spring-boot:run`
-3. Nginx 통합 접속: `http://localhost` 또는 `http://49.50.137.35/malangee`
