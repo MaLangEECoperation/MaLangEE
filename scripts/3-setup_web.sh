@@ -1,16 +1,16 @@
 #!/bin/bash
 
 ###############################################
-#  Nginx 웹 서버 설정 스크립트
+#  Nginx 웹 서버 설정 스크립트 (루트 분기 방식)
 #  실행 방법: bash setup_nginx.sh
 #  또는: sudo bash setup_nginx.sh (권장)
 #
 #  설정 내용:
 #  ├─ Nginx 설치
-#  ├─ Frontend 리버스 프록시 설정 (포트 80)
+#  ├─ Frontend 리버스 프록시 설정 (루트 경로 /)
 #  ├─ Backend API 프록시 설정 (/api)
-#  ├─ 자동 리다이렉트 설정
-#  └─ SSL 설정 (선택사항)
+#  ├─ 환경별 .env 파일 자동 생성
+#  └─ CORS 설정
 #
 #  OS: Ubuntu/Debian 기반
 ###############################################
@@ -68,22 +68,15 @@ read -p "Frontend 호스트 (기본값: localhost): " FRONTEND_HOST
 FRONTEND_HOST=${FRONTEND_HOST:-"localhost"}
 
 # Backend 설정
-read -p "Backend 포트 (기본값: $BACKEND_PORT): " BACKEND_PORT_INPUT
-BACKEND_PORT=${BACKEND_PORT_INPUT:-"$BACKEND_PORT"}
+read -p "Backend 포트 (기본값: 8080): " BACKEND_PORT_INPUT
+BACKEND_PORT=${BACKEND_PORT_INPUT:-"8080"}
 
-read -p "Backend 호스트 (기본값: $BACKEND_HOST): " BACKEND_HOST_INPUT
-BACKEND_HOST=${BACKEND_HOST_INPUT:-"$BACKEND_HOST"}
+read -p "Backend 호스트 (기본값: localhost): " BACKEND_HOST_INPUT
+BACKEND_HOST=${BACKEND_HOST_INPUT:-"localhost"}
 
 # 도메인/IP 설정
-read -p "도메인/IP (기본값: $DOMAIN_NAME): " DOMAIN_NAME_INPUT
-DOMAIN_NAME=${DOMAIN_NAME_INPUT:-"$DOMAIN_NAME"}
-
-# 프로젝트 경로 설정
-read -p "프로젝트 경로 (기본값: $PROJECT_PATH) - 예: /malangee : " PROJECT_PATH_INPUT
-PROJECT_PATH=${PROJECT_PATH_INPUT:-"$PROJECT_PATH"}
-
-# 경로 정규화 (config.sh 함수 사용)
-PROJECT_PATH=$(normalize_path "$PROJECT_PATH")
+read -p "도메인/IP (기본값: 49.50.137.35): " DOMAIN_NAME_INPUT
+DOMAIN_NAME=${DOMAIN_NAME_INPUT:-"49.50.137.35"}
 
 echo ""
 echo -e "${YELLOW}설정 정보:${NC}"
@@ -92,11 +85,10 @@ echo "  • 서비스명: $SERVICE_NAME"
 echo "  • Frontend: http://$FRONTEND_HOST:$FRONTEND_PORT"
 echo "  • Backend: http://$BACKEND_HOST:$BACKEND_PORT"
 echo "  • Nginx 도메인/IP: $DOMAIN_NAME"
-echo "  • 프로젝트 경로: $PROJECT_PATH"
 echo ""
-echo -e "${CYAN}웹 접속 경로:${NC}"
-echo "  • Frontend: http://$DOMAIN_NAME$PROJECT_PATH"
-echo "  • Backend API: http://$DOMAIN_NAME$PROJECT_PATH/api"
+echo -e "${CYAN}웹 접속 경로 (루트 분기):${NC}"
+echo "  • Frontend: http://$DOMAIN_NAME/"
+echo "  • Backend API: http://$DOMAIN_NAME/api"
 echo ""
 
 # 3) Nginx 설정 파일 생성
@@ -106,15 +98,19 @@ NGINX_CONFIG="$NGINX_SITES_AVAILABLE/$NGINX_CONFIG_NAME"
 
 print_info "Nginx 설정 파일 생성 중: $NGINX_CONFIG"
 
-# Nginx 설정 파일 작성
+# Nginx 설정 파일 작성 (루트 분기 방식)
 cat > /tmp/malangee_nginx.conf << 'EOFNGINX'
-# MaLangEE Nginx 설정
+# MaLangEE Nginx 설정 (루트 분기 방식)
+# 구조:
+#   / → Frontend (localhost:5173)
+#   /api/ → Backend (localhost:8080)
 
-# Frontend 및 Backend 업스트림 정의
+# Frontend 업스트림
 upstream frontend_upstream {
     server FRONTEND_HOST:FRONTEND_PORT;
 }
 
+# Backend 업스트림
 upstream backend_upstream {
     server BACKEND_HOST:BACKEND_PORT;
 }
@@ -124,23 +120,24 @@ server {
     listen 80;
     server_name DOMAIN_NAME;
 
-    # API 요청은 Backend로 프록시
-    location PROJECT_PATH/api/ {
-        proxy_pass http://backend_upstream;
+    # ================================================
+    # Backend API 프록시 (/api/...)
+    # ================================================
+    location /api/ {
+        proxy_pass http://backend_upstream/;
+        
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Path PROJECT_PATH/api;
         proxy_cache_bypass $http_upgrade;
         
-        # CORS 헤더 추가
+        # CORS 설정
         add_header 'Access-Control-Allow-Origin' '*' always;
-        add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
-        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization' always;
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, PATCH, OPTIONS' always;
+        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization, X-Requested-With' always;
+        add_header 'Access-Control-Max-Age' '86400' always;
         
         # OPTIONS 메서드 처리
         if ($request_method = 'OPTIONS') {
@@ -148,17 +145,12 @@ server {
         }
     }
 
-    # Health check 엔드포인트
-    location PROJECT_PATH/health {
-        proxy_pass http://backend_upstream;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        access_log off;
-    }
-
-    # Frontend 요청
-    location PROJECT_PATH {
+    # ================================================
+    # Frontend 프록시 (루트 경로 /)
+    # ================================================
+    location / {
         proxy_pass http://frontend_upstream;
+        
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -166,24 +158,24 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Script-Name PROJECT_PATH;
         proxy_cache_bypass $http_upgrade;
-        
-        # SPA 라우팅 지원 (Backend/Frontend Dev Server가 처리)
-        # error_page 404 PROJECT_PATH/index.html;
     }
 
-    # 정적 파일 캐싱 (선택사항)
+    # ================================================
+    # 정적 파일 캐싱
+    # ================================================
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
         proxy_pass http://frontend_upstream;
         expires 30d;
         add_header Cache-Control "public, immutable";
     }
 
+    # ================================================
     # Gzip 압축
+    # ================================================
     gzip on;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
-    gzip_min_length 1000;
+    gzip_min_length 1024;
     gzip_proxied any;
     gzip_vary on;
 }
@@ -195,9 +187,8 @@ sed -i "s|FRONTEND_PORT|$FRONTEND_PORT|g" /tmp/malangee_nginx.conf
 sed -i "s|BACKEND_HOST|$BACKEND_HOST|g" /tmp/malangee_nginx.conf
 sed -i "s|BACKEND_PORT|$BACKEND_PORT|g" /tmp/malangee_nginx.conf
 sed -i "s|DOMAIN_NAME|$DOMAIN_NAME|g" /tmp/malangee_nginx.conf
-sed -i "s|PROJECT_PATH|$PROJECT_PATH|g" /tmp/malangee_nginx.conf
 
-# 설정 파일 복사 (Root 권한 필요)
+# 설정 파일 복사
 if [[ $EUID -eq 0 ]]; then
     cp /tmp/malangee_nginx.conf "$NGINX_CONFIG"
     chmod 644 "$NGINX_CONFIG"
@@ -296,8 +287,16 @@ echo "  2️⃣ Backend 시작 (다른 터미널):"
 echo "     cd $PROJECT_ROOT/backend"
 echo "     mvn spring-boot:run"
 echo ""
-echo "  3️⃣ 웹 브라우저에서 접속:"
-echo "     http://$DOMAIN_NAME$PROJECT_PATH"
+echo "  3️⃣ 웹 브라우저에서 접속 (루트 분기):"
+echo "     Frontend: http://localhost:5173"
+echo "     Backend API: http://localhost:$BACKEND_PORT/api"
+echo ""
+
+echo ""
+echo -e "${CYAN}🌐 배포 후 웹 접속:${NC}"
+echo ""
+echo "  Frontend: http://$DOMAIN_NAME/"
+echo "  Backend API: http://$DOMAIN_NAME/api"
 echo ""
 
 echo -e "${CYAN}⚙️ 유용한 명령어:${NC}"
@@ -324,19 +323,10 @@ echo ""
 echo "  ⚠ Frontend와 Backend가 실행 중이어야 합니다"
 echo "  ⚠ 포트 80이 사용 가능해야 합니다"
 echo "  ⚠ 공인 IP 사용 시 방화벽에서 포트 80 허용 필요"
-echo "  ⚠ 로컬호스트가 아닌 경우 /etc/hosts 수정 필요:"
-echo "    127.0.0.1 $DOMAIN_NAME"
 echo ""
-echo "  프로젝트 경로: $PROJECT_PATH"
-echo "  Frontend URL: http://$DOMAIN_NAME$PROJECT_PATH"
-echo "  Backend URL: http://$DOMAIN_NAME$PROJECT_PATH/api"
-echo ""
-
-echo -e "${CYAN}🔐 SSL 설정 (선택사항):${NC}"
-echo ""
-echo "  Let's Encrypt를 사용하여 SSL 인증서 설정:"
-echo "    sudo apt-get install -y certbot python3-certbot-nginx"
-echo "    sudo certbot certonly --nginx -d $DOMAIN_NAME"
+echo "  구조:"
+echo "    / → Frontend (localhost:$FRONTEND_PORT)"
+echo "    /api → Backend (localhost:$BACKEND_PORT)"
 echo ""
 
 echo -e "${GREEN}✓ Nginx 웹 서버 설정 완료!${NC}\n"

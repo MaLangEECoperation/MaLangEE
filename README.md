@@ -2,9 +2,10 @@
 
 AI 기반 언어 학습 플랫폼으로, 자동 배포 기능과 완전한 개발 환경이 적용된 엔터프라이즈 프로젝트입니다.
 
-> 📖 **설치 가이드 선택**
-> - 🐧 **Ubuntu/Linux 서버**: [docs/01-SETUP_GUIDE.md](docs/01-SETUP_GUIDE.md)
-> - 🪟 **Windows 11 로컬 개발**: [docs/10-WINDOWS_SETUP_GUIDE.md](docs/10-WINDOWS_SETUP_GUIDE.md)
+> 📖 **가이드 바로가기**
+> - ℹ️ **프로젝트 핵심 정보**: [docs/00-PROJECT_INFO.md](docs/00-PROJECT_INFO.md)
+> - 💻 **개발자 가이드 (Local)**: [docs/01-DEV_GUIDE.md](docs/01-DEV_GUIDE.md)
+> - ⚙️ **서버 운영 가이드 (Ops)**: [docs/02-SERVER_OPS.md](docs/02-SERVER_OPS.md)
 
 ---
 
@@ -141,9 +142,9 @@ MaLangEE/
 │   ├── data/                   # 데이터베이스 데이터
 │   └── ...
 ├── docs/                        # 📚 문서 모음
-│   ├── 01-SETUP_GUIDE.md        # 🐧 Ubuntu 서버 배포 가이드 (단계별)
-│   ├── 02-DEPLOYMENT_GUIDE.md   # 배포 관리 & 모니터링
-│   └── 10-WINDOWS_SETUP_GUIDE.md # 🪟 Windows 로컬 개발 가이드
+│   ├── 00-PROJECT_INFO.md       # ℹ️ 프로젝트 핵심 정보
+│   ├── 01-DEV_GUIDE.md          # 💻 개발자 가이드
+│   └── 02-SERVER_OPS.md         # ⚙️ 서버 운영 가이드
 ├── scripts/                     # 배포 및 설정 스크립트 (단계별 실행)
 │   ├── config.sh               # 공통 설정 파일 (중앙 관리)
 │   ├── 1-init_server.sh        # 1️⃣ Ubuntu 서버 초기화
@@ -444,7 +445,38 @@ sudo systemctl enable cron
 
 ---
 
-## 📝 개발 워크플로우
+## � 문서 (Documentation)
+
+프로젝트 문서는 `docs/` 디렉토리에 정리되어 있습니다.
+
+```
+docs/
+├── 00-PROJECT_INFO.md   # ℹ️ 프로젝트 핵심 정보 (IP, 포트, 계정)
+├── 01-DEV_GUIDE.md      # 💻 개발자 가이드 (로컬 실행 방법)
+└── 02-SERVER_OPS.md     # ⚙️ 서버 운영 가이드 (배포 및 관리)
+```
+
+### ℹ️ [00-PROJECT_INFO.md](docs/00-PROJECT_INFO.md)
+모든 팀원이 가장 먼저 확인해야 할 문서입니다.
+- 서비스 접속 URL
+- 서버 IP 및 SSH 접속 정보
+- 기술 스택 버전 및 포트 맵
+
+### 💻 [01-DEV_GUIDE.md](docs/01-DEV_GUIDE.md)
+개발자가 로컬 환경(Windows/Mac)에서 프로젝트를 실행하는 방법입니다.
+- 필수 설치 도구 (Git, JDK, Node 등)
+- Backend, Frontend, AI Engine 실행 명령어
+- 트러블슈팅
+
+### ⚙️ [02-SERVER_OPS.md](docs/02-SERVER_OPS.md)
+서버 관리자가 배포 환경을 구축하고 운영하는 방법입니다.
+- 초기 서버 세팅 스크립트 사용법
+- 자동 배포(Cron) 관리 및 로그 확인
+- Nginx 설정 및 문제 해결
+
+---
+
+## �📝 개발 워크플로우
 
 ### 1️⃣ 로컬에서 개발
 ```bash
@@ -502,7 +534,8 @@ cd /home/aimaster/projects/MaLangEE && git log --oneline -1
 
 ## 🔗 관련 링크
 
--  **[docs/02-DEPLOYMENT_GUIDE.md](docs/02-DEPLOYMENT_GUIDE.md)** - 서버 설정 & 배포 관리
+- ℹ️ **[docs/00-PROJECT_INFO.md](docs/00-PROJECT_INFO.md)** - 프로젝트 핵심 정보
+- ⚙️ **[docs/02-SERVER_OPS.md](docs/02-SERVER_OPS.md)** - 서버 운영 가이드
 - 🔧 **[scripts/1-init_server.sh](scripts/1-init_server.sh)** - 서버 초기화 스크립트
 
 ---
@@ -513,7 +546,7 @@ cd /home/aimaster/projects/MaLangEE && git log --oneline -1
 
 1. **배포 로그 확인**: `/var/log/MaLangEE_deploy.log`
 2. **Cron 상태 확인**: `sudo systemctl status cron`
-3. **[docs/02-DEPLOYMENT_GUIDE.md](docs/02-DEPLOYMENT_GUIDE.md) - 문제 해결** 섹션 참고
+3. **[docs/02-SERVER_OPS.md](docs/02-SERVER_OPS.md) - 문제 해결** 섹션 참고
 4. **수동 배포 테스트**: `/home/aimaster/deploy.sh`
 
 ---
