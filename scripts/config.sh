@@ -127,10 +127,70 @@ get_deploy_script_path() {
     echo "/home/${user}/deploy.sh"
 }
 
+# ============================================
+# 서비스 상태 확인 함수
+# ============================================
+
+# 단일 서비스 상태 확인
+is_service_running() {
+    local service_name="$1"
+    systemctl is-active --quiet "$service_name" 2>/dev/null
+    return $?
+}
+
+# 서비스 실행 상태 출력
+check_service_status() {
+    local service_name="$1"
+    
+    if is_service_running "$service_name"; then
+        print_success "🟢 $service_name 실행 중"
+        return 0
+    else
+        print_warning "🔴 $service_name 실행 중지됨"
+        return 1
+    fi
+}
+
+# 모든 주요 서비스 상태 확인
+check_all_services() {
+    echo ""
+    print_header "📊 서비스 상태 확인"
+    
+    local backend_status=0
+    local frontend_status=0
+    local ai_status=0
+    
+    check_service_status "malangee-backend" || backend_status=1
+    check_service_status "malangee-frontend" || frontend_status=1
+    check_service_status "malangee-ai" || ai_status=1
+    
+    echo ""
+    return $((backend_status + frontend_status + ai_status))
+}
+
+# 포트 점유 상태 확인
+is_port_in_use() {
+    local port="$1"
+    netstat -tuln 2>/dev/null | grep -q ":$port " || ss -tuln 2>/dev/null | grep -q ":$port "
+    return $?
+}
+
+# 프로세스 실행 여부 확인
+is_process_running() {
+    local process_pattern="$1"
+    pgrep -f "$process_pattern" >/dev/null 2>&1
+    return $?
+}
+
 export -f normalize_path
 export -f get_repo_name
 export -f get_project_path
 export -f get_deploy_script_path
+export -f is_service_running
+export -f check_service_status
+export -f check_all_services
+export -f is_port_in_use
+export -f is_process_running
 export -f print_header
 export -f print_success
 export -f print_error

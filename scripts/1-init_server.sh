@@ -146,13 +146,29 @@ echo ""
 ### 4) 자동 배포 스크립트 생성
 print_header "4️⃣ 자동 배포 스크립트 생성"
 
-# deploy.sh는 이미 프로젝트 내부에 존재하므로, crontab에서 호출하도록 설정
-DEPLOY_SCRIPT="$REPO_PATH/deploy.sh"
+tee "$DEPLOY_SCRIPT" > /dev/null << 'EOF'
+#!/bin/bash
 
-# 배포 스크립트 권한 설정
+REPO_PATH="__REPO_PATH__"
+LOG_FILE="__LOG_FILE__"
+
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] 배포 시작" >> $LOG_FILE
+
+# 저장소 업데이트
+cd $REPO_PATH || exit 1
+git fetch origin main >> $LOG_FILE 2>&1
+git reset --hard origin/main >> $LOG_FILE 2>&1
+
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] 배포 완료" >> $LOG_FILE
+EOF
+
+# 변수 치환
+sed -i "s|__REPO_PATH__|$REPO_PATH|g" "$DEPLOY_SCRIPT"
+sed -i "s|__LOG_FILE__|$LOG_FILE|g" "$DEPLOY_SCRIPT"
+
 chmod +x "$DEPLOY_SCRIPT"
 chown "$USERNAME:$USERNAME" "$DEPLOY_SCRIPT"
-print_success "배포 스크립트 경로: $DEPLOY_SCRIPT"
+print_success "배포 스크립트 생성: $DEPLOY_SCRIPT"
 echo ""
 
 ### 5) Cron 자동 배포 설정
@@ -165,7 +181,7 @@ sudo -u "$USERNAME" crontab -l > "$CRON_FILE" 2>/dev/null || true
 
 # 중복 방지
 if ! grep -q "deploy.sh" "$CRON_FILE" 2>/dev/null; then
-    echo "*/10 * * * * cd $REPO_PATH && ./deploy.sh all >> $LOG_FILE 2>&1" >> "$CRON_FILE"
+    echo "*/10 * * * * $DEPLOY_SCRIPT >> $LOG_FILE 2>&1" >> "$CRON_FILE"
     sudo -u "$USERNAME" crontab "$CRON_FILE"
     print_success "Cron 설정 완료 (10분마다 배포 체크)"
 else
@@ -232,7 +248,7 @@ echo "3️⃣ 저장소 상태 확인:"
 echo "   cd $REPO_PATH && git status"
 echo ""
 echo "4️⃣ 배포 스크립트 수동 실행:"
-echo "   $DEPLOY_SCRIPT all"
+echo "   $DEPLOY_SCRIPT"
 echo ""
 echo "5️⃣ (선택사항) GitHub Actions 빠른 배포 추가:"
 echo "   docs/GITHUB_ACTIONS_SSH_DEPLOY.md 참고"

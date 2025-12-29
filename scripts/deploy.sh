@@ -200,14 +200,29 @@ fi
 
 # 5. 상태 확인
 echo -e "\n${CYAN}📊 서비스 상태 확인:${NC}"
+
 if [[ "$TARGET" == "all" || "$TARGET" == "backend" ]]; then
-    systemctl status malangee-backend --no-pager | head -n 3
+    if sudo systemctl is-active --quiet malangee-backend 2>/dev/null; then
+        echo -e "${GREEN}✓ Backend:     실행 중${NC}"
+    else
+        echo -e "${RED}✗ Backend:     중지됨${NC}"
+    fi
 fi
+
 if [[ "$TARGET" == "all" || "$TARGET" == "ai" ]]; then
-    systemctl status malangee-ai --no-pager | head -n 3
+    if sudo systemctl is-active --quiet malangee-ai 2>/dev/null; then
+        echo -e "${GREEN}✓ AI-Engine:   실행 중${NC}"
+    else
+        echo -e "${RED}✗ AI-Engine:   중지됨${NC}"
+    fi
 fi
+
 if [[ "$TARGET" == "all" || "$TARGET" == "frontend" ]]; then
-    systemctl status malangee-frontend --no-pager | head -n 3
+    if sudo systemctl is-active --quiet malangee-frontend 2>/dev/null; then
+        echo -e "${GREEN}✓ Frontend:    실행 중${NC}"
+    else
+        echo -e "${RED}✗ Frontend:    중지됨${NC}"
+    fi
 fi
 
 echo -e "\n${GREEN}✓ 배포 완료!${NC}"
