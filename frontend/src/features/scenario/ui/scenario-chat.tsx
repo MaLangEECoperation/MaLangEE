@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { scenarioApi } from "@/shared/api/scenario";
-import type { Scenario, ScenarioMessage } from "@/shared/types/api";
+import type { ScenarioMessage } from "@/shared/type/api";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 

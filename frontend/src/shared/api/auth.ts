@@ -1,5 +1,5 @@
 import { apiClient } from "../lib/api-client";
-import type { Token, User } from "../types/api";
+import type { Token, User } from "../type/api";
 
 export const authApi = {
   register: async (email: string, username: string, password: string): Promise<User> => {

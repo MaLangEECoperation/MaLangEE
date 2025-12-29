@@ -1,5 +1,5 @@
 import { apiClient } from "../lib/api-client";
-import type { DailyReflection, DailyReflectionCreate } from "../types/api";
+import type { DailyReflection, DailyReflectionCreate } from "../type/api";
 
 export const dailyReflectionApi = {
   create: async (data: DailyReflectionCreate): Promise<DailyReflection> => {

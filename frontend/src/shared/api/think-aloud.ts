@@ -1,5 +1,5 @@
 import { apiClient } from "../lib/api-client";
-import type { ThinkAloud, ThinkAloudCreate, ThinkAloudTopic } from "../types/api";
+import type { ThinkAloud, ThinkAloudCreate, ThinkAloudTopic } from "../type/api";
 
 export const thinkAloudApi = {
   getTopic: async (): Promise<ThinkAloudTopic> => {

@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { dailyReflectionApi } from "@/shared/api/daily-reflection";
-import type { DailyReflection } from "@/shared/types/api";
+import type { DailyReflection } from "@/shared/type/api";
 
 export function DailyReflectionList() {
   const { data, isLoading, error } = useQuery({

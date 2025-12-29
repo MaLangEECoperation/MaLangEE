@@ -1,5 +1,5 @@
 import { apiClient } from "../lib/api-client";
-import type { Scenario, ScenarioCreate, ScenarioType } from "../types/api";
+import type { Scenario, ScenarioCreate, ScenarioType } from "../type/api";
 
 export const scenarioApi = {
   getTypes: async (): Promise<ScenarioType[]> => {

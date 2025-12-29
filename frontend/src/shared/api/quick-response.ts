@@ -1,5 +1,5 @@
 import { apiClient } from "../lib/api-client";
-import type { QuickResponse, QuickResponseCreate, QuickResponseScenario } from "../types/api";
+import type { QuickResponse, QuickResponseCreate, QuickResponseScenario } from "../type/api";
 
 export const quickResponseApi = {
   getScenario: async (): Promise<QuickResponseScenario> => {

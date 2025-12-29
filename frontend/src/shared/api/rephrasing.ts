@@ -1,5 +1,5 @@
 import { apiClient } from "../lib/api-client";
-import type { Rephrasing, RephrasingCreate, RephrasingSentence } from "../types/api";
+import type { Rephrasing, RephrasingCreate, RephrasingSentence } from "../type/api";
 
 export const rephrasingApi = {
   getSentence: async (): Promise<RephrasingSentence> => {
