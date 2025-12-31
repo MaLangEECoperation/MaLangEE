@@ -36,7 +36,7 @@ export PROJECT_PATH="/"
 # ============================================
 # 참고: setup_nginx.sh에서 사용자 입력으로 덮어씌워짐
 export FRONTEND_HOST="localhost"
-export FRONTEND_PORT="5173"
+export FRONTEND_PORT="3000"
 
 # ============================================
 # Backend 설정
