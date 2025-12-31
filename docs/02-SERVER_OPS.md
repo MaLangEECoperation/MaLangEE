@@ -5,19 +5,21 @@
 
 ---
 
-## � 현재 구조: 포트 기반 (Port-Based Architecture)
+## 🌐 현재 구조: 로드밸런서 + 포트 기반
 
-더 이상 **Nginx를 사용하지 않습니다**. 대신 각 서비스가 고유 포트에서 직접 실행됩니다.
+프론트엔드는 네이버 클라우드 로드밸런서를 통해 HTTPS로 제공되며, 백엔드와 AI 엔진은 직접 포트로 접근합니다.
 
 ```
-Frontend:   49.50.137.35:3000  → Next.js Development Server
+Frontend:   https://lb-dev-web-ai-117002060-f11523401681.kr.lb.naverncp.com  → Next.js (HTTPS)
+            49.50.137.35:3000  → Next.js Development Server (직접 접속)
 Backend:    49.50.137.35:8080  → Spring Boot Application
 AI Engine:  49.50.137.35:5000  → Python Flask/FastAPI
 Database:   49.50.137.35:5432  → PostgreSQL
 ```
 
 **장점:**
-- ✅ Nginx 설정 불필요 (단순함)
+- ✅ HTTPS 보안 통신 (로드밸런서 SSL/TLS)
+- ✅ 프론트엔드 고가용성 및 부하 분산
 - ✅ 경로 변환 없음 (명확함)
 - ✅ 개발/배포 환경 동일
 
@@ -140,6 +142,10 @@ curl http://49.50.137.35:8080/api/health
 
 **Frontend 테스트**
 ```bash
+# 운영 접속
+curl https://lb-dev-web-ai-117002060-f11523401681.kr.lb.naverncp.com/
+
+# 직접 접속 (개발/디버깅)
 curl http://49.50.137.35:3000/
 ```
 
@@ -186,10 +192,13 @@ ls -la /home/aimaster/projects/MaLangEE/deploy.sh
 
 ### 2. 서비스 접속 불가
 
-**Frontend 접속 불가 (http://49.50.137.35:3000/)**
+**Frontend 접속 불가**
+- **운영 URL**: https://lb-dev-web-ai-117002060-f11523401681.kr.lb.naverncp.com
+- **직접 접속**: http://49.50.137.35:3000 (개발/디버깅용)
+
 ```bash
 # Next.js 프로세스 확인
-ps aux | grep vite
+ps aux | grep next
 
 # 포트 점유 확인
 sudo lsof -i :3000
@@ -276,7 +285,7 @@ grep "ERROR\|FAILED" /var/log/MaLangEE_deploy.log | wc -l
 
 ### 매일 아침
 - [ ] Cron 작동 확인: `tail -f /var/log/MaLangEE_deploy.log`
-- [ ] Frontend 접속 확인: `curl http://49.50.137.35:3000/`
+- [ ] Frontend 접속 확인: `curl https://lb-dev-web-ai-117002060-f11523401681.kr.lb.naverncp.com/`
 - [ ] Backend API 접속 확인: `curl http://49.50.137.35:8080/api/health`
 - [ ] DB 접속 확인: `psql -h localhost -U malangee_user -d malangee`
 

@@ -336,10 +336,11 @@ python main.py
 ```bash
 # 위의 터미널 1, 2를 먼저 실행한 후
 # 별도 터미널에서:
-sudo systemctl start nginx
+# (시스템이 자동으로 실행 중)
 
 # 웹 접속
-http://localhost:3000       # Frontend
+https://lb-dev-web-ai-117002060-f11523401681.kr.lb.naverncp.com  # Frontend (HTTPS, 운영)
+http://localhost:3000       # Frontend (개발 직접 접속)
 http://localhost:8080/api  # Backend API
 http://localhost:5000      # AI Engine
 ```
