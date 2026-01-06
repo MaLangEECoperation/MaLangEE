@@ -147,9 +147,10 @@ if [[ "$TARGET" == "all" || "$TARGET" == "backend" ]]; then
     if [ -d "$BACKEND_DIR" ]; then
         cd "$BACKEND_DIR" || exit 1
         
-        # Poetry 이용한 의존성 설치
+        # Unified Build: Backend에서 Poetry Install (AI Engine 포함)
+        echo "[INFO] Unified Dependency Install (Poetry)" | tee -a $LOG_FILE
+        
         if [ -f "pyproject.toml" ]; then
-
             poetry config virtualenvs.in-project true
             poetry install
         else
@@ -157,16 +158,18 @@ if [[ "$TARGET" == "all" || "$TARGET" == "backend" ]]; then
         fi
         
         if [ $? -ne 0 ]; then
-            echo -e "${RED}✗ Backend 의존성 설치 실패!${NC}"
-            echo "[ERROR] Backend poetry install 실패" | tee -a $LOG_FILE
+            echo -e "${RED}✗ 의존성 설치 실패!${NC}"
+            echo "[ERROR] poetry install 실패" | tee -a $LOG_FILE
             exit 1
         fi
         
-        echo -e "${GREEN}✓ Backend 준비 완료${NC}"
+        echo -e "${GREEN}✓ Backend 및 AI-Engine 의존성 설치 완료${NC}"
         cd "$PROJECT_ROOT" || exit 1
     else
         echo -e "${YELLOW}⚠ Backend 폴더가 없습니다: $BACKEND_DIR${NC}"
     fi
+    echo ""
+fi
     echo ""
 fi
 
@@ -176,22 +179,8 @@ if [[ "$TARGET" == "all" || "$TARGET" == "ai" ]]; then
     echo "[INFO] Python AI 엔진 업데이트" | tee -a $LOG_FILE
     
     if [ -d "$AI_DIR" ]; then
-        cd "$AI_DIR" || exit 1
-        
-        # 가상환경 생성 및 의존성 설치
-        if [ ! -d "venv" ]; then
-            python3 -m venv venv | tee -a $LOG_FILE
-        fi
-        
-        # 요구사항 파일이 있으면 설치
-        if [ -f "requirements.txt" ]; then
-            source venv/bin/activate
-            pip install -r requirements.txt | tee -a $LOG_FILE
-            deactivate
-        fi
-        
-        echo -e "${GREEN}✓ AI-Engine 업데이트 완료${NC}"
-        cd "$PROJECT_ROOT" || exit 1
+        # Unified Build에서 이미 의존성 설치됨
+        echo -e "${GREEN}✓ AI-Engine 준비 완료 (Unified Build)${NC}"
     else
         echo -e "${YELLOW}⚠ AI-Engine 폴더가 없습니다: $AI_DIR${NC}"
     fi

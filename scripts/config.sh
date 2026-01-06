@@ -33,7 +33,7 @@ export AI_ENGINE_PORT="5000"
 # ============================================
 # 데이터베이스 설정
 # ============================================
-# 참고: setup_dev_environment.sh에서 사용자 입력으로 덮어씌워짐
+# 참고: setup_dev.sh에서 사용자 입력으로 덮어씌워짐
 export DB_NAME="malangee"
 export DB_USER="malangee_user"
 export DB_PASSWORD="malangee_password"
