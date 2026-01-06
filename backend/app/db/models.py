@@ -14,6 +14,10 @@ class User(Base):
     nickname = Column(String, nullable=False) # 닉네임
     is_active = Column(Boolean, default=True) # 활성 상태
     
+    # Audit Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
     sessions = relationship("ConversationSession", back_populates="owner")
 
 class ConversationSession(Base):

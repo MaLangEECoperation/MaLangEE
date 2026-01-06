@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import datetime
 from pydantic import BaseModel
 
 class UserBase(BaseModel):
@@ -16,6 +17,8 @@ class UserUpdate(BaseModel):
 
 class UserInDBBase(UserBase):
     id: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True
