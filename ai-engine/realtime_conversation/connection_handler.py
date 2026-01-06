@@ -75,8 +75,11 @@ class ConnectionHandler:
             await self.conversation_manager.initialize_session(self.openai_ws)
             
             # 히스토리 주입
-            if self.history:
-                await self.conversation_manager.inject_history(self.history)
+            # [Voice Change 등 재연결 시] 
+            # 초기 히스토리(self.history) + 현재 세션에서 발생한 대화(self.tracker.messages)를 합쳐서 주입
+            full_history = self.history + self.tracker.messages
+            if full_history:
+                await self.conversation_manager.inject_history(full_history)
 
             # 수신 태스크 재시작
             if self.openai_task and not self.openai_task.done():
