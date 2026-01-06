@@ -15,6 +15,36 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/config.sh"
 
+# ============================================
+# Secret Key (JWT) & API Key 관리
+# ============================================
+SECRETS_FILE="$SCRIPT_DIR/secrets.sh"
+
+# 1. 기존 secrets.sh 로드 (있는 경우)
+if [ -f "$SECRETS_FILE" ]; then
+    source "$SECRETS_FILE"
+fi
+
+# 2. JWT Secret Key 자동 생성 (없을 경우)
+if [ -z "$SECRET_KEY" ]; then
+    echo "  ℹ️  JWT Secret Key가 없으므로 새로 생성합니다..."
+    
+    # openssl로 랜덤 키 생성
+    NEW_SECRET=$(openssl rand -hex 32)
+    
+    # 파일에 저장 (기존 내용 유지하며 추가)
+    if [ ! -f "$SECRETS_FILE" ]; then
+        echo "#!/bin/bash" > "$SECRETS_FILE"
+        chmod 600 "$SECRETS_FILE"
+    fi
+    
+    echo "export SECRET_KEY=\"$NEW_SECRET\"" >> "$SECRETS_FILE"
+    
+    # 현재 세션에도 적용
+    export SECRET_KEY="$NEW_SECRET"
+    echo "  ✓ 새 Secret Key 생성 및 저장 완료"
+fi
+
 # 프로젝트 경로
 PROJECT_ROOT=$(get_project_path "$DEPLOY_USER" "$GITHUB_REPO")
 FRONTEND_DIR="$PROJECT_ROOT/frontend"
@@ -95,6 +125,13 @@ RestartSec=10
 Environment=PYTHONPATH=$BACKEND_DIR:$AI_DIR
 Environment=PATH=/usr/bin:/usr/local/bin:/home/$DEPLOY_USER/.local/bin
 Environment=OPENAI_API_KEY=$OPENAI_API_KEY
+Environment=SECRET_KEY=$SECRET_KEY
+Environment=USE_SQLITE=False
+Environment=POSTGRES_USER=$DB_USER
+Environment=POSTGRES_PASSWORD=$DB_PASSWORD
+Environment=POSTGRES_SERVER=$DB_HOST
+Environment=POSTGRES_PORT=$DB_PORT
+Environment=POSTGRES_DB=$DB_NAME
 
 [Install]
 WantedBy=multi-user.target

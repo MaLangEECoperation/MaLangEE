@@ -8,7 +8,7 @@
 #  
 #  기능:
 #  1. Git Pull (코드 업데이트)
-#  2. Backend 빌드 (Maven)
+#  2. Backend 빌드
 #  3. Frontend 의존성 설치 (NPM)
 #  4. 서비스 재시작 (Systemd)
 #
