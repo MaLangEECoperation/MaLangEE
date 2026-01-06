@@ -71,6 +71,42 @@ class ConversationManager:
         await openai_ws.send(json.dumps(session_config))
         logger.info("-> session.update 전송 완료 (초기화)")
 
+    async def inject_history(self, messages: list):
+        """
+        이전 대화 기록을 OpenAI 세션에 주입합니다.
+        
+        Args:
+            messages (list): [{role: 'user'|'assistant', content: '...'}, ...] 형태의 리스트
+        """
+        if not self.openai_ws:
+            logger.warning("OpenAI WebScoket이 연결되지 않아 히스토리를 주입할 수 없습니다.")
+            return
+
+        logger.info(f"대화 히스토리 주입 시작 ({len(messages)}건)")
+        
+        for msg in messages:
+            # role 매핑 ('user' -> 'user', 'assistant' -> 'assistant')
+            # system 메시지는 보통 제외하거나 session instructions에 녹임
+            if msg['role'] not in ['user', 'assistant']:
+                continue
+                
+            item_event = {
+                "type": "conversation.item.create",
+                "item": {
+                    "type": "message",
+                    "role": msg['role'],
+                    "content": [
+                        {
+                            "type": "input_text",
+                            "text": msg['content']
+                        } 
+                    ]
+                }
+            }
+            await self.openai_ws.send(json.dumps(item_event))
+            
+        logger.info("-> 대화 히스토리 주입 완료")
+
     async def update_session_settings(self, new_settings: dict) -> bool:
         """
         세션 설정을 업데이트합니다.
