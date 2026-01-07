@@ -1,0 +1,10 @@
+{
+    "python.analysis.extraPaths": [
+        "./ai-engine",
+        "./backend"
+    ],
+    "python.autoComplete.extraPaths": [
+        "./ai-engine",
+        "./backend"
+    ]
+}
