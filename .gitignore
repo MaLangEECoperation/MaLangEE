@@ -210,3 +210,10 @@ frontend/.vite/
 
 # Database
 *.db
+
+# JetBrains
+.idea/
+
+# Scripts Secrets
+scripts/secrets.sh
+

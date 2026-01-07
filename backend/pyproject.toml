@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "malangee-backend"
 version = "0.1.0"
-description = "FastAPI Backend for MaLangEE"
+description = "FastAPI Backend for MaLangEE (Unified Environment)"
 authors = ["Admin"]
 readme = "README.md"
 packages = [{include = "app"}]
@@ -16,6 +16,12 @@ pydantic-settings = "^2.1.0"
 python-dotenv = "^1.0.0"
 asyncpg = "^0.31.0"
 psycopg2-binary = "^2.9.11"
+python-jose = {extras = ["cryptography"], version = "^3.5.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-multipart = "^0.0.21"
+bcrypt = "3.2.2"
+websockets = "^15.0.1"
+openai = "^2.14.0"
 
 [build-system]
 requires = ["poetry-core"]

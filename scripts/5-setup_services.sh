@@ -15,6 +15,36 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/config.sh"
 
+# ============================================
+# Secret Key (JWT) & API Key 관리
+# ============================================
+SECRETS_FILE="$SCRIPT_DIR/secrets.sh"
+
+# 1. 기존 secrets.sh 로드 (있는 경우)
+if [ -f "$SECRETS_FILE" ]; then
+    source "$SECRETS_FILE"
+fi
+
+# 2. JWT Secret Key 자동 생성 (없을 경우)
+if [ -z "$SECRET_KEY" ]; then
+    echo "  ℹ️  JWT Secret Key가 없으므로 새로 생성합니다..."
+    
+    # openssl로 랜덤 키 생성
+    NEW_SECRET=$(openssl rand -hex 32)
+    
+    # 파일에 저장 (기존 내용 유지하며 추가)
+    if [ ! -f "$SECRETS_FILE" ]; then
+        echo "#!/bin/bash" > "$SECRETS_FILE"
+        chmod 600 "$SECRETS_FILE"
+    fi
+    
+    echo "export SECRET_KEY=\"$NEW_SECRET\"" >> "$SECRETS_FILE"
+    
+    # 현재 세션에도 적용
+    export SECRET_KEY="$NEW_SECRET"
+    echo "  ✓ 새 Secret Key 생성 및 저장 완료"
+fi
+
 # 프로젝트 경로
 PROJECT_ROOT=$(get_project_path "$DEPLOY_USER" "$GITHUB_REPO")
 FRONTEND_DIR="$PROJECT_ROOT/frontend"
@@ -31,20 +61,33 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-# 0. 필수 패키지 설치 확인 (Maven)
+# 0. 필수 패키지 확인
 echo -e "\n${GREEN}0️⃣ 필수 패키지 확인 및 설치${NC}"
-if ! command -v mvn &> /dev/null; then
-    echo "  ℹ️  Maven이 설치되어 있지 않습니다. 설치를 진행합니다..."
-    apt-get update -y
-    apt-get install -y maven
-    echo "  ✓ Maven 설치 완료"
+
+# Poetry 설치 확인 (Python Backend)
+# 주의: 스크립트가 root로 실행되므로 DEPLOY_USER(aimaster) 계정으로 설치해야 함
+if ! sudo -u "$DEPLOY_USER" command -v poetry &> /dev/null; then
+    echo "  ℹ️  $DEPLOY_USER 계정에 Poetry가 없습니다. 설치를 진행합니다..."
+    
+    # aimaster 권한으로 설치 스크립트 실행
+    sudo -u "$DEPLOY_USER" bash -c "curl -sSL https://install.python-poetry.org | python3 -"
+    
+    # PATH 설정 확인 및 추가 (root 세션용)
+    POETRY_BIN="/home/$DEPLOY_USER/.local/bin/poetry"
+    echo "  ✓ Poetry 설치 완료 ($POETRY_BIN)"
 else
-    echo "  ✓ Maven 이미 설치됨"
+    echo "  ✓ Poetry 이미 설치됨"
 fi
 
-# Maven 경로 확인
-MVN_PATH=$(which mvn)
-echo "  ℹ️  Maven 경로: $MVN_PATH"
+
+
+# Poetry 경로 확인
+POETRY_PATH=$(which poetry)
+# 만약 root path에 없다면 사용자 홈 디렉토리 확인 시도 (일반적인 경우)
+if [ -z "$POETRY_PATH" ]; then
+    POETRY_PATH="/home/$DEPLOY_USER/.local/bin/poetry"
+fi
+echo "  ℹ️  Poetry 경로: $POETRY_PATH"
 
 # Node/NPM 경로 확인
 NPM_PATH=$(which npm)
@@ -68,19 +111,27 @@ fi
 
 cat > /etc/systemd/system/malangee-backend.service <<EOF
 [Unit]
-Description=MaLangEE Backend Service (Spring Boot)
+Description=MaLangEE Backend Service (FastAPI)
 After=syslog.target network.target postgresql.service
 
 [Service]
-User=$USER
+User=$DEPLOY_USER
 WorkingDirectory=$BACKEND_DIR
-# Maven 경로 동적 적용
-ExecStart=$MVN_PATH spring-boot:run
+# Poetry를 통한 Uvicorn 실행
+ExecStart=$POETRY_PATH run uvicorn app.main:app --host 0.0.0.0 --port $BACKEND_PORT
 SuccessExitStatus=143
 Restart=always
 RestartSec=10
-Environment=JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-Environment=PATH=/usr/bin:/usr/local/bin
+Environment=PYTHONPATH=$BACKEND_DIR:$AI_DIR
+Environment=PATH=/usr/bin:/usr/local/bin:/home/$DEPLOY_USER/.local/bin
+Environment=OPENAI_API_KEY=$OPENAI_API_KEY
+Environment=SECRET_KEY=$SECRET_KEY
+Environment=USE_SQLITE=False
+Environment=POSTGRES_USER=$DB_USER
+Environment=POSTGRES_PASSWORD=$DB_PASSWORD
+Environment=POSTGRES_SERVER=$DB_HOST
+Environment=POSTGRES_PORT=$DB_PORT
+Environment=POSTGRES_DB=$DB_NAME
 
 [Install]
 WantedBy=multi-user.target
@@ -106,10 +157,10 @@ Description=MaLangEE AI Engine Service (Python)
 After=syslog.target network.target
 
 [Service]
-User=$USER
-WorkingDirectory=$AI_DIR
-# Python 경로 동적 적용, 출력 버퍼링 비활성화(-u)
-ExecStart=$PYTHON_PATH -u app.py
+User=$DEPLOY_USER
+WorkingDirectory=$BACKEND_DIR
+# Backend의 Poetry 가상환경을 사용하여 AI-Engine 실행
+ExecStart=$POETRY_PATH run python ../ai-engine/app.py
 Restart=always
 RestartSec=10
 

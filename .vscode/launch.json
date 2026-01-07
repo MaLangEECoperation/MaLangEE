@@ -14,7 +14,7 @@
             "jinja": true,
             "justMyCode": true,
             "env": {
-                "PYTHONPATH": "${workspaceFolder}/backend"
+                "PYTHONPATH": "${workspaceFolder}/backend;${workspaceFolder}/ai-engine"
             }
         }
     ]

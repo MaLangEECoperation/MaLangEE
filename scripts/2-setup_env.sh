@@ -74,20 +74,17 @@ else
     print_success "패키지 업데이트 완료"
 fi
 
-# 3) Java 설치
-print_header "3️⃣ Java 설치"
+# 3) Poetry 설치
+print_header "3️⃣ Poetry 설치 (Python 패키지 매니저)"
 
-if command -v java &> /dev/null; then
-    JAVA_VERSION=$(java -version 2>&1 | head -1)
-    print_success "Java 이미 설치됨: $JAVA_VERSION"
+if command -v poetry &> /dev/null; then
+    POETRY_VERSION=$(poetry --version)
+    print_success "Poetry 이미 설치됨: $POETRY_VERSION"
 else
-    print_info "Java 설치 중..."
-    if command -v sudo &> /dev/null; then
-        sudo apt-get install -y openjdk-17-jdk-headless &>/dev/null
-        print_success "Java 설치 완료"
-    else
-        print_warning "Java 설치를 위해서는 sudo 권한이 필요합니다"
-    fi
+    print_info "Poetry 설치 중..."
+    curl -sSL https://install.python-poetry.org | python3 -
+    export PATH="/root/.local/bin:$PATH"
+    print_success "Poetry 설치 완료"
 fi
 
 # 4) Node.js 설치
@@ -258,6 +255,33 @@ else
     print_warning "PostgreSQL이 설치되지 않았습니다."
 fi
 
+# 8) OpenAI API Key 설정 (대화형)
+print_header "8️⃣ OpenAI API Key 설정"
+
+SECRETS_FILE="$SCRIPT_DIR/secrets.sh"
+
+if [ -f "$SECRETS_FILE" ]; then
+    print_info "이미 secrets.sh 파일이 존재합니다: $SECRETS_FILE"
+    print_info "OpenAI Key 설정을 건너뜁니다."
+else
+    echo -e "${YELLOW}AI-Engine 구동을 위해 OpenAI API Key가 필요합니다.${NC}"
+    echo -e "입력하지 않고 엔터를 치면 나중에 수동으로 secrets.sh 파일에 입력해야 합니다.\n"
+    
+    read -p "OpenAI API Key 입력 (sk-...): " OPENAI_KEY_INPUT
+    
+    if [ -n "$OPENAI_KEY_INPUT" ]; then
+        echo "#!/bin/bash" > "$SECRETS_FILE"
+        echo "# 자동 생성된 비밀 키 파일 (Git에 커밋하지 마세요)" >> "$SECRETS_FILE"
+        echo "export OPENAI_API_KEY=\"$OPENAI_KEY_INPUT\"" >> "$SECRETS_FILE"
+        
+        chmod 600 "$SECRETS_FILE"
+        print_success "API Key가 설정되었습니다: $SECRETS_FILE"
+    else
+        print_warning "API Key가 설정되지 않았습니다. (나중에 scripts/secrets.sh 파일을 생성하세요)"
+    fi
+fi
+
+
 echo -e "${GREEN}╔════════════════════════════════════════╗${NC}"
 echo -e "${GREEN}║        ✓ 설치 완료!                   ║${NC}"
 echo -e "${GREEN}╚════════════════════════════════════════╝${NC}\n"
@@ -313,17 +337,18 @@ echo "     - 포트 번호, API URL 등 환경 설정"
 echo ""
 echo "  2️⃣ 개발 의존성 설치:"
 echo "     cd frontend && npm install"
-echo "     cd ../backend && mvn clean install"
+echo "     cd ../backend && poetry config virtualenvs.in-project true && poetry install"
 echo "     cd ../ai-engine && python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt"
 echo ""
-echo "  3️⃣ 데이터베이스 테이블 생성 (필요시):"
-echo "     psql -h localhost -U <데이터베이스_사용자> -d <데이터베이스명> -f database/init.sql"
+echo "  3️⃣ 데이터베이스 테이블 생성:"
+echo "     # Backend 서버 최초 실행 시 자동으로 테이블이 생성됩니다."
+echo "     cd backend && poetry run uvicorn app.main:app --reload"
 echo ""
 echo -e "${CYAN}📖 프로젝트 구조:${NC}"
 echo ""
 echo "  MaLangEE/"
 echo "  ├── frontend/              # React/Vue 프론트엔드"
-echo "  ├── backend/               # Java Spring Boot REST API"
+echo "  ├── backend/               # Python FastAPI REST API"
 echo "  ├── ai-engine/             # Python AI 엔진"
 echo "  ├── database/              # PostgreSQL 설정"
 echo "  ├── docs/                  # 문서"

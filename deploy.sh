@@ -8,7 +8,7 @@
 #  
 #  기능:
 #  1. Git Pull (코드 업데이트)
-#  2. Backend 빌드 (Maven)
+#  2. Backend 빌드
 #  3. Frontend 의존성 설치 (NPM)
 #  4. 서비스 재시작 (Systemd)
 #
@@ -141,55 +141,46 @@ fi
 
 # 3. Backend 빌드
 if [[ "$TARGET" == "all" || "$TARGET" == "backend" ]]; then
-    echo -e "${GREEN}3️⃣ Backend 빌드 (Spring Boot)${NC}"
-    echo "[INFO] Spring Boot 빌드 시작" | tee -a $LOG_FILE
+    echo -e "${GREEN}3️⃣ Backend 빌드 ${NC}"
+    echo "[INFO] 빌드 시작" | tee -a $LOG_FILE
     
     if [ -d "$BACKEND_DIR" ]; then
         cd "$BACKEND_DIR" || exit 1
         
-        # Maven Wrapper 확인
-        if [ -f "./mvnw" ]; then
-            ./mvnw clean package -DskipTests | tee -a $LOG_FILE
+        # Unified Build: Backend에서 Poetry Install (AI Engine 포함)
+        echo "[INFO] Unified Dependency Install (Poetry)" | tee -a $LOG_FILE
+        
+        if [ -f "pyproject.toml" ]; then
+            poetry config virtualenvs.in-project true
+            poetry install
         else
-            mvn clean package -DskipTests | tee -a $LOG_FILE
+            echo -e "${YELLOW}⚠ pyproject.toml이 없습니다.${NC}"
         fi
         
         if [ $? -ne 0 ]; then
-            echo -e "${RED}✗ Backend 빌드 실패!${NC}"
-            echo "[ERROR] Backend mvn build 실패" | tee -a $LOG_FILE
+            echo -e "${RED}✗ 의존성 설치 실패!${NC}"
+            echo "[ERROR] poetry install 실패" | tee -a $LOG_FILE
             exit 1
         fi
         
-        echo -e "${GREEN}✓ Backend 빌드 완료${NC}"
+        echo -e "${GREEN}✓ Backend 및 AI-Engine 의존성 설치 완료${NC}"
         cd "$PROJECT_ROOT" || exit 1
     else
         echo -e "${YELLOW}⚠ Backend 폴더가 없습니다: $BACKEND_DIR${NC}"
     fi
     echo ""
 fi
+    echo ""
+fi
 
 # 4. AI-Engine 업데이트
 if [[ "$TARGET" == "all" || "$TARGET" == "ai" ]]; then
     echo -e "${GREEN}4️⃣ AI-Engine 업데이트 (Python)${NC}"
-    echo "[INFO] Python AI 서버 업데이트" | tee -a $LOG_FILE
+    echo "[INFO] Python AI 엔진 업데이트" | tee -a $LOG_FILE
     
     if [ -d "$AI_DIR" ]; then
-        cd "$AI_DIR" || exit 1
-        
-        # 가상환경 생성 및 의존성 설치
-        if [ ! -d "venv" ]; then
-            python3 -m venv venv | tee -a $LOG_FILE
-        fi
-        
-        # 요구사항 파일이 있으면 설치
-        if [ -f "requirements.txt" ]; then
-            source venv/bin/activate
-            pip install -r requirements.txt | tee -a $LOG_FILE
-            deactivate
-        fi
-        
-        echo -e "${GREEN}✓ AI-Engine 업데이트 완료${NC}"
-        cd "$PROJECT_ROOT" || exit 1
+        # Unified Build에서 이미 의존성 설치됨
+        echo -e "${GREEN}✓ AI-Engine 준비 완료 (Unified Build)${NC}"
     else
         echo -e "${YELLOW}⚠ AI-Engine 폴더가 없습니다: $AI_DIR${NC}"
     fi
