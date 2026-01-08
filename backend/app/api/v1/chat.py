@@ -1,14 +1,14 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, Query
 
 from app.api import deps
 from app.db import models
-from app.schemas.chat import SessionCreate, SessionSummary, SessionResponse, SessionIdRequest
+from app.schemas.chat import SessionCreate, SessionSummary, SessionResponse, SessionIdRequest, SyncSessionResponse
 from app.services.chat_service import ChatService
 
 router = APIRouter()
 
-@router.put("/sync", status_code=200, summary="데모 세션 사용자 회원가입후 아아디 연동")
+@router.put("/sync", response_model=SyncSessionResponse, summary="데모 세션 사용자 회원가입후 아아디 연동")
 async def sync_guest_session(
     request: SessionIdRequest,
     current_user: models.User = Depends(deps.get_current_user),
@@ -28,7 +28,7 @@ async def sync_guest_session(
         if not success:
             raise HTTPException(status_code=404, detail="Session not found")
             
-        return {"status": "success", "session_id": request.session_id}
+        return SyncSessionResponse(status="success", session_id=request.session_id)
     except Exception as e:
         # 이미 존재하는 세션 ID 등 에러 처리
         raise HTTPException(status_code=500, detail=str(e))
@@ -59,7 +59,7 @@ async def get_session_detail(
         raise HTTPException(status_code=404, detail="Session not found")
     return session
 
-@router.get("/recent")
+@router.get("/recent", response_model=Optional[SessionResponse])
 async def get_recent_chat_session(
     current_user: models.User = Depends(deps.get_current_user),
     service: ChatService = Depends(deps.get_chat_service),
@@ -73,7 +73,7 @@ async def get_recent_chat_session(
     if not session:
         return None # 204 No Content or just null
         
-    return session
+    return SessionResponse.model_validate(session)
 
 @router.websocket("/ws/chat")
 async def websocket_chat(

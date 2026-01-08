@@ -36,3 +36,10 @@ class SessionSummary(SessionBase):
 
     class Config:
         from_attributes = True
+
+class SyncSessionResponse(BaseModel):
+    """
+    세션 동기화 응답 스키마
+    """
+    status: str
+    session_id: str

@@ -15,7 +15,7 @@ def read_user_me(
     """
     현재 사용자 정보 조회
     """
-    return current_user
+    return user_schema.User.model_validate(current_user)
 
 @router.put("/me", response_model=user_schema.User)
 async def update_user_me(
@@ -26,7 +26,8 @@ async def update_user_me(
     """
     내 정보 수정
     """
-    return await service.update_user_profile(current_user, user_in)
+    user = await service.update_user_profile(current_user, user_in)
+    return user_schema.User.model_validate(user)
 
 @router.delete("/me", response_model=user_schema.User)
 async def delete_user_me(
@@ -38,4 +39,5 @@ async def delete_user_me(
     - 실제 데이터를 삭제하지 않고, 활성 상태(is_active)를 False로 변경합니다.
     - 탈퇴 후에는 로그인이 불가능합니다.
     """
-    return await service.withdraw_user(current_user)
+    user = await service.withdraw_user(current_user)
+    return user_schema.User.model_validate(user)
