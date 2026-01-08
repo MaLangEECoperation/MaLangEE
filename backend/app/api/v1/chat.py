@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, WebSocket, Query
 
 from app.api import deps
 from app.db import models
-from app.schemas.chat import SessionCreate, SessionSummary, SessionResponse, SessionIdRequest, SyncSessionResponse
+from app.schemas.chat import SessionCreate, SessionSummary, SessionResponse, SessionIdRequest, SyncSessionResponse, HintResponse
 from app.services.chat_service import ChatService
 
 router = APIRouter()
@@ -109,3 +109,24 @@ async def websocket_guest_chat(
     
     # AI 세션 시작 (user_id=None)
     await chat_service.start_ai_session(websocket, user_id=None, session_id=session_id)
+
+@router.get("/hints/{session_id}", response_model=HintResponse, summary="대화 힌트 생성")
+async def get_hint(
+    session_id: str,
+    service: ChatService = Depends(deps.get_chat_service),
+):
+    """
+    [Hint Generation]
+    현재 진행 중인 세션(메모리)의 대화 맥락을 기반으로 힌트를 생성합니다.
+    - 5초 이상 무응답 시 프론트엔드에서 호출
+    - LLM을 통해 추천 답변 3개 생성
+    - Note: user_id가 없는(Guest/Demo) 사용자도 힌트를 받을 수 있도록 session_id만 사용합니다.
+    """
+    hints = await service.generate_hint(session_id)
+    
+    if not hints:
+        # 세션이 없거나 힌트 생성 실패 시 빈 리스트 반환 (또는 404)
+        # 프론트엔드 처리를 위해 빈 리스트가 나을 수 있음
+        return HintResponse(hints=[], session_id=session_id)
+        
+    return HintResponse(hints=hints, session_id=session_id)

@@ -43,3 +43,10 @@ class SyncSessionResponse(BaseModel):
     """
     status: str
     session_id: str
+
+class HintResponse(BaseModel):
+    """
+    힌트 생성 응답 스키마
+    """
+    hints: List[str]
+    session_id: str

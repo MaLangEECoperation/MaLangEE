@@ -259,7 +259,7 @@ class ConnectionHandler:
             self.openai_task.cancel()
         if self.openai_ws:
             await self.openai_ws.close()
-        
+            
         # [Tracker] 세션 종료 및 리포트 생성 (전송 & 반환)
         if hasattr(self, 'tracker'):
             report = self.tracker.finalize()
@@ -281,3 +281,24 @@ class ConnectionHandler:
 
             return report
         return None
+
+    def get_transcript_context(self, limit: int = 10) -> list:
+        """
+        [Hint Generation]
+        현재 세션의 최근 대화 내역(Context)을 반환합니다.
+        LLM이 다음 발화 힌트를 생성할 때 사용됩니다.
+        """
+        try:
+            # 1. Tracker에서 현재 세션의 메시지 가져오기
+            current_messages = self.tracker.messages if hasattr(self, 'tracker') else []
+            
+            # 2. (옵션) 초기 히스토리(self.history)까지 포함할지 여부 결정
+            # 힌트 생성엔 최신 맥락이 중요하므로 current_messages 위주로 반환
+            
+            # 최근 N개만 추출 (Too many tokens 방지)
+            recent_messages = current_messages[-limit:]
+            
+            return recent_messages
+        except Exception as e:
+            logger.error(f"Context retrieval failed: {e}")
+            return []
