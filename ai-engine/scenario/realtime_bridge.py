@@ -85,6 +85,7 @@ async def handle_client(client_ws) -> None:
         "sample_rate": 24000,
         "speaking": False,
         "completed_sent": False,
+        "user_transcripts": [],
     }
 
     async def on_transcript(text: str, is_final: bool) -> None:
@@ -136,9 +137,15 @@ async def handle_client(client_ws) -> None:
             "completed": state_snapshot.completed,
         }
         try:
+            title = await _generate_session_title(
+                config,
+                scenario_state=scenario_state_payload,
+                transcripts=state.get("user_transcripts", []),
+            )
             await _persist_scenario_state(
                 session_id=session_id,
                 scenario_state=scenario_state_payload,
+                title=title,
             )
         except Exception as exc:
             logger.error("Scenario save failed [%s]: %s", client_id, exc)
@@ -176,6 +183,7 @@ async def handle_client(client_ws) -> None:
                 if builder.state.completed:
                     return
                 await send_to_client({"type": "input_audio.transcript", "transcript": transcript})
+                state["user_transcripts"].append(transcript)
 
     ready_event = asyncio.Event()
     session_ready = {"updated": False, "cleared": False}
@@ -277,6 +285,7 @@ async def handle_client_message(
     if msg_type == "text":
         text = payload.get("text")
         if isinstance(text, str) and text.strip():
+            state.setdefault("user_transcripts", []).append(text.strip())
             await openai_client.send_event(
                 {
                     "type": "conversation.item.create",
@@ -341,11 +350,12 @@ async def _persist_scenario_state(
     *,
     session_id: str,
     scenario_state: dict[str, Any],
+    title: str,
 ) -> None:
     now = datetime.now(timezone.utc).isoformat()
     session_data = SessionCreate(
         session_id=session_id,
-        title=None,
+        title=title,
         started_at=now,
         ended_at=now,
         total_duration_sec=0.0,
@@ -360,3 +370,99 @@ async def _persist_scenario_state(
     async with AsyncSessionLocal() as db:
         repo = ChatRepository(db)
         await repo.create_session_log(session_data, user_id=None)
+
+async def _generate_session_title(
+    config: AppConfig,
+    *,
+    scenario_state: dict[str, Any],
+    transcripts: list[str],
+) -> str:
+    prompt = _build_title_prompt(scenario_state, transcripts)
+    try:
+        title = await asyncio.to_thread(
+            _request_title,
+            config.api_key,
+            config.llm_model,
+            prompt,
+        )
+    except Exception:
+        return _build_session_title(scenario_state)
+    return _normalize_title(title, fallback=_build_session_title(scenario_state))
+
+
+def _build_title_prompt(scenario_state: dict[str, Any], transcripts: list[str]) -> str:
+    place = scenario_state.get("place") or "unknown"
+    partner = scenario_state.get("partner") or "unknown"
+    goal = scenario_state.get("goal") or "unknown"
+    transcript_text = " ".join(transcripts[-6:]) if transcripts else ""
+    return (
+        "Create a concise English conversation title (max 50 characters). "
+        "Base it on the user's conversation and the scenario context. "
+        "Return only the title, no quotes.\n\n"
+        f"Scenario: place={place}, partner={partner}, goal={goal}\n"
+        f"User conversation: {transcript_text}"
+    )
+
+
+def _request_title(api_key: str, model: str, prompt: str) -> str:
+    client = OpenAI(api_key=api_key)
+    if hasattr(client, "responses"):
+        try:
+            response = client.responses.create(
+                model=model,
+                input=prompt,
+                temperature=0.7,
+            )
+        except TypeError:
+            response = client.responses.create(
+                model=model,
+                input=prompt,
+            )
+        text = getattr(response, "output_text", None)
+        if isinstance(text, str) and text.strip():
+            return text.strip()
+        return _extract_text_from_response(response)
+    if hasattr(client, "chat"):
+        response = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+        )
+        return response.choices[0].message.content.strip()
+    raise RuntimeError("OpenAI client does not support responses or chat completions")
+
+
+def _extract_text_from_response(response: Any) -> str:
+    output = getattr(response, "output", None)
+    if not output:
+        return ""
+    for item in output:
+        content = getattr(item, "content", None)
+        if not content:
+            continue
+        for part in content:
+            text = getattr(part, "text", None)
+            if isinstance(text, str) and text.strip():
+                return text.strip()
+    return ""
+
+
+def _normalize_title(title: str, *, fallback: str) -> str:
+    cleaned = title.replace("\n", " ").strip().strip("\"'")
+    if not cleaned:
+        return fallback
+    if len(cleaned) > 50:
+        cleaned = cleaned[:50].rstrip()
+    return cleaned
+
+
+def _build_session_title(scenario_state: dict[str, Any]) -> str:
+    parts = [
+        scenario_state.get("place"),
+        scenario_state.get("partner"),
+        scenario_state.get("goal"),
+    ]
+    cleaned = [part.strip() for part in parts if isinstance(part, str) and part.strip()]
+    if not cleaned:
+        return "Conversation"
+    return " / ".join(cleaned)

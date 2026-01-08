@@ -32,7 +32,7 @@ async def test_save_scenario_session_fields() -> None:
     session_id = str(uuid.uuid4())
     session_data = SessionCreate(
         session_id=session_id,
-        title=None,
+        title="Test Conversation",
         started_at=now,
         ended_at=now,
         total_duration_sec=0.0,
@@ -53,6 +53,7 @@ async def test_save_scenario_session_fields() -> None:
             select(ConversationSession).where(ConversationSession.session_id == session_id)
         )
         saved = result.scalar_one()
+        assert saved.title == "Test Conversation"
         assert saved.scenario_place == "test-place"
         assert saved.scenario_partner == "test-partner"
         assert saved.scenario_goal == "test-goal"
