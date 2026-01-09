@@ -1,6 +1,6 @@
 # MaLangEE Scenario 모듈 프런트엔드 가이드 (React)
 
-이 문서는 `/ai-engine/scenario` 모듈과 WS 릴레이를 React 프런트엔드에서 연결하는 방법을 정리한다. 목표는 음성 입력 → STT → 시나리오 구성 → TTS 응답 → `scenario.completed`까지의 흐름을 UI에서 안정적으로 다루는 것이다.
+이 문서는 `/ai-engine/scenario` 모듈을 FastAPI WebSocket으로 노출한 엔드포인트에 React 프런트엔드를 연결하는 방법을 정리한다. 목표는 음성 입력 → STT → 시나리오 구성 → TTS 응답 → `scenario.completed`까지의 흐름을 UI에서 안정적으로 다루는 것이다.
 
 ## 1) 모듈 역할 요약
 - 시나리오 구성 조건: 장소(place), 대화 상대(partner), 대화 목적(goal) 3가지 확보.
@@ -11,11 +11,12 @@
 관련 코드:
 - 시나리오 로직: `ai-engine/scenario/scenario_builder.py`
 - 이벤트 파이프라인: `ai-engine/scenario/realtime_pipeline.py`
-- WS 릴레이 서버: `ai-engine/scenario/realtime_bridge.py`
+- WS 핸들러: `ai-engine/scenario/realtime_bridge.py`
+- FastAPI WS 엔드포인트: `backend/app/api/v1/scenario.py`
 - 테스트 참고: `tests/index.html`
 
 ## 2) 프런트엔드 데이터 흐름
-1) 브라우저 마이크 → PCM16 base64 → WS(`input_audio_chunk`)
+1) 브라우저 마이크 → PCM16 base64 → WS(`/api/v1/ws/scenario` 또는 `/api/v1/ws/guest-scenario`, `input_audio_chunk`)
 2) 서버가 Realtime STT로 사용자 발화를 텍스트로 추출
 3) 시나리오 로직이 질문/완료 문장 생성
 4) 서버가 TTS(PCM16) 스트리밍 전송(`response.audio.delta`)
@@ -226,10 +227,11 @@ export function ScenarioClient({ wsUrl }: { wsUrl: string }) {
 
 ## 7) 로컬 테스트 방법
 - 서버 실행:
-  - `cd ai-engine`
-  - `uv run python scripts/ws_realtime_bridge.py --port 8001`
-- 프런트엔드에서 `ws://127.0.0.1:8001` 연결 후 오디오 전송.
-- `tests/index.html`도 동일한 프로토콜을 사용하므로 참고 가능.
+  - `cd backend`
+  - `uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
+- 로그인 사용자: `ws://127.0.0.1:8000/api/v1/ws/scenario?token=...`
+- 게스트: `ws://127.0.0.1:8000/api/v1/ws/guest-scenario`
+- `tests/index.html` 기본 URL은 게스트 엔드포인트를 사용.
 
 ## 8) 주의사항
 - 입력 오디오 포맷은 PCM16(LE), 모노 채널 기준.

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PCM16 Audio E2E Test</title>
+    <title>Scenario WS Test</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -58,44 +58,29 @@
     </style>
   </head>
   <body>
-    <h1>PCM16 Audio E2E Test</h1>
+    <h1>Scenario WS Test</h1>
     <div class="card">
-      <p>Paste base64 PCM16 chunks or connect to a WS relay to stream audio.</p>
+      <p>Connect to the Scenario WS endpoint and stream audio/text.</p>
 
       <label for="wsUrl">WebSocket URL</label>
-      <input id="wsUrl" type="text" value="ws://127.0.0.1:8001" />
+      <input id="wsUrl" type="text" value="ws://127.0.0.1:8000/api/v1/ws/guest-scenario" />
       <button id="connectBtn">Connect</button>
       <div class="status" id="wsStatus">WS: Disconnected</div>
-
-      <label for="sampleRate">Sample Rate</label>
-      <input id="sampleRate" type="number" value="24000" min="8000" step="1000" />
-
-      <label for="inputSampleRate">Mic Sample Rate</label>
-      <input id="inputSampleRate" type="number" value="16000" min="8000" step="1000" />
 
       <button id="micBtn">Start Mic</button>
 
       <label for="textInput">Send Text</label>
       <textarea id="textInput" placeholder="Send a text message to the server"></textarea>
       <button id="sendTextBtn">Send Text</button>
-
-      <label for="base64Input">Base64 PCM16 Chunk</label>
-      <textarea id="base64Input" placeholder="Paste base64 audio chunk"></textarea>
-
-      <button id="playBtn">Play Chunk</button>
       <div class="status" id="status"></div>
     </div>
 
     <script>
-      const playBtn = document.getElementById("playBtn");
-      const base64Input = document.getElementById("base64Input");
-      const sampleRateInput = document.getElementById("sampleRate");
       const statusEl = document.getElementById("status");
       const wsStatusEl = document.getElementById("wsStatus");
       const wsUrlInput = document.getElementById("wsUrl");
       const connectBtn = document.getElementById("connectBtn");
       const micBtn = document.getElementById("micBtn");
-      const inputSampleRateInput = document.getElementById("inputSampleRate");
       const textInput = document.getElementById("textInput");
       const sendTextBtn = document.getElementById("sendTextBtn");
 
@@ -196,7 +181,7 @@
           return;
         }
         if (micStream) return;
-        const targetRate = Number(inputSampleRateInput.value) || 16000;
+        const targetRate = 16000;
         micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         micContext = new AudioContext();
         const source = micContext.createMediaStreamSource(micStream);
@@ -258,13 +243,13 @@
           payload = JSON.parse(message);
         } catch (err) {
           // non-JSON payload: treat as base64 chunk
-          const sampleRate = Number(sampleRateInput.value) || 24000;
+          const sampleRate = 24000;
           playChunk(message, sampleRate);
           statusEl.textContent = "Played chunk from WS (raw base64).";
           return;
         }
 
-        const sampleRate = Number(payload.sample_rate) || Number(sampleRateInput.value) || 24000;
+        const sampleRate = Number(payload.sample_rate) || 24000;
         const base64Chunk =
           payload.chunk || payload.delta || payload.audio || payload.base64 || payload.data;
         if (base64Chunk) {
@@ -321,20 +306,6 @@
         if (!text) return;
         ws.send(JSON.stringify({ type: "text", text }));
         textInput.value = "";
-      });
-
-      playBtn.addEventListener("click", async () => {
-        const base64Chunk = base64Input.value.trim();
-        if (!base64Chunk) {
-          statusEl.textContent = "Please paste a base64 chunk.";
-          return;
-        }
-        const sampleRate = Number(sampleRateInput.value) || 24000;
-        if (audioContext && audioContext.state === "suspended") {
-          await audioContext.resume();
-        }
-        playChunk(base64Chunk, sampleRate);
-        statusEl.textContent = `Played ${base64Chunk.length} chars at ${sampleRate} Hz.`;
       });
     </script>
   </body>
