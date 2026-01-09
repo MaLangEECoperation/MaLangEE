@@ -15,7 +15,7 @@ export const authApi = {
     formData.append("username", email);
     formData.append("password", password);
 
-    return fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/login`, {
+    return fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -30,7 +30,7 @@ export const authApi = {
   },
 
   getCurrentUser: async (): Promise<User> => {
-    return apiClient.get<User>("/auth/me");
+    return apiClient.get<User>("/users/me");
   },
 
   checkLoginId: async (login_id: string): Promise<DuplicateCheckResponse> => {
