@@ -18,6 +18,12 @@ class AppConfig:
     def from_env() -> "AppConfig":
         load_dotenv()
         api_key = os.getenv("OPENAI_API_KEY", "").strip()
+        try:
+            from app.core.config import settings as backend_settings
+        except Exception:
+            backend_settings = None
+        if backend_settings and backend_settings.OPENAI_API_KEY:
+            api_key = str(backend_settings.OPENAI_API_KEY).strip()
         if not api_key:
             raise RuntimeError("OPENAI_API_KEY is required")
         realtime_model = os.getenv("OPENAI_REALTIME_MODEL", "").strip()
