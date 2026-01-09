@@ -221,3 +221,7 @@ TODO.md
 
 # Scripts Secrets
 scripts/secrets.sh
+
+# Node.js (root level - frontend has its own)
+node_modules/
+yarn.lock
