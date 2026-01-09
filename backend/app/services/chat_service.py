@@ -47,7 +47,7 @@ class ChatService:
             return None
         return SessionResponse.model_validate(session)
 
-    async def get_history_for_websocket(self, session_id: str, user_id: int) -> tuple[List[Dict[str, Any]], Optional[str]]:
+    async def get_history_for_websocket(self, session_id: str, user_id: int) -> List[Dict[str, Any]]:
         """
         WebSocket 연결 시 OpenAI에 주입할 이전 대화 내역을 조회하여 포맷팅합니다.
         """
@@ -61,13 +61,13 @@ class ChatService:
                     "content": msg.content
                 })
         
-        return history_messages, session.title if session else None
+        return history_messages
 
     async def start_ai_session(self, websocket: WebSocket, user_id: Optional[int], session_id: str = None):
         """
         AI와의 실시간 대화 세션을 시작합니다.
         - OpenAI API Key 로드
-        - 히스토리 조회
+        - 히스토리 조회 (내부적으로 처리)
         - ConnectionHandler 시작
         """
         # 1. OpenAI API Key 확인
@@ -78,15 +78,15 @@ class ChatService:
             await websocket.close(code=1008, reason="Server configuration error")
             return
 
-        # 2. 히스토리 조회
+        # 2. 히스토리 조회 (Service Layer Logic)
         history_messages = []
-        session_title = None
         if session_id and user_id:
-            history_messages, session_title = await self.get_history_for_websocket(session_id, user_id)
+             history_messages = await self.get_history_for_websocket(session_id, user_id)
 
         # 3. ConnectionHandler 시작
         if ConnectionHandler:
-            handler = ConnectionHandler(websocket, api_key, history=history_messages, session_id=session_id, title=session_title)
+            # title 인자 제거
+            handler = ConnectionHandler(websocket, api_key, history=history_messages, session_id=session_id)
             
             # [Manager] 세션 등록
             if session_id:

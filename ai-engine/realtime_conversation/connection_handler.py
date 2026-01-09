@@ -33,11 +33,11 @@ class ConnectionHandler:
        - 사용자/AI 대화 내용(Transcript) 처리 및 로그 출력
        - 에러 핸들링 및 세션 초기화
     """
-    def __init__(self, client_ws: WebSocket, api_key: str, history: list = None, session_id: str = None, title: str = None):
+    def __init__(self, client_ws: WebSocket, api_key: str, history: list = None, session_id: str = None):
         self.client_ws = client_ws
         self.api_key = api_key
         self.conversation_manager = ConversationManager()
-        self.tracker = ConversationTracker(session_id=session_id, title=title) 
+        self.tracker = ConversationTracker(session_id=session_id) 
         self.openai_ws = None
         self.openai_task = None
         self.history = history or [] # 대화 히스토리 저장

@@ -94,6 +94,7 @@ async def websocket_chat(
     # user 객체는 안전하게 존재함
 
     # 2. AI 세션 시작 (Service 위임)
+    # Service 내부에서 필요한 히스토리를 조회하도록 위임합니다.
     await chat_service.start_ai_session(websocket, user.id, session_id)
 
 @router.websocket("/ws/guest-chat")

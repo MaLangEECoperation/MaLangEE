@@ -18,7 +18,8 @@ class ChatRepository:
 
         if db_session:
             # [UPDATE]
-            db_session.title = session_data.title
+            # Title은 업데이트하지 않음 (생성 시 또는 별도 API로만 관리)
+            
             db_session.started_at = session_data.started_at
             db_session.ended_at = session_data.ended_at
             
@@ -30,12 +31,9 @@ class ChatRepository:
             if user_id is not None:
                 db_session.user_id = user_id
             
-            # 기존 메시지는 유지하고, 새로운 메시지만 추가 (Append Only)
-            # 가정: session_data.messages는 항상 전체 히스토리를 담고 있음
-            existing_count = len(db_session.messages)
-            new_messages = session_data.messages[existing_count:]
-            
-            for msg in new_messages:
+            # Tracker는 현재 세션의 '새로운' 메시지만 들고 있으므로,
+            # 슬라이싱 없이 그대로 기존 DB 메시지 뒤에 추가(Append)하면 됩니다.
+            for msg in session_data.messages:
                 db_msg = ChatMessage(
                     session_id=session_data.session_id,
                     role=msg.role,
