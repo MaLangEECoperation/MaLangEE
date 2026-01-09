@@ -210,10 +210,18 @@ frontend/.vite/
 
 # Database
 *.db
+SPEC.md
+TODO.md
 
 # JetBrains
 .idea/
 
+# macOS
+.DS_Store
+
 # Scripts Secrets
 scripts/secrets.sh
 
+# Node.js (root level - frontend has its own)
+node_modules/
+yarn.lock

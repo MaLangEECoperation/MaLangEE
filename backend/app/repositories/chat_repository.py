@@ -1,4 +1,6 @@
 from typing import Optional
+from datetime import datetime
+import json
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func
@@ -16,7 +18,26 @@ class ChatRepository:
         result = await self.db.execute(stmt)
         db_session = result.scalars().first()
 
+        scenario_state_json = None
+        if session_data.scenario_state_json is not None:
+            if isinstance(session_data.scenario_state_json, str):
+                scenario_state_json = session_data.scenario_state_json
+            else:
+                scenario_state_json = json.dumps(session_data.scenario_state_json, ensure_ascii=False)
+
+        scenario_completed_at = None
+        if session_data.scenario_completed_at:
+            if isinstance(session_data.scenario_completed_at, datetime):
+                scenario_completed_at = session_data.scenario_completed_at
+            else:
+                try:
+                    scenario_completed_at = datetime.fromisoformat(session_data.scenario_completed_at)
+                except ValueError:
+                    scenario_completed_at = None
+
         if db_session:
+            if db_session.deleted:
+                raise ValueError("Session is deleted")
             # [UPDATE]
             # Title은 업데이트하지 않음 (생성 시 또는 별도 API로만 관리)
             
@@ -30,6 +51,17 @@ class ChatRepository:
             
             if user_id is not None:
                 db_session.user_id = user_id
+
+            if session_data.scenario_place is not None:
+                db_session.scenario_place = session_data.scenario_place
+            if session_data.scenario_partner is not None:
+                db_session.scenario_partner = session_data.scenario_partner
+            if session_data.scenario_goal is not None:
+                db_session.scenario_goal = session_data.scenario_goal
+            if scenario_state_json is not None:
+                db_session.scenario_state_json = scenario_state_json
+            if scenario_completed_at is not None:
+                db_session.scenario_completed_at = scenario_completed_at
             
             # Tracker는 현재 세션의 '새로운' 메시지만 들고 있으므로,
             # 슬라이싱 없이 그대로 기존 DB 메시지 뒤에 추가(Append)하면 됩니다.
@@ -51,6 +83,11 @@ class ChatRepository:
                 ended_at=session_data.ended_at,
                 total_duration_sec=session_data.total_duration_sec,
                 user_speech_duration_sec=session_data.user_speech_duration_sec,
+                scenario_place=session_data.scenario_place,
+                scenario_partner=session_data.scenario_partner,
+                scenario_goal=session_data.scenario_goal,
+                scenario_state_json=scenario_state_json,
+                scenario_completed_at=scenario_completed_at,
                 user_id=user_id
             )
             self.db.add(db_session)
@@ -73,7 +110,10 @@ class ChatRepository:
     async def get_recent_session_by_user(self, user_id: int) -> Optional[ConversationSession]:
         stmt = (
             select(ConversationSession)
-            .where(ConversationSession.user_id == user_id)
+            .where(
+                ConversationSession.user_id == user_id,
+                ConversationSession.deleted.is_(False),
+            )
             .order_by(ConversationSession.ended_at.desc())
             .options(selectinload(ConversationSession.messages))
             .limit(1)
@@ -86,7 +126,8 @@ class ChatRepository:
             select(ConversationSession)
             .where(
                 ConversationSession.session_id == session_id,
-                ConversationSession.user_id == user_id
+                ConversationSession.user_id == user_id,
+                ConversationSession.deleted.is_(False),
             )
             .options(selectinload(ConversationSession.messages))
         )
