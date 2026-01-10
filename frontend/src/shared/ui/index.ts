@@ -6,4 +6,6 @@ export { Textarea } from "./textarea";
 export type { TextareaProps } from "./textarea";
 export { Navigation } from "./navigation";
 export { FeatureDescription } from "./feature-description";
+export { MicButton } from "./MicButton";
+export { GlassCard } from "./GlassCard";
 
