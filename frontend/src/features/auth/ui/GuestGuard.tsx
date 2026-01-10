@@ -21,10 +21,7 @@ interface GuestGuardProps {
  * </GuestGuard>
  * ```
  */
-export const GuestGuard: FC<GuestGuardProps> = ({
-  children,
-  redirectTo = "/topic-select",
-}) => {
+export const GuestGuard: FC<GuestGuardProps> = ({ children, redirectTo = "/topic-select" }) => {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -38,7 +35,7 @@ export const GuestGuard: FC<GuestGuardProps> = ({
   if (isLoading || isAuthenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-700 border-t-transparent" />
+        <div className="border-primary-700 h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
       </div>
     );
   }

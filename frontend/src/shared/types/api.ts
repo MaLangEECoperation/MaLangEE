@@ -1,4 +1,47 @@
-/** API types */
+/** 공용 API 응답 타입 */
+
+/**
+ * 표준 API 응답 래퍼
+ */
+export interface ApiResponse<T = unknown> {
+  /** 응답 데이터 */
+  data: T;
+  /** 성공 여부 */
+  success: boolean;
+  /** 에러 메시지 (실패 시) */
+  message?: string;
+}
+
+/**
+ * 페이지네이션된 응답
+ */
+export interface PaginatedResponse<T = unknown> {
+  /** 현재 페이지 데이터 */
+  items: T[];
+  /** 전체 아이템 개수 */
+  total: number;
+  /** 현재 페이지 번호 (1부터 시작) */
+  page: number;
+  /** 페이지당 아이템 수 */
+  page_size: number;
+  /** 전체 페이지 수 */
+  total_pages: number;
+}
+
+/**
+ * API 에러 응답
+ */
+export interface ApiError {
+  /** 에러 메시지 */
+  message: string;
+  /** HTTP 상태 코드 */
+  status_code: number;
+  /** 상세 에러 정보 (선택) */
+  details?: Record<string, unknown>;
+}
+
+/** 엔티티 타입 */
+
 export interface User {
   id: number;
   email: string;
@@ -116,4 +159,3 @@ export interface ScenarioType {
   name: string;
   name_kr: string;
 }
-

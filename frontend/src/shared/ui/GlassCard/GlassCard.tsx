@@ -1,11 +1,19 @@
 import { FC, ReactNode } from "react";
 import "./GlassCard.css";
 
-interface GlassCardProps {
+/**
+ * 글래스모피즘 카드 컴포넌트의 Props
+ */
+export interface GlassCardProps {
+  /** 카드 본문 내용 */
   children: ReactNode;
+  /** 카드 헤더 영역 (선택) */
   header?: ReactNode;
+  /** 카드 푸터 영역 (선택) */
   footer?: ReactNode;
+  /** 배경 장식 원형(blob) 표시 여부 */
   withBackground?: boolean;
+  /** 추가 CSS 클래스 */
   className?: string;
 }
 

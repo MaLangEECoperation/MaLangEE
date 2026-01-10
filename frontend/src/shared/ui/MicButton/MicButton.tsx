@@ -2,10 +2,17 @@ import { FC } from "react";
 import Image from "next/image";
 import "./MicButton.css";
 
-interface MicButtonProps {
+/**
+ * 마이크 버튼 컴포넌트의 Props
+ */
+export interface MicButtonProps {
+  /** 현재 음성 녹음 중인지 여부 */
   isListening: boolean;
+  /** 버튼 클릭 시 호출되는 핸들러 */
   onClick: () => void;
+  /** 버튼 크기 */
   size?: "sm" | "md" | "lg";
+  /** 추가 CSS 클래스 */
   className?: string;
 }
 

@@ -12,13 +12,13 @@ export function FeatureDescription({
   example,
 }: FeatureDescriptionProps) {
   return (
-    <div className="mb-8 p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg border border-primary/20">
-      <h2 className="text-2xl font-bold mb-3 text-foreground">{title}</h2>
+    <div className="from-primary/5 to-primary/10 border-primary/20 mb-8 rounded-lg border bg-gradient-to-br p-6">
+      <h2 className="text-foreground mb-3 text-2xl font-bold">{title}</h2>
       <p className="text-muted-foreground mb-4 leading-relaxed">{description}</p>
-      
-      <div className="space-y-2 mb-4">
-        <p className="text-sm font-semibold text-foreground">주요 기능:</p>
-        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+
+      <div className="mb-4 space-y-2">
+        <p className="text-foreground text-sm font-semibold">주요 기능:</p>
+        <ul className="text-muted-foreground list-inside list-disc space-y-1 text-sm">
           {features.map((feature, idx) => (
             <li key={idx}>{feature}</li>
           ))}
@@ -26,13 +26,11 @@ export function FeatureDescription({
       </div>
 
       {example && (
-        <div className="mt-4 p-4 bg-background/50 rounded-md border border-primary/10">
-          <p className="text-xs font-semibold text-muted-foreground mb-1">예시:</p>
-          <p className="text-sm text-foreground italic">{example}</p>
+        <div className="bg-background/50 border-primary/10 mt-4 rounded-md border p-4">
+          <p className="text-muted-foreground mb-1 text-xs font-semibold">예시:</p>
+          <p className="text-foreground text-sm italic">{example}</p>
         </div>
       )}
     </div>
   );
 }
-
-

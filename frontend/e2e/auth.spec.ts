@@ -11,4 +11,3 @@ test.describe("Authentication", () => {
     await expect(page.getByRole("heading", { name: "Register" })).toBeVisible();
   });
 });
-

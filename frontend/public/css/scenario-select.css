@@ -1,11 +1,11 @@
 /* Scenario Select Page Styles */
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
 
 :root {
-  --primary-purple: #7E6CF3;
-  --text-main: #1A1A1A;
+  --primary-purple: #7e6cf3;
+  --text-main: #1a1a1a;
   --text-sub: #767676;
-  --error-purple: #7E6CF3;
+  --error-purple: #7e6cf3;
 }
 
 /* Background styles */
@@ -18,7 +18,6 @@
   overflow: hidden;
   position: relative;
 }
-
 
 /* Glassmorphism card */
 .scenario-card {

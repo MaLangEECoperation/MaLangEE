@@ -49,11 +49,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${notoSans.variable} antialiased`}
         style={{ fontFamily: "var(--font-noto-sans)" }}
       >
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
 }
-
