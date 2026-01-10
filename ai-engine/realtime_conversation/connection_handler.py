@@ -249,8 +249,11 @@ class ConnectionHandler:
             await self.handle_openai_disconnect(str(e))
         finally:
             # 정상적으로 루프가 끝난 경우에도 연결이 끊긴 것으로 간주
-            if self.openai_ws and self.openai_ws.open:
-                 await self.openai_ws.close()
+            if self.openai_ws:
+                try:
+                    await self.openai_ws.close()
+                except Exception:
+                    pass
 
 
     async def cleanup(self):
