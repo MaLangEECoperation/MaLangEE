@@ -154,3 +154,6 @@ NEXT_PUBLIC_API_URL=http://49.50.137.35:8080
 - [개발 가이드](./docs/01-DEV_GUIDE.md)
 - [서버 운영](./docs/02-SERVER_OPS.md)
 - [Tailwind 가이드](./docs/tailwind.md)
+
+##
+API 서버 : http://49.50.137.35:8080/
