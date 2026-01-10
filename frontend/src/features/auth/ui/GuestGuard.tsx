@@ -37,9 +37,9 @@ export const GuestGuard: FC<GuestGuardProps> = ({
   // 로딩 중이거나 이미 인증됨 (리다이렉트 중)
   if (isLoading || isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-700 border-t-transparent" />
-      </div>
+
+        <div className="border-primary-700 h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
+
     );
   }
 

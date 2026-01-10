@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MicButton, GlassCard } from "@/shared/ui";
+import Image from "next/image";
+import { MicButton } from "@/shared/ui";
 import "@/shared/styles/scenario.css";
-import { useAuth } from "@/features/auth/hook";
 import { AuthGuard } from "@/features/auth/ui/AuthGuard";
+import { FullLayout } from "@/shared/ui/FullLayout";
 
 /**
  * 시나리오 선택 페이지 상태
@@ -18,7 +19,6 @@ type ScenarioState = 0 | 1 | 2 | 3;
 
 export default function ScenarioSelectPage() {
   const router = useRouter();
-  const { logout } = useAuth();
   const [currentState, setCurrentState] = useState<ScenarioState>(0);
   const [isListening, setIsListening] = useState(false);
   const [textOpacity, setTextOpacity] = useState(1);
@@ -44,7 +44,7 @@ export default function ScenarioSelectPage() {
           setIsListening(false);
           // 성공 시 1.5초 후 토픽 선택 페이지로 이동
           setTimeout(() => {
-            router.push("/topic-select");
+            router.push("/auth/scenario-select");
           }, 1500);
         } else {
           setCurrentState(2);
@@ -88,20 +88,16 @@ export default function ScenarioSelectPage() {
 
   return (
     <AuthGuard>
-      <GlassCard
-        withBackground={true}
-        footer={
-          <MicButton
-            isListening={isListening}
-            onClick={handleMicClick}
-            size="md"
-            className={currentState === 3 ? "pointer-events-none opacity-50" : ""}
-          />
-        }
-      >
+      <FullLayout showHeader={true} maxWidth="md:max-w-[60vw]">
         {/* Character */}
         <div className="character-box">
-          <img src={"/images/malangee.svg"} alt="MalangEE Character" width={150} height={150} />
+          <Image
+            src="/images/malangee.svg"
+            alt="MalangEE Character"
+            width={150}
+            height={150}
+            priority
+          />
         </div>
 
         {/* Text Group */}
@@ -109,7 +105,17 @@ export default function ScenarioSelectPage() {
           <h1 className="scenario-title">{getMainTitle()}</h1>
           <p className="scenario-desc">{getSubDesc()}</p>
         </div>
-      </GlassCard>
+
+        {/* Mic Button - Footer */}
+        <div className="mt-8">
+          <MicButton
+            isListening={isListening}
+            onClick={handleMicClick}
+            size="md"
+            className={currentState === 3 ? "pointer-events-none opacity-50" : ""}
+          />
+        </div>
+      </FullLayout>
     </AuthGuard>
   );
 }

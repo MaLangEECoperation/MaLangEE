@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { authApi } from "./auth-api";
 import { tokenStorage } from "../model";
-import type { LoginFormData, RegisterFormData } from "../model";
+import type { LoginFormData, RegisterFormData, NicknameUpdateFormData } from "../model";
 
 const AUTH_QUERY_KEY = ["auth", "user"];
 
@@ -90,3 +90,21 @@ export function useCheckNickname() {
     mutationFn: (nickname: string) => authApi.checkNickname(nickname),
   });
 }
+
+/**
+ * 닉네임 변경 mutation
+ */
+export function useUpdateNickname() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: NicknameUpdateFormData) =>
+      authApi.updateCurrentUser({ nickname: data.new_nickname }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
+      router.push("/topic-select");
+    },
+  });
+}
+

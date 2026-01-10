@@ -65,7 +65,7 @@ export default function LoginPage() {
           width={128}
           height={128}
           priority
-          className="h-20 w-20 object-contain"
+          className="object-contain"
         />
 
         {/* 서브타이틀 */}

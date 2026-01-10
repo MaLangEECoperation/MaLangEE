@@ -184,7 +184,10 @@ export default function DashboardPage() {
     <div className="w-full max-w-sm tracking-tight">
       {/* Added wrapper width and tracking */}
       <div className="text-2xl mb-4 font-bold">{userProfile?.nickname || "닉네임"}</div>
-      <button className="rounded-full bg-[#D4CCFF] px-4 py-2 text-[10px] font-medium text-[#5F51D9] transition-colors hover:bg-[#C9BFFF]">
+      <button
+        onClick={() => router.push("/settings/change-nickname")}
+        className="rounded-full bg-[#D4CCFF] px-4 py-2 text-[10px] font-medium text-[#5F51D9] transition-colors hover:bg-[#C9BFFF]"
+      >
         닉네임 변경
       </button>
       <div className="mt-4 space-y-1">
@@ -283,6 +286,7 @@ export default function DashboardPage() {
     <SplitViewLayout
       leftChildren={leftContent}
       rightChildren={rightContent}
+      maxWidth="md:max-w-[70vw]"
       leftColSpan={4}
       rightColSpan={8}
     />

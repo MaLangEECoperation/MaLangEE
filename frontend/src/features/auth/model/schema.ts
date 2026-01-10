@@ -31,6 +31,11 @@ export const userUpdateSchema = z.object({
   password: z.string().optional(),
 });
 
+export const nicknameUpdateSchema = z.object({
+  current_nickname: z.string().min(1, "기존 닉네임을 입력해주세요"),
+  new_nickname: z.string().min(1, "새로운 닉네임을 입력해주세요"),
+});
+
 // ============================================
 // Response Schemas
 // ============================================
@@ -62,6 +67,7 @@ export type RegisterFormData = z.infer<typeof registerSchema>;
 export type LoginIdCheckData = z.infer<typeof loginIdCheckSchema>;
 export type NicknameCheckData = z.infer<typeof nicknameCheckSchema>;
 export type UserUpdateData = z.infer<typeof userUpdateSchema>;
+export type NicknameUpdateFormData = z.infer<typeof nicknameUpdateSchema>;
 
 export type Token = z.infer<typeof tokenSchema>;
 export type User = z.infer<typeof userSchema>;
