@@ -132,7 +132,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image: url(/images/login-bg-02.png);
+    background-image: url(/images/login-bg-01.png);
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -154,7 +154,7 @@
   }
 
   body.bg-chat-history {
-    background-image: url(/images/login-bg-02.png);
+    background-image: url(/images/login-bg-01.png);
   }
 }
 

@@ -6,6 +6,7 @@ import { SplitViewLayout } from "@/shared/ui/SplitViewLayout";
 import { useRouter } from "next/navigation";
 import { useGetChatSessions } from "@/features/chat";
 import type { ChatHistoryItem } from "@/shared/types/chat";
+import { ChatDetailPopup } from "./ChatDetailPopup";
 
 const ITEMS_PER_PAGE = 10;
 const DEBUG_MODE = process.env.NODE_ENV === "development";
@@ -24,6 +25,8 @@ export default function DashboardPage() {
   const [isInitialLoading, setIsInitialLoading] = useState(!DEBUG_MODE);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [showDetailPopup, setShowDetailPopup] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<ChatHistoryItem | null>(null);
 
   // 프로덕션 모드에서 API 호출 (디버그 모드에서는 무시됨)
   const { data: sessions } = useGetChatSessions(0, 20);
@@ -240,8 +243,11 @@ export default function DashboardPage() {
             {visibleSessions.map((item) => (
               <div
                 key={item.id}
-                onClick={() => router.push(`/chat-history/${item.id}`)}
-                className="flex w-full cursor-pointer items-center gap-4 border-b border-[#D5D2DE] px-0 py-2 transition-all"
+                onClick={() => {
+                  setSelectedSession(item);
+                  setShowDetailPopup(true);
+                }}
+                className="flex w-full cursor-pointer items-center gap-4 border-b border-[#D5D2DE] px-0 py-2 transition-all hover:bg-gray-50"
               >
                 {/* 날짜 */}
                 <div className="flex min-w-[80px] flex-col items-center justify-center text-sm text-[#6A667A]">
@@ -283,12 +289,22 @@ export default function DashboardPage() {
   );
 
   return (
-    <SplitViewLayout
-      leftChildren={leftContent}
-      rightChildren={rightContent}
-      maxWidth="md:max-w-[70vw]"
-      leftColSpan={4}
-      rightColSpan={8}
-    />
+    <>
+      <SplitViewLayout
+        leftChildren={leftContent}
+        rightChildren={rightContent}
+        bgClass="bg-chat-history"
+        leftColSpan={4}
+        rightColSpan={8}
+      />
+
+      {/* 대화 상세 팝업 */}
+      {showDetailPopup && selectedSession && (
+        <ChatDetailPopup
+          session={selectedSession}
+          onClose={() => setShowDetailPopup(false)}
+        />
+      )}
+    </>
   );
 }
