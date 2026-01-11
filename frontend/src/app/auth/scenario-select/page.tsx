@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { MicButton } from "@/shared/ui";
+import { MicButton, Button } from "@/shared/ui";
+import { PopupLayout } from "@/shared/ui/PopupLayout";
 import "@/shared/styles/scenario.css";
 import { FullLayout } from "@/shared/ui/FullLayout";
 
@@ -21,6 +22,7 @@ export default function ScenarioSelectPage() {
   const [currentState, setCurrentState] = useState<ScenarioState>(0);
   const [isListening, setIsListening] = useState(false);
   const [textOpacity, setTextOpacity] = useState(1);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   const handleMicClick = () => {
     if (currentState === 3) return;
@@ -41,9 +43,9 @@ export default function ScenarioSelectPage() {
         if (isSuccess) {
           setCurrentState(3);
           setIsListening(false);
-          // 성공 시 1.5초 후 토픽 선택 페이지로 이동
+          // 성공 시 1.5초 후 로그인 팝업 표시
           setTimeout(() => {
-            router.push("/auth/scenario-select");
+            setShowLoginPopup(true);
           }, 1500);
         } else {
           setCurrentState(2);
@@ -85,34 +87,87 @@ export default function ScenarioSelectPage() {
     }
   };
 
+  const handleStopChat = () => {
+    router.push("/auth/signup");
+  };
+
+  const handleLogin = () => {
+    router.push("/auth/login");
+  };
+
   return (
-    <FullLayout showHeader={true} maxWidth="md:max-w-[60vw]">
-      {/* Character */}
-      <div className="character-box">
-        <Image
-          src="/images/malangee.svg"
-          alt="MalangEE Character"
-          width={150}
-          height={150}
-          priority
-        />
-      </div>
+    <>
+      <FullLayout showHeader={true} maxWidth="md:max-w-[60vw]">
+        {/* Character */}
+        <div className="character-box">
+          <Image
+            src="/images/malangee.svg"
+            alt="MalangEE Character"
+            width={150}
+            height={150}
+            priority
+          />
+        </div>
 
-      {/* Text Group */}
-      <div className="text-group text-center" style={{ opacity: textOpacity }}>
-        <h1 className="scenario-title">{getMainTitle()}</h1>
-        <p className="scenario-desc">{getSubDesc()}</p>
-      </div>
+        {/* Text Group */}
+        <div className="text-group text-center" style={{ opacity: textOpacity }}>
+          <h1 className="scenario-title">{getMainTitle()}</h1>
+          <p className="scenario-desc">{getSubDesc()}</p>
+        </div>
 
-      {/* Mic Button - Footer */}
-      <div className="mt-8">
-        <MicButton
-          isListening={isListening}
-          onClick={handleMicClick}
-          size="md"
-          className={currentState === 3 ? "pointer-events-none opacity-50" : ""}
-        />
-      </div>
-    </FullLayout>
+        {/* Mic Button - Footer */}
+        <div className="mt-8">
+          <MicButton
+            isListening={isListening}
+            onClick={handleMicClick}
+            size="md"
+            className={currentState === 3 ? "pointer-events-none opacity-50" : ""}
+          />
+
+          {/* 임시 테스트 링크 */}
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => setShowLoginPopup(true)}
+              className="text-sm text-gray-500 underline hover:text-gray-700 transition"
+            >
+              회원가입 권유 팝업 열기 (테스트)
+            </button>
+          </div>
+        </div>
+      </FullLayout>
+
+      {/* Login Popup */}
+      {showLoginPopup && (
+        <PopupLayout onClose={() => setShowLoginPopup(false)} maxWidth="md" showCloseButton={false}>
+          <div className="flex flex-col items-center gap-6 py-6">
+            {/* Text */}
+            <div className="text-center">
+              <p className="text-xl font-semibold text-gray-800 leading-relaxed">
+                로그인을 하면 대화를 저장하고
+                <br />
+                이어 말할 수 있어요
+              </p>
+            </div>
+
+            {/* Buttons - 한 행에 2개 */}
+            <div className="flex w-full gap-3">
+              <Button
+                onClick={handleStopChat}
+                variant="outline"
+                className="h-14 flex-1 rounded-full border-2 border-gray-300 text-base font-semibold text-gray-700 transition hover:bg-gray-50"
+              >
+                대화 그만하기
+              </Button>
+              <Button
+                onClick={handleLogin}
+                className="h-14 flex-1 rounded-full bg-[#7666f5] text-base font-semibold text-white shadow-[0_10px_30px_rgba(118,102,245,0.35)] transition hover:bg-[#6758e8]"
+              >
+                로그인하기
+              </Button>
+            </div>
+          </div>
+        </PopupLayout>
+      )}
+    </>
   );
 }
