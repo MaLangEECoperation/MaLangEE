@@ -68,22 +68,20 @@ export default function WelcomeBackPage() {
 
   if (isLoading) {
     return (
-      <AuthGuard>
-        <FullLayout showHeader={true} maxWidth="md:max-w-[60vw]">
-          <div className="character-box">
-            <Image
-              src="/images/malangee.svg"
-              alt="MalangEE Character"
-              width={150}
-              height={150}
-              priority
-            />
-          </div>
-          <div className="text-group">
-            <h1 className="scenario-title">잠시만 기다려주세요...</h1>
-          </div>
-        </FullLayout>
-      </AuthGuard>
+      <FullLayout showHeader={true} maxWidth="md:max-w-[60vw]">
+        <div className="character-box">
+          <Image
+            src="/images/malangee.svg"
+            alt="MalangEE Character"
+            width={150}
+            height={150}
+            priority
+          />
+        </div>
+        <div className="text-group">
+          <h1 className="scenario-title">잠시만 기다려주세요...</h1>
+        </div>
+      </FullLayout>
     );
   }
 

@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { SplitViewLayout } from "@/shared/ui/SplitViewLayout";
-import { GuestGuard, type LoginFormData, loginSchema, useLogin } from "@/features/auth";
+import { type LoginFormData, loginSchema, useLogin } from "@/features/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -144,41 +144,41 @@ export default function LoginPage() {
   );
 
   return (
-    <GuestGuard>
-        <SplitViewLayout
-          leftChildren={leftContent}
-          rightChildren={rightContent}
-          showHeader={false}
-          maxWidth="md:max-w-[60vw]"
-          leftColSpan={5}
-          rightColSpan={7}
-        />
+    <>
+      <SplitViewLayout
+        leftChildren={leftContent}
+        rightChildren={rightContent}
+        showHeader={false}
+        maxWidth="md:max-w-[60vw]"
+        leftColSpan={5}
+        rightColSpan={7}
+      />
 
-        {showComingSoonModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="relative mx-4 w-full max-w-sm rounded-[24px] border border-white/60 bg-gradient-to-br from-white/90 via-white/80 to-[#f0e8ff]/80 shadow-[0_20px_80px_rgba(125,106,246,0.3)] backdrop-blur-2xl">
-              <div className="space-y-6 px-8 py-8">
-                <div className="space-y-2">
-                  <p className="text-center text-2xl font-semibold text-[#1F1C2B]">준비중입니다</p>
-                  <p
-                    className="text-center text-sm text-[#625a75]"
-                    style={{ letterSpacing: "-0.1px" }}
-                  >
-                    해당 기능은 현재 준비 중입니다.
-                    <br />
-                    조금만 기다려주세요!
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowComingSoonModal(false)}
-                  className="h-[48px] w-full rounded-full bg-[#7666f5] text-base font-semibold text-white shadow-[0_10px_30px_rgba(118,102,245,0.35)] transition hover:bg-[#6758e8]"
+      {showComingSoonModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="relative mx-4 w-full max-w-sm rounded-[24px] border border-white/60 bg-gradient-to-br from-white/90 via-white/80 to-[#f0e8ff]/80 shadow-[0_20px_80px_rgba(125,106,246,0.3)] backdrop-blur-2xl">
+            <div className="space-y-6 px-8 py-8">
+              <div className="space-y-2">
+                <p className="text-center text-2xl font-semibold text-[#1F1C2B]">준비중입니다</p>
+                <p
+                  className="text-center text-sm text-[#625a75]"
+                  style={{ letterSpacing: "-0.1px" }}
                 >
-                  확인
-                </button>
+                  해당 기능은 현재 준비 중입니다.
+                  <br />
+                  조금만 기다려주세요!
+                </p>
               </div>
+              <button
+                onClick={() => setShowComingSoonModal(false)}
+                className="h-[48px] w-full rounded-full bg-[#7666f5] text-base font-semibold text-white shadow-[0_10px_30px_rgba(118,102,245,0.35)] transition hover:bg-[#6758e8]"
+              >
+                확인
+              </button>
             </div>
           </div>
-        )}
-    </GuestGuard>
+        </div>
+      )}
+    </>
   );
 }

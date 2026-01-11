@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MicButton } from "@/shared/ui";
 import "@/shared/styles/scenario.css";
-import { AuthGuard } from "@/features/auth/ui/AuthGuard";
 import { FullLayout } from "@/shared/ui/FullLayout";
 
 /**
@@ -87,8 +86,7 @@ export default function ScenarioSelectPage() {
   };
 
   return (
-    <AuthGuard>
-      <FullLayout showHeader={true} maxWidth="md:max-w-[60vw]">
+    <FullLayout showHeader={true} maxWidth="md:max-w-[60vw]">
         {/* Character */}
         <div className="character-box">
           <Image
@@ -116,6 +114,5 @@ export default function ScenarioSelectPage() {
           />
         </div>
       </FullLayout>
-    </AuthGuard>
   );
 }

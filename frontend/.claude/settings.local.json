@@ -11,7 +11,9 @@
       "mcp__serena__list_dir",
       "Bash(yarn eslint:*)",
       "Bash(yarn playwright test:*)",
-      "Bash(yarn playwright install:*)"
+      "Bash(yarn playwright install:*)",
+      "Bash(yarn tsc:*)",
+      "Bash(yarn lint:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

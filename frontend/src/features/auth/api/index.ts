@@ -8,4 +8,4 @@ export {
   useCheckNickname,
   useUpdateNickname,
 } from "./use-auth-mutation";
-export { useCurrentUser, useIsAuthenticated } from "./use-current-user";
+export { useCurrentUser } from "./use-current-user";

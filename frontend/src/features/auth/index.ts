@@ -27,7 +27,6 @@ export {
   useCheckNickname,
   useUpdateNickname,
   useCurrentUser,
-  useIsAuthenticated,
 } from "./api";
 
 // Hooks

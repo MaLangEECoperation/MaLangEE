@@ -10,7 +10,6 @@ import {
   useNicknameCheck,
   registerSchema,
   type RegisterFormData,
-  GuestGuard,
 } from "@/features/auth";
 import { FullLayout } from "@/shared/ui/FullLayout";
 
@@ -77,8 +76,7 @@ export default function RegisterPage() {
     !nicknameCheck.isAvailable;
 
   return (
-    <GuestGuard>
-      <FullLayout showHeader={false} maxWidth="md:max-w-[450px]">
+    <FullLayout showHeader={false} maxWidth="md:max-w-[450px]">
         <div className="w-full space-y-8">
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold leading-snug md:text-4xl">회원가입</h1>
@@ -201,6 +199,5 @@ export default function RegisterPage() {
           </form>
         </div>
       </FullLayout>
-    </GuestGuard>
   );
 }

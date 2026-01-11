@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useGetChatSessions } from "@/features/chat";
 import type { ChatHistoryItem } from "@/shared/types/chat";
 import { ChatDetailPopup } from "./ChatDetailPopup";
+import { NicknameChangePopup } from "./NicknameChangePopup";
 
 const ITEMS_PER_PAGE = 10;
 const DEBUG_MODE = process.env.NODE_ENV === "development";
@@ -27,6 +28,7 @@ export default function DashboardPage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showDetailPopup, setShowDetailPopup] = useState(false);
   const [selectedSession, setSelectedSession] = useState<ChatHistoryItem | null>(null);
+  const [showNicknamePopup, setShowNicknamePopup] = useState(false);
 
   // 프로덕션 모드에서 API 호출 (디버그 모드에서는 무시됨)
   const { data: sessions } = useGetChatSessions(0, 20);
@@ -188,7 +190,7 @@ export default function DashboardPage() {
       {/* Added wrapper width and tracking */}
       <div className="text-2xl mb-4 font-bold">{userProfile?.nickname || "닉네임"}</div>
       <button
-        onClick={() => router.push("/settings/change-nickname")}
+        onClick={() => setShowNicknamePopup(true)}
         className="rounded-full bg-[#D4CCFF] px-4 py-2 text-[10px] font-medium text-[#5F51D9] transition-colors hover:bg-[#C9BFFF]"
       >
         닉네임 변경
@@ -296,6 +298,7 @@ export default function DashboardPage() {
         bgClass="bg-chat-history"
         leftColSpan={4}
         rightColSpan={8}
+        showHeader={!showNicknamePopup && !showDetailPopup}
       />
 
       {/* 대화 상세 팝업 */}
@@ -303,6 +306,17 @@ export default function DashboardPage() {
         <ChatDetailPopup
           session={selectedSession}
           onClose={() => setShowDetailPopup(false)}
+        />
+      )}
+
+      {/* 닉네임 변경 팝업 */}
+      {showNicknamePopup && (
+        <NicknameChangePopup
+          onClose={() => setShowNicknamePopup(false)}
+          onSuccess={() => {
+            // 사용자 프로필 새로고침이 필요한 경우 여기에 로직 추가
+            // 현재는 디버그 모드에서 테스트 데이터를 사용하므로 별도 처리 없음
+          }}
         />
       )}
     </>
