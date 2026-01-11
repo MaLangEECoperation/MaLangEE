@@ -115,19 +115,37 @@ if [[ "$TARGET" == "all" || "$TARGET" == "frontend" ]]; then
     if [ -d "$FRONTEND_DIR" ]; then
         cd "$FRONTEND_DIR" || exit 1
         
-        # npm install
-        npm install | tee -a $LOG_FILE
-        if [ $? -ne 0 ]; then
+        # npm install (타임아웃 설정: 5분)
+        echo "[INFO] npm install 실행 중... (최대 5분)" | tee -a $LOG_FILE
+        timeout 300 npm install 2>&1 | tee -a $LOG_FILE
+        INSTALL_EXIT_CODE=${PIPESTATUS[0]}
+        
+        if [ $INSTALL_EXIT_CODE -eq 124 ]; then
+            echo -e "${RED}✗ Frontend 의존성 설치 타임아웃! (5분 초과)${NC}"
+            echo "[ERROR] Frontend npm install 타임아웃" | tee -a $LOG_FILE
+            cd "$PROJECT_ROOT" || exit 1
+            exit 1
+        elif [ $INSTALL_EXIT_CODE -ne 0 ]; then
             echo -e "${RED}✗ Frontend 의존성 설치 실패!${NC}"
-            echo "[ERROR] Frontend npm install 실패" | tee -a $LOG_FILE
+            echo "[ERROR] Frontend npm install 실패 (exit code: $INSTALL_EXIT_CODE)" | tee -a $LOG_FILE
+            cd "$PROJECT_ROOT" || exit 1
             exit 1
         fi
         
-        # npm build
-        npm run build | tee -a $LOG_FILE
-        if [ $? -ne 0 ]; then
+        # npm build (타임아웃 설정: 5분)
+        echo "[INFO] npm run build 실행 중... (최대 5분)" | tee -a $LOG_FILE
+        timeout 300 npm run build 2>&1 | tee -a $LOG_FILE
+        BUILD_EXIT_CODE=${PIPESTATUS[0]}
+        
+        if [ $BUILD_EXIT_CODE -eq 124 ]; then
+            echo -e "${RED}✗ Frontend 빌드 타임아웃! (5분 초과)${NC}"
+            echo "[ERROR] Frontend npm build 타임아웃" | tee -a $LOG_FILE
+            cd "$PROJECT_ROOT" || exit 1
+            exit 1
+        elif [ $BUILD_EXIT_CODE -ne 0 ]; then
             echo -e "${RED}✗ Frontend 빌드 실패!${NC}"
-            echo "[ERROR] Frontend npm build 실패" | tee -a $LOG_FILE
+            echo "[ERROR] Frontend npm build 실패 (exit code: $BUILD_EXIT_CODE)" | tee -a $LOG_FILE
+            cd "$PROJECT_ROOT" || exit 1
             exit 1
         fi
         
@@ -135,6 +153,7 @@ if [[ "$TARGET" == "all" || "$TARGET" == "frontend" ]]; then
         cd "$PROJECT_ROOT" || exit 1
     else
         echo -e "${YELLOW}⚠ Frontend 폴더가 없습니다: $FRONTEND_DIR${NC}"
+        echo "[WARN] Frontend 폴더 없음: $FRONTEND_DIR" | tee -a $LOG_FILE
     fi
     echo ""
 fi
@@ -201,18 +220,28 @@ fi
 if [[ "$TARGET" == "all" || "$TARGET" == "restart" ]]; then
     echo -e "${GREEN}5️⃣ 서비스 재시작${NC}"
     
-    if [[ "$TARGET" == "all" || "$TARGET" == "restart" ]]; then
-        echo "  • Backend 재시작 중..."
-        sudo systemctl restart malangee-backend
-        echo "[INFO] Backend 재시작" | tee -a $LOG_FILE
-        
-        echo "  • Frontend 재시작 중..."
-        sudo systemctl restart malangee-frontend
-        echo "[INFO] Frontend 재시작" | tee -a $LOG_FILE
-        
-        echo "  • AI-Engine 재시작 중..."
-        sudo systemctl restart malangee-ai
-        echo "[INFO] AI-Engine 재시작" | tee -a $LOG_FILE
+    echo "  • Backend 재시작 중..."
+    sudo systemctl restart malangee-backend
+    if [ $? -eq 0 ]; then
+        echo "[INFO] Backend 재시작 성공" | tee -a $LOG_FILE
+    else
+        echo "[ERROR] Backend 재시작 실패" | tee -a $LOG_FILE
+    fi
+    
+    echo "  • Frontend 재시작 중..."
+    sudo systemctl restart malangee-frontend
+    if [ $? -eq 0 ]; then
+        echo "[INFO] Frontend 재시작 성공" | tee -a $LOG_FILE
+    else
+        echo "[ERROR] Frontend 재시작 실패" | tee -a $LOG_FILE
+    fi
+    
+    echo "  • AI-Engine 재시작 중..."
+    sudo systemctl restart malangee-ai
+    if [ $? -eq 0 ]; then
+        echo "[INFO] AI-Engine 재시작 성공" | tee -a $LOG_FILE
+    else
+        echo "[ERROR] AI-Engine 재시작 실패" | tee -a $LOG_FILE
     fi
     echo ""
 fi
