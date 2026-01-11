@@ -188,13 +188,15 @@ export default function DashboardPage() {
   const leftContent = (
     <div className="w-full max-w-sm tracking-tight">
       {/* Added wrapper width and tracking */}
-      <div className="text-2xl mb-4 font-bold">{userProfile?.nickname || "닉네임"}</div>
-      <button
-        onClick={() => setShowNicknamePopup(true)}
-        className="rounded-full bg-[#D4CCFF] px-4 py-2 text-[10px] font-medium text-[#5F51D9] transition-colors hover:bg-[#C9BFFF]"
-      >
-        닉네임 변경
-      </button>
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-2xl font-bold">{userProfile?.nickname || "닉네임"}</div>
+        <button
+          onClick={() => setShowNicknamePopup(true)}
+          className="rounded-full bg-[#D4CCFF] px-4 py-2 text-[10px] font-medium text-[#5F51D9] transition-colors hover:bg-[#C9BFFF]"
+        >
+          닉네임 변경
+        </button>
+      </div>
       <div className="mt-4 space-y-1">
         {" "}
         {/* Reduced space-y */}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { MicButton } from "@/shared/ui";
 import "@/shared/styles/scenario.css";
 import { FullLayout } from "@/shared/ui/FullLayout";
+import { useRouter } from "next/navigation";
 
 /**
  * 대화 상태
@@ -15,6 +16,7 @@ import { FullLayout } from "@/shared/ui/FullLayout";
 type ConversationState = "ai-speaking" | "user-turn" | "user-speaking";
 
 export default function ConversationPage() {
+  const router = useRouter();
   const [conversationState, setConversationState] = useState<ConversationState>("ai-speaking");
   const [aiMessage, setAiMessage] = useState("Hello! How are you today?");
   const [showHint, setShowHint] = useState(false);
@@ -92,6 +94,13 @@ export default function ConversationPage() {
   const toggleSubtitle = () => {
     setSubtitleEnabled(!subtitleEnabled);
     sessionStorage.setItem("subtitleEnabled", (!subtitleEnabled).toString());
+  };
+
+  const handleCompleteChat = () => {
+    // 대화 시간 시뮬레이션 데이터 저장
+    sessionStorage.setItem("totalChatDuration", "240"); // 4분
+    sessionStorage.setItem("userSpeakDuration", "150"); // 2분 30초
+    router.push("/chat/complete");
   };
 
   return (
@@ -245,6 +254,12 @@ export default function ConversationPage() {
             }`}
           >
             {subtitleEnabled ? "자막 숨기기" : "자막 보기"}
+          </button>
+          <button
+            onClick={handleCompleteChat}
+            className="rounded-full bg-pink-100 px-3 py-1 text-xs transition hover:bg-pink-200"
+          >
+            대화 완료
           </button>
         </div>
       </div>
