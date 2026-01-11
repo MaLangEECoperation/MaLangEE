@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { AuthGuard } from "@/features/auth/ui/AuthGuard";
 import { FullLayout } from "@/shared/ui/FullLayout";
 import "@/shared/styles/scenario.css";
 
@@ -33,7 +32,7 @@ export default function WelcomeBackPage() {
   const [isConfirmed, setIsConfirmed] = useState(false);
   const user = mockUser;
   const lastSession = mockLastSession;
-  const [textOpacity, setTextOpacity] = useState(1);
+  const textOpacity = 1;
 
   // 로딩 시뮬레이션
   useEffect(() => {
@@ -54,11 +53,9 @@ export default function WelcomeBackPage() {
     // 텍스트 변경
     setIsConfirmed(true);
 
-    // 1초 후 대화 페이지로 이동
+    // 1초 후 자막 설정 페이지로 이동
     setTimeout(() => {
-      if (lastSession) {
-        router.push(`/chat?sessionId=${lastSession.session_id}`);
-      }
+      router.push("/chat/subtitle-settings");
     }, 1000);
   };
 
