@@ -76,6 +76,13 @@ class ApiClient {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
 
+      // 401: 인증 오류 - 토큰이 없거나 유효하지 않음
+      if (response.status === 401) {
+        const error = new Error(errorData.detail || "인증이 필요합니다. 다시 로그인해주세요.");
+        Object.assign(error, { status: 401 });
+        throw error;
+      }
+
       // 400: 일반적인 에러 (예: 이미 존재하는 아이디)
       if (response.status === 400 && errorData.detail) {
         throw new Error(errorData.detail);

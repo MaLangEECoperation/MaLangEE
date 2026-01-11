@@ -26,7 +26,7 @@ export const GuestGuard: FC<GuestGuardProps> = ({
   redirectTo = "/topic-select",
 }) => {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, isError } = useAuth();
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -34,12 +34,21 @@ export const GuestGuard: FC<GuestGuardProps> = ({
     }
   }, [isAuthenticated, isLoading, redirectTo, router]);
 
-  // 로딩 중이거나 이미 인증됨 (리다이렉트 중)
-  if (isLoading || isAuthenticated) {
+  // 로딩 중이면서 에러가 없는 경우만 로딩 표시
+  if (isLoading && !isError) {
     return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#5F51D9] border-t-transparent" />
+      </div>
+    );
+  }
 
-        <div className="border-primary-700 h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
-
+  // 인증된 상태면서 리다이렉트 중
+  if (isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#5F51D9] border-t-transparent" />
+      </div>
     );
   }
 

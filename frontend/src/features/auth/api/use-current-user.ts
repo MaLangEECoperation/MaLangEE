@@ -12,7 +12,18 @@ const AUTH_QUERY_KEY = ["auth", "user"];
 export function useCurrentUser() {
   return useQuery<User>({
     queryKey: AUTH_QUERY_KEY,
-    queryFn: () => authApi.getCurrentUser(),
+    queryFn: async () => {
+      try {
+        return await authApi.getCurrentUser();
+      } catch (error: unknown) {
+        // 401 에러면 토큰 제거
+        const status = (error as { status?: number })?.status;
+        if (status === 401) {
+          tokenStorage.remove();
+        }
+        throw error;
+      }
+    },
     enabled: tokenStorage.exists(),
     retry: false,
     staleTime: 5 * 60 * 1000, // 5분
