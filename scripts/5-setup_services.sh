@@ -15,15 +15,6 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/config.sh"
 
-# [Fix] Windows에서 편집된 경우를 대비해 변수 내 \r 제거 (Sanitize)
-DB_HOST=$(echo "$DB_HOST" | tr -d '\r')
-DB_PORT=$(echo "$DB_PORT" | tr -d '\r')
-DB_NAME=$(echo "$DB_NAME" | tr -d '\r')
-DB_USER=$(echo "$DB_USER" | tr -d '\r')
-DB_PASSWORD=$(echo "$DB_PASSWORD" | tr -d '\r')
-OPENAI_API_KEY=$(echo "$OPENAI_API_KEY" | tr -d '\r')
-SECRET_KEY=$(echo "$SECRET_KEY" | tr -d '\r')
-
 # ============================================
 # Secret Key (JWT) & API Key 관리
 # ============================================
@@ -33,6 +24,16 @@ SECRETS_FILE="$SCRIPT_DIR/secrets.sh"
 if [ -f "$SECRETS_FILE" ]; then
     source "$SECRETS_FILE"
 fi
+
+# [Fix] Windows에서 편집된 경우를 대비해 변수 내 \r 제거 (Sanitize) 
+# secrets.sh 로드 후 실행해야 함
+DB_HOST=$(echo "$DB_HOST" | tr -d '\r')
+DB_PORT=$(echo "$DB_PORT" | tr -d '\r')
+DB_NAME=$(echo "$DB_NAME" | tr -d '\r')
+DB_USER=$(echo "$DB_USER" | tr -d '\r')
+DB_PASSWORD=$(echo "$DB_PASSWORD" | tr -d '\r')
+OPENAI_API_KEY=$(echo "$OPENAI_API_KEY" | tr -d '\r')
+SECRET_KEY=$(echo "$SECRET_KEY" | tr -d '\r')
 
 # 2. JWT Secret Key 자동 생성 (없을 경우)
 if [ -z "$SECRET_KEY" ]; then
@@ -139,6 +140,41 @@ if [[ "$CONFIRM_DB" =~ ^[Nn]$ ]]; then
     
     echo "  ✓ 설정이 업데이트되었습니다."
 fi
+
+# ============================================
+# API Key 설정 확인 (Interactive)
+# ============================================
+echo -e "\n${GREEN}0️⃣-2 OpenAI API Key 확인${NC}"
+# 키 마스킹 처리 (앞 3자리만 표시)
+if [ -n "$OPENAI_API_KEY" ] && [ "${#OPENAI_API_KEY}" -gt 3 ]; then
+    MASKED_KEY="${OPENAI_API_KEY:0:7}..."
+else
+    MASKED_KEY="(없음 또는 잘못된 형식)"
+fi
+echo "  • Current Key: $MASKED_KEY"
+
+read -p "  API Key를 변경하시겠습니까? (y/N): " CONFIRM_KEY
+if [[ "$CONFIRM_KEY" =~ ^[Yy]$ ]]; then
+    read -p "  Enter New OpenAI API Key: " INPUT_API_KEY
+    if [ -n "$INPUT_API_KEY" ]; then
+        OPENAI_API_KEY=$(echo "$INPUT_API_KEY" | tr -d '\r')
+        echo "  ✓ API Key가 업데이트되었습니다 (서비스 파일에 적용됨)"
+    fi
+fi
+
+
+
+# ============================================
+# [Final Safe Guard] 모든 변수 최종 세척 (Sanitize)
+# ============================================
+# 서비스 파일 생성 직전에 한 번 더 확실하게 \r과 공백을 제거합니다.
+DB_HOST=$(echo "$DB_HOST" | tr -d '\r' | xargs)
+DB_PORT=$(echo "$DB_PORT" | tr -d '\r' | xargs)
+DB_NAME=$(echo "$DB_NAME" | tr -d '\r' | xargs)
+DB_USER=$(echo "$DB_USER" | tr -d '\r' | xargs)
+DB_PASSWORD=$(echo "$DB_PASSWORD" | tr -d '\r' | xargs)
+OPENAI_API_KEY=$(echo "$OPENAI_API_KEY" | tr -d '\r' | xargs)
+SECRET_KEY=$(echo "$SECRET_KEY" | tr -d '\r' | xargs)
 
 
 # 1. Backend 서비스 (Spring Boot)
