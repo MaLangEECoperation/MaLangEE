@@ -19,6 +19,36 @@ Tailwind CSS v4는 CSS 기반 설정을 사용합니다. 모든 설정은 `src/a
 
 ## 디자인 시스템 색상
 
+### Brand Colors (Phase 2 추가)
+
+말랭이 프로젝트 전용 브랜드 색상입니다.
+
+| 변수 | oklch 값 | hex 값 | 용도 |
+|------|-----------|--------|------|
+| `brand` | `oklch(0.55 0.2 280)` | `#7B6CF6` | 기본 브랜드 색상 |
+| `brand-foreground` | `oklch(1 0 0)` | `#FFFFFF` | 브랜드 색상 위 텍스트 |
+| `brand-700` | `oklch(0.35 0.15 280)` | `#4b3f74` | 더 진한 브랜드 (헤더, 강조) |
+| `brand-200` | `oklch(0.85 0.08 280)` | `#cfc5ff` | 연한 브랜드 (배경, 보조) |
+| `brand-50` | `oklch(0.95 0.02 280)` | `#f0e8ff` | 매우 연한 브랜드 (배경) |
+
+### Text Colors (Phase 2 추가)
+
+일관된 텍스트 색상을 위한 변수입니다.
+
+| 변수 | oklch 값 | hex 값 | 용도 |
+|------|-----------|--------|------|
+| `text-primary` | `oklch(0.15 0.01 280)` | `#1F1C2B` | 주요 텍스트 |
+| `text-secondary` | `oklch(0.45 0.03 280)` | `#625a75` | 보조 텍스트 (설명, 캡션) |
+
+### Gradient Colors (Phase 2 추가)
+
+페이지 배경에 사용되는 그라디언트 색상입니다.
+
+| 변수 | oklch 값 | hex 값 | 용도 |
+|------|-----------|--------|------|
+| `gradient-purple` | `oklch(0.88 0.08 310)` | `#F6D7FF` | 그라디언트 시작 (보라) |
+| `gradient-blue` | `oklch(0.92 0.03 250)` | `#DCE9FF` | 그라디언트 끝 (파랑) |
+
 ### Primary Scale (Purple)
 
 버튼, 포인트 컬러로 사용되는 보라색 계열입니다.
@@ -32,6 +62,12 @@ Tailwind CSS v4는 CSS 기반 설정을 사용합니다. 모든 설정은 `src/a
 | `primary-500` | `#C9C5F3` | 가장 연한 보라 |
 
 ```tsx
+// Brand 색상 사용 (Phase 2 권장)
+<button className="bg-brand hover:bg-brand/90 text-brand-foreground">
+  브랜드 버튼
+</button>
+
+// Primary 색상 사용 (기존 방식)
 <button className="bg-primary-700 hover:bg-primary-800">
   버튼
 </button>
