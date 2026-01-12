@@ -94,34 +94,38 @@ class ChatService:
             # user_id 필터 없이 조회 후, 로직에서 소유권 검증 수행
             session_obj = await self.chat_repo.get_session_by_id(session_id)
             
-            if session_obj:
-                # [Security Check] 소유권 검증
-                # 세션에 주인이 있는데(owned), 요청자가 주인이 아니거나(mismatch) 비회원(None)인 경우 접근 차단
-                if session_obj.user_id is not None:
-                    if user_id is None or session_obj.user_id != user_id:
-                        print(f"Unauthorized access attempt to session {session_id} by user {user_id}")
-                        await websocket.close(code=4003, reason="Unauthorized access to this session")
-                        return
+            if not session_obj:
+                print(f"Session {session_id} not found.")
+                await websocket.close(code=4004, reason="Session not found")
+                return
 
-                # [New] 시나리오 컨텍스트 추출
-                conversation_context = {
-                    "title": session_obj.title,
-                    "place": session_obj.scenario_place,
-                    "partner": session_obj.scenario_partner,
-                    "goal": session_obj.scenario_goal
-                }
-                
-                # [New] 저장된 Voice 설정 추출
-                if session_obj.voice:
-                    voice_config = session_obj.voice
-                
-                # 히스토리 추출
-                if session_obj.messages:
-                    for msg in session_obj.messages:
-                        history_messages.append({
-                            "role": msg.role,
-                            "content": msg.content
-                        })
+            # [Security Check] 소유권 검증
+            # 세션에 주인이 있는데(owned), 요청자가 주인이 아니거나(mismatch) 비회원(None)인 경우 접근 차단
+            if session_obj.user_id is not None:
+                if user_id is None or session_obj.user_id != user_id:
+                    print(f"Unauthorized access attempt to session {session_id} by user {user_id}")
+                    await websocket.close(code=4003, reason="Unauthorized access to this session")
+                    return
+
+            # [New] 시나리오 컨텍스트 추출
+            conversation_context = {
+                "title": session_obj.title,
+                "place": session_obj.scenario_place,
+                "partner": session_obj.scenario_partner,
+                "goal": session_obj.scenario_goal
+            }
+            
+            # [New] 저장된 Voice 설정 추출
+            if session_obj.voice:
+                voice_config = session_obj.voice
+            
+            # 히스토리 추출
+            if session_obj.messages:
+                for msg in session_obj.messages:
+                    history_messages.append({
+                        "role": msg.role,
+                        "content": msg.content
+                    })
 
         # 4. ConnectionHandler 시작
         if ConnectionHandler:
