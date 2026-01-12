@@ -141,6 +141,27 @@ if [[ "$CONFIRM_DB" =~ ^[Nn]$ ]]; then
     echo "  ✓ 설정이 업데이트되었습니다."
 fi
 
+# ============================================
+# API Key 설정 확인 (Interactive)
+# ============================================
+echo -e "\n${GREEN}0️⃣-2 OpenAI API Key 확인${NC}"
+# 키 마스킹 처리 (앞 3자리만 표시)
+if [ -n "$OPENAI_API_KEY" ] && [ "${#OPENAI_API_KEY}" -gt 3 ]; then
+    MASKED_KEY="${OPENAI_API_KEY:0:7}..."
+else
+    MASKED_KEY="(없음 또는 잘못된 형식)"
+fi
+echo "  • Current Key: $MASKED_KEY"
+
+read -p "  API Key를 변경하시겠습니까? (y/N): " CONFIRM_KEY
+if [[ "$CONFIRM_KEY" =~ ^[Yy]$ ]]; then
+    read -p "  Enter New OpenAI API Key: " INPUT_API_KEY
+    if [ -n "$INPUT_API_KEY" ]; then
+        OPENAI_API_KEY=$(echo "$INPUT_API_KEY" | tr -d '\r')
+        echo "  ✓ API Key가 업데이트되었습니다 (서비스 파일에 적용됨)"
+    fi
+fi
+
 
 # 1. Backend 서비스 (Spring Boot)
 echo -e "\n${GREEN}1️⃣ Backend 서비스 등록 (malangee-backend)${NC}"
