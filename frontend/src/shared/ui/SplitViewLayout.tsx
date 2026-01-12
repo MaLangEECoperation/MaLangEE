@@ -45,7 +45,7 @@ export const SplitViewLayout = ({
           {/* Left Content Section */}
           <div
             className="flex flex-col items-start justify-center gap-6 "
-            style={{ flex: `0 0 ${(leftColSpan / 12) * 100}%` }}
+            style={{ flex: `0 0 ${(leftColSpan / 14) * 100}%` }}
           >
             <>
               <div className="text-lg font-semibold text-[#5F51D9]">

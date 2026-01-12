@@ -313,7 +313,6 @@ export default function DashboardPage() {
       <SplitViewLayout
         leftChildren={leftContent}
         rightChildren={rightContent}
-        bgClass="bg-chat-history"
         leftColSpan={4}
         rightColSpan={8}
         showHeader={!showNicknamePopup && !showDetailPopup}
