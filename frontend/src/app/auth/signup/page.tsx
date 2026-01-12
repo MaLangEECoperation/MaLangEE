@@ -87,7 +87,7 @@ export default function RegisterPage() {
             {/* 아이디 입력 */}
             <div className="flex flex-col gap-2">
               <label
-                className="text-sm font-medium text-[#1F1C2B]"
+                className="text-sm font-medium text-text-primary"
                 style={{ letterSpacing: "-0.2px" }}
               >
                 아이디
@@ -98,7 +98,7 @@ export default function RegisterPage() {
                   type="text"
                   placeholder="아이디를 입력해주세요"
                   {...register("login_id")}
-                  className="h-[56px] w-full rounded-full border border-[#d4d0df] bg-white px-5 text-base text-[#1F1C2B] shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-[#8c869c] focus:border-[#7B6CF6] focus:outline-none focus:ring-2 focus:ring-[#cfc5ff]"
+                  className="h-[56px] w-full rounded-full border border-border-light bg-white px-5 text-base text-text-primary shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-placeholder focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-200"
                   style={{ letterSpacing: "-0.2px" }}
                 />
                 {loginIdCheck.isChecking && (
@@ -122,7 +122,7 @@ export default function RegisterPage() {
             {/* 비밀번호 입력 */}
             <div className="flex flex-col gap-2">
               <label
-                className="text-sm font-medium text-[#1F1C2B]"
+                className="text-sm font-medium text-text-primary"
                 style={{ letterSpacing: "-0.2px" }}
               >
                 비밀번호
@@ -133,7 +133,7 @@ export default function RegisterPage() {
                   type="password"
                   placeholder="영문+숫자 조합 10자리 이상 입력해주세요"
                   {...register("password")}
-                  className="h-[56px] w-full rounded-full border border-[#d4d0df] bg-white px-5 text-base text-[#1F1C2B] shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-[#8c869c] focus:border-[#7B6CF6] focus:outline-none focus:ring-2 focus:ring-[#cfc5ff]"
+                  className="h-[56px] w-full rounded-full border border-border-light bg-white px-5 text-base text-text-primary shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-placeholder focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-200"
                   style={{ letterSpacing: "-0.2px" }}
                 />
                 {errors.password && (
@@ -145,7 +145,7 @@ export default function RegisterPage() {
             {/* 닉네임 입력 */}
             <div className="flex flex-col gap-2">
               <label
-                className="text-sm font-medium text-[#1F1C2B]"
+                className="text-sm font-medium text-text-primary"
                 style={{ letterSpacing: "-0.2px" }}
               >
                 닉네임
@@ -156,7 +156,7 @@ export default function RegisterPage() {
                   type="text"
                   placeholder="닉네임을 입력해주세요"
                   {...register("nickname")}
-                  className="h-[56px] w-full rounded-full border border-[#d4d0df] bg-white px-5 text-base text-[#1F1C2B] shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-[#8c869c] focus:border-[#7B6CF6] focus:outline-none focus:ring-2 focus:ring-[#cfc5ff]"
+                  className="h-[56px] w-full rounded-full border border-border-light bg-white px-5 text-base text-text-primary shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-placeholder focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-200"
                   style={{ letterSpacing: "-0.2px" }}
                 />
                 {nicknameCheck.isChecking && (
@@ -194,9 +194,9 @@ export default function RegisterPage() {
               {registerMutation.isPending ? "가입 중..." : "회원가입"}
             </Button>
 
-            <p className="text-center text-sm text-[#625a75]" style={{ letterSpacing: "-0.1px" }}>
+            <p className="text-center text-sm text-text-secondary" style={{ letterSpacing: "-0.1px" }}>
               이미 계정이 있으신가요?{" "}
-              <Link href="/auth/login" className="font-semibold text-[#7B6CF6] hover:underline">
+              <Link href="/auth/login" className="font-semibold text-brand hover:underline">
                 로그인
               </Link>
             </p>

@@ -1,5 +1,5 @@
-export { Button, buttonVariants } from "./Button1";
-export type { ButtonProps } from "./Button1";
+export { Button, buttonVariants } from "./Button";
+export type { ButtonProps } from "./Button";
 export { Input } from "./input";
 export type { InputProps } from "./input";
 export { Textarea } from "./textarea";
@@ -11,4 +11,9 @@ export { GlassCard } from "./GlassCard";
 export * from "./GlassCard";
 export * from "./MicButton";
 export * from "./SplitViewLayout";
+export { DecorativeCircle } from "./DecorativeCircle";
+export { Logo } from "./Logo";
+export { Mascot } from "./Mascot";
+export { GlassmorphicCard } from "./GlassmorphicCard";
+export { PageBackground } from "./PageBackground";
 
