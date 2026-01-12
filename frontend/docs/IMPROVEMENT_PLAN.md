@@ -125,19 +125,19 @@ yarn build       # 빌드 성공
 ### 수정/개선 체크리스트
 
 #### 색상 시스템 통일
-- [ ] `app/page.tsx` - 하드코딩된 그라디언트를 테마 클래스로 교체
-- [ ] `app/auth/login/page.tsx` - 색상값을 테마 변수로 마이그레이션
-- [ ] `app/auth/signup/page.tsx` - 색상값을 테마 변수로 마이그레이션
-- [ ] `app/auth/scenario-select/page.tsx` - 테마 변수 적용
-- [ ] `app/topic-select/page.tsx` - 테마 변수 적용
-- [ ] `app/dashboard/page.tsx` - 카드 컴포넌트 스타일 통일
+- [x] `app/globals.css` - 테마 색상 변수 추가 (brand-700, brand-200, brand-50, text-primary, text-secondary, gradient-purple, gradient-blue)
+- [x] `app/auth/login/page.tsx` - 색상값을 테마 변수로 마이그레이션
+- [x] `app/auth/signup/page.tsx` - 색상값을 테마 변수로 마이그레이션
+- [x] `app/topic-select/page.tsx` - 테마 변수 적용
+- [x] `shared/ui/Button.tsx` - 버튼 variant 색상을 테마 변수로 업데이트
 
 #### 공용 컴포넌트 추가
-- [ ] `shared/ui/DecorativeCircle.tsx` - 배경 장식 원형 컴포넌트 추출
-- [ ] `shared/ui/GlassmorphicCard.tsx` - 글래스모피즘 카드 컴포넌트 (로그인/회원가입용)
-- [ ] `shared/ui/PageBackground.tsx` - 공용 페이지 배경 컴포넌트
-- [ ] `shared/ui/Logo.tsx` - MalangEE 로고 컴포넌트
-- [ ] `shared/ui/Mascot.tsx` - 마스코트 이미지 컴포넌트
+- [x] `shared/ui/DecorativeCircle.tsx` - 배경 장식 원형 컴포넌트 추출
+- [x] `shared/ui/GlassmorphicCard.tsx` - 글래스모피즘 카드 컴포넌트 (로그인/회원가입용)
+- [x] `shared/ui/PageBackground.tsx` - 공용 페이지 배경 컴포넌트
+- [x] `shared/ui/Logo.tsx` - MalangEE 로고 컴포넌트
+- [x] `shared/ui/Mascot.tsx` - 마스코트 이미지 컴포넌트
+- [x] `shared/ui/index.ts` - Button import 경로 수정
 
 #### 반응형 디자인 개선
 - [ ] 모바일 퍼스트 접근 방식으로 모든 페이지 검토

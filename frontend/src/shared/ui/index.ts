@@ -11,4 +11,9 @@ export { GlassCard } from "./GlassCard";
 export * from "./GlassCard";
 export * from "./MicButton";
 export * from "./SplitViewLayout";
+export { DecorativeCircle } from "./DecorativeCircle";
+export { Logo } from "./Logo";
+export { Mascot } from "./Mascot";
+export { GlassmorphicCard } from "./GlassmorphicCard";
+export { PageBackground } from "./PageBackground";
 

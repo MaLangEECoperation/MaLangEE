@@ -348,6 +348,81 @@ NEXT_PUBLIC_DEBUG_MODE=false
 - [README.md](../README.md) - 프로젝트 개요
 - [FSD 아키텍처 가이드](../docs/fsd-architecture.md)
 
+## 📅 Phase 2 작업 내역 (2026-01-12)
+
+### Phase 2: UI/UX 개선 및 디자인 시스템 일관성 확립
+
+#### 완료 일자: 2026-01-12
+#### 커밋: b2a6d44 "feat: Phase 2 - UI/UX 개선 및 디자인 시스템 일관성 확립"
+
+### 주요 변경사항
+
+#### 1. 테마 색상 시스템 구축 (`src/app/globals.css`)
+
+**추가된 색상 변수:**
+```css
+/* Brand Colors */
+--brand: oklch(0.55 0.2 280);               /* #7B6CF6 */
+--brand-foreground: oklch(1 0 0);          /* #FFFFFF */
+--brand-700: oklch(0.35 0.15 280);         /* #4b3f74 - darker brand */
+--brand-200: oklch(0.85 0.08 280);         /* #cfc5ff - lighter brand */
+--brand-50: oklch(0.95 0.02 280);          /* #f0e8ff - very light brand */
+
+/* Text Colors */
+--text-primary: oklch(0.15 0.01 280);      /* #1F1C2B - dark text */
+--text-secondary: oklch(0.45 0.03 280);    /* #625a75 - muted text */
+
+/* Gradient Colors */
+--gradient-purple: oklch(0.88 0.08 310);   /* #F6D7FF */
+--gradient-blue: oklch(0.92 0.03 250);     /* #DCE9FF */
+```
+
+#### 2. 공용 UI 컴포넌트 생성
+
+**신규 컴포넌트 5개:**
+- `DecorativeCircle.tsx` - 배경 장식 원형 컴포넌트 (size, color, blur, opacity 설정 가능)
+- `Logo.tsx` - MalangEE 로고 컴포넌트 wrapper
+- `Mascot.tsx` - 마스코트 이미지 컴포넌트 (glow effect)
+- `GlassmorphicCard.tsx` - 글래스모피즘 카드 (인증 페이지용)
+- `PageBackground.tsx` - 페이지 배경 컴포넌트 (gradient + decorations)
+
+#### 3. 하드코딩 색상 → 테마 변수 마이그레이션
+
+**수정된 파일:**
+- `app/auth/login/page.tsx` - `text-[#4b3f74]` → `text-brand-700`
+- `app/auth/signup/page.tsx` - `text-[#625a75]` → `text-text-secondary`, `text-[#7B6CF6]` → `text-brand`
+- `app/topic-select/page.tsx` - `bg-[#7B6CF6]` → `bg-brand`, `to-[#f0e8ff]/80` → `to-brand-50/80`
+- `shared/ui/Button.tsx` - 모든 variant를 테마 변수로 업데이트
+
+**Button variant 업데이트:**
+```tsx
+primary: "bg-brand text-brand-foreground shadow-[0_10px_30px_rgba(118,102,245,0.35)] hover:bg-brand/90"
+"outline-purple": "border-2 border-brand bg-white text-brand hover:bg-brand-50"
+secondary: "bg-brand-200 text-brand hover:bg-brand-200/80"
+solid: "bg-brand text-brand-foreground shadow-lg hover:bg-brand/90"
+```
+
+#### 4. 버그 수정
+- `shared/ui/index.ts` - `./Button1` → `./Button` import 경로 수정
+- TypeScript 컴파일 오류 해결
+- 빌드 성공 확인
+
+### 성과
+
+- ✅ 디자인 시스템 일관성 확보 (하드코딩 색상 제거)
+- ✅ 재사용 가능한 공용 컴포넌트 5개 생성
+- ✅ Tailwind CSS v4 oklch() 색상 공간 활용
+- ✅ 타입 안정성 향상
+- ✅ 빌드 및 타입 체크 통과
+
+### 다음 단계 (Phase 2 추가 개선사항)
+
+- [ ] 반응형 디자인 검토 및 최적화
+- [ ] 접근성 개선 (ARIA 레이블, 키보드 네비게이션)
+- [ ] 애니메이션 및 트랜지션 추가
+
+---
+
 ## 📅 문서 작성 이후 작업 내역 (2026-01-11 ~ 2026-01-12)
 
 ### 8. 공통 Button 컴포넌트 추가

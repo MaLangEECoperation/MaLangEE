@@ -152,19 +152,32 @@
 
 ### 3.1 디자인 시스템
 
-#### 색상 팔레트
+#### 색상 팔레트 (Phase 2 업데이트: 2026-01-12)
+
+**현재 구현된 테마 색상 (Tailwind CSS v4 + oklch):**
 
 ```css
+@theme inline {
+  /* Brand Colors - 말랭이 브랜드 색상 */
+  --color-brand: oklch(0.55 0.2 280);              /* #7B6CF6 */
+  --color-brand-foreground: oklch(1 0 0);          /* #FFFFFF */
+  --color-brand-700: oklch(0.35 0.15 280);         /* #4b3f74 */
+  --color-brand-200: oklch(0.85 0.08 280);         /* #cfc5ff */
+  --color-brand-50: oklch(0.95 0.02 280);          /* #f0e8ff */
+
+  /* Text Colors - 일관된 텍스트 색상 */
+  --color-text-primary: oklch(0.15 0.01 280);      /* #1F1C2B */
+  --color-text-secondary: oklch(0.45 0.03 280);    /* #625a75 */
+
+  /* Gradient Colors - 페이지 배경 */
+  --color-gradient-purple: oklch(0.88 0.08 310);   /* #F6D7FF */
+  --color-gradient-blue: oklch(0.92 0.03 250);     /* #DCE9FF */
+}
+
 :root {
-  /* 배경 색상 */
+  /* 기존 색상 (Figma 디자인 기반) */
   --color-background: #FFFFFF;
   --color-surface-dark: #393939;
-
-  /* 텍스트 색상 */
-  --color-text-primary: #000000;
-  --color-text-secondary: #7C7C7C;
-
-  /* 시맨틱 색상 */
   --color-error: #FF0000;
   --color-disabled: #CEC6C6;
 
@@ -178,6 +191,12 @@
 }
 ```
 
+**Phase 2 개선사항:**
+- oklch() 색상 공간 도입으로 더 일관된 색상 관리
+- 하드코딩된 hex 값을 CSS 변수로 전환
+- 브랜드 색상 스케일 구축 (700, 200, 50)
+- 텍스트 색상 표준화 (primary, secondary)
+
 #### 타이포그래피 체계
 
 | 용도 | 폰트 | 크기 | 굵기 | 행간 |
@@ -190,9 +209,51 @@
 | 힌트 텍스트 | Roboto | 28px | 400 | 1.17em |
 | 캡션 | Noto Sans | 13px | 400 | 1.35em |
 
-#### 컴포넌트 명세
+#### 컴포넌트 명세 (Phase 2 업데이트)
 
-**Primary 버튼**
+**Phase 2에서 추가된 공용 컴포넌트:**
+
+1. **DecorativeCircle** - 배경 장식 원형
+   - Props: size, color, blur, opacity, className
+   - 용도: 페이지 배경 장식 효과
+
+2. **Logo** - MalangEE 로고 컴포넌트
+   - SVG 기반, 크기 조정 가능
+   - 용도: 헤더, 랜딩 페이지
+
+3. **Mascot** - 마스코트 이미지
+   - glow effect 포함
+   - 용도: 대화 화면, 로딩 상태
+
+4. **GlassmorphicCard** - 글래스모피즘 카드
+   - backdrop-blur 효과
+   - 용도: 인증 페이지 (로그인/회원가입)
+
+5. **PageBackground** - 페이지 배경 컴포넌트
+   - gradient + decorative circles
+   - variant: "gradient" | "solid"
+   - 용도: 전체 페이지 배경
+
+**Button 컴포넌트 (Phase 2 업데이트):**
+```tsx
+// Brand variant (새로 추가)
+<Button variant="brand">브랜드 버튼</Button>
+// → bg-brand text-brand-foreground hover:bg-brand/90
+
+// Brand Outline variant (새로 추가)
+<Button variant="brand-outline">아웃라인 버튼</Button>
+// → border-2 border-brand text-brand hover:bg-brand-50
+
+// Primary variant (기존, 테마 변수로 업데이트)
+<Button variant="primary">Primary</Button>
+// → bg-brand text-brand-foreground shadow-[0_10px_30px_rgba(118,102,245,0.35)]
+
+// Secondary variant (기존, 테마 변수로 업데이트)
+<Button variant="secondary">Secondary</Button>
+// → bg-brand-200 text-brand hover:bg-brand-200/80
+```
+
+**기존 버튼 스타일 (Figma 기반):**
 ```css
 .button-primary {
   background: #000000;
@@ -207,10 +268,7 @@
 .button-primary:disabled {
   background: #CEC6C6;
 }
-```
 
-**Secondary 버튼**
-```css
 .button-secondary {
   background: transparent;
   border: 1px solid #000000;
