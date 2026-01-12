@@ -150,11 +150,11 @@
   }
 
   body.bg-auth-flow {
-    background-image: url(/split_layout_bg.svg);
+    background-image: url(/images/split_layout_bg.svg);
   }
 
   body.bg-chat-history {
-    background-image: url(/split_layout_bg.svg);
+    background-image: url(/images/split_layout_bg.svg);
   }
 }
 

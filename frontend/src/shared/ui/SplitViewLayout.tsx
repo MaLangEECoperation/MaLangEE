@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import Image from "next/image";
 import { GlassCard } from "./GlassCard";
+import { MalangEE } from "./MalangEE";
 
 interface SplitViewLayoutProps {
   leftChildren?: React.ReactNode;
@@ -52,14 +53,7 @@ export const SplitViewLayout = ({
               </div>
               <div className="flex items-center gap-6">
                 <div className="flex items-center justify-center">
-                  <Image
-                    src="/images/malangee.gif"
-                    alt="MalangEE"
-                    width={150}
-                    height={150}
-                    priority
-                    className="object-contain"
-                  />
+                  <MalangEE size={150} />
                 </div>
               </div>
             </>
