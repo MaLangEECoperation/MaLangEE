@@ -83,7 +83,9 @@ export function useMicrophoneCapture(
       sourceNodeRef.current = sourceNode;
 
       // ScriptProcessorNode 사용 (AudioWorklet 대체, 더 넓은 호환성)
-      const bufferSize = Math.floor((config.sampleRate * config.chunkDurationMs) / 1000);
+      // 버퍼 크기는 반드시 2의 거듭제곱이어야 함 (256, 512, 1024, 2048, 4096, 8192, 16384)
+      // 16kHz에서 ~100ms에 가장 가까운 값은 2048 (128ms)
+      const bufferSize = 2048;
       const processorNode = audioContext.createScriptProcessor(
         bufferSize,
         config.channelCount,
