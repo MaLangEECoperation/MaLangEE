@@ -8,7 +8,7 @@ export const config = {
   localhostUrl: process.env.NEXT_PUBLIC_LOCALHOST_URL,
 
   // 백엔드 API 기본 URL
-  apiBaseUrl: process.env.NEXT_PUBLIC_API_URL,
+  apiBaseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://49.50.137.35:8080',
 
   // API 기본 경로
   apiBasePath: "/api/v1",
@@ -22,6 +22,15 @@ export const config = {
     return `${this.apiBaseUrl}${this.apiBasePath}`;
   },
 } as const;
+
+export type Config = typeof config;
+
+/**
+ * 설정 객체 반환
+ */
+export function getConfig(): Config {
+  return config;
+}
 
 export default config;
 

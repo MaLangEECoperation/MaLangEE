@@ -192,45 +192,50 @@ yarn build       # 빌드 성공
 ### 수정/개선 체크리스트
 
 #### features/voice-recording 구현
-- [ ] `features/voice-recording/model/types.ts` - 오디오 관련 타입 정의
-- [ ] `features/voice-recording/lib/audio-utils.ts` - PCM16 변환 유틸리티
-  - [ ] `base64ToBytes()` - base64 → Uint8Array
-  - [ ] `pcm16ToFloat32()` - PCM16 → Float32 (재생용)
-  - [ ] `float32ToPCM16()` - Float32 → PCM16 (전송용)
-  - [ ] `bytesToBase64()` - Uint8Array → base64
-- [ ] `features/voice-recording/hook/useMicrophoneCapture.ts` - 마이크 캡처 훅
-  - [ ] MediaRecorder API 또는 AudioWorklet 기반 구현
-  - [ ] 16kHz 다운샘플링
-  - [ ] PCM16 모노 출력
-- [ ] `features/voice-recording/hook/useAudioPlayback.ts` - 오디오 재생 훅
-  - [ ] Web Audio API AudioContext 관리
-  - [ ] 스트리밍 오디오 큐잉 및 재생
-  - [ ] 24kHz 샘플레이트 지원
-- [ ] `features/voice-recording/ui/VoiceRecorder.tsx` - 통합 녹음/재생 컴포넌트
-- [ ] `features/voice-recording/index.ts` - Public API export
+- [x] `features/voice-recording/model/types.ts` - 오디오 관련 타입 정의
+- [x] `features/voice-recording/lib/audio-utils.ts` - PCM16 변환 유틸리티
+  - [x] `base64ToBytes()` - base64 → Uint8Array
+  - [x] `pcm16ToFloat32()` - PCM16 → Float32 (재생용)
+  - [x] `float32ToPCM16()` - Float32 → PCM16 (전송용)
+  - [x] `bytesToBase64()` - Uint8Array → base64
+  - [x] `downsample()` - 다운샘플링 유틸리티 (추가)
+  - [x] `stereoToMono()` - 스테레오→모노 변환 (추가)
+  - [x] `calculateVolumeLevel()` - 볼륨 레벨 계산 (추가)
+- [x] `features/voice-recording/hook/useMicrophoneCapture.ts` - 마이크 캡처 훅
+  - [x] ScriptProcessorNode 기반 구현
+  - [x] 16kHz 다운샘플링
+  - [x] PCM16 모노 출력
+  - [x] 볼륨 레벨 실시간 계산
+- [x] `features/voice-recording/hook/useAudioPlayback.ts` - 오디오 재생 훅
+  - [x] Web Audio API AudioContext 관리
+  - [x] 스트리밍 오디오 큐잉 및 재생
+  - [x] 24kHz 샘플레이트 지원
+- [x] `features/voice-recording/ui/VoiceRecorder.tsx` - 통합 녹음/재생 컴포넌트
+- [x] `features/voice-recording/index.ts` - Public API export
 
 #### features/scenario-chat 구현
-- [ ] `features/scenario-chat/model/types.ts` - 채팅 메시지 타입
-  - [ ] `ScenarioJson` - { place, conversation_partner, conversation_goal }
-  - [ ] `WebSocketMessage` - 서버 메시지 타입 유니온
-- [ ] `features/scenario-chat/api/websocket.ts` - WebSocket 클라이언트
-  - [ ] 연결 관리 (connect, disconnect, reconnect)
-  - [ ] 메시지 핸들러 등록
-  - [ ] 에러 처리 및 재연결 로직
-- [ ] `features/scenario-chat/hook/useScenarioWebSocket.ts` - WebSocket 훅
-  - [ ] `ready` 이벤트 처리
-  - [ ] `response.audio.delta` 이벤트 처리
-  - [ ] `response.audio_transcript.delta/done` 처리
-  - [ ] `input_audio.transcript` 처리
-  - [ ] `scenario.completed` 처리
-  - [ ] `error` 처리
-- [ ] `features/scenario-chat/hook/useScenarioChat.ts` - 채팅 상태 관리 훅
-- [ ] `features/scenario-chat/ui/ScenarioChat.tsx` - 채팅 UI 컴포넌트
-- [ ] `features/scenario-chat/index.ts` - Public API export
+- [x] `features/scenario-chat/model/types.ts` - 채팅 메시지 타입
+  - [x] `ScenarioJson` - { place, conversation_partner, conversation_goal }
+  - [x] `WebSocketMessage` - 서버 메시지 타입 유니온 (Client/Server 분리)
+- [x] `features/scenario-chat/api/websocket.ts` - WebSocket 클라이언트
+  - [x] 연결 관리 (connect, disconnect, reconnect)
+  - [x] 메시지 핸들러 등록
+  - [x] 에러 처리 및 재연결 로직
+  - [x] 싱글톤 인스턴스 지원
+- [x] `features/scenario-chat/hook/useScenarioWebSocket.ts` - WebSocket 훅
+  - [x] `ready` 이벤트 처리
+  - [x] `response.audio.delta` 이벤트 처리
+  - [x] `response.audio_transcript.delta/done` 처리
+  - [x] `input_audio.transcript` 처리
+  - [x] `scenario.completed` 처리
+  - [x] `error` 처리
+- [x] `features/scenario-chat/hook/useScenarioChat.ts` - 채팅 상태 관리 훅
+- [x] `features/scenario-chat/ui/ScenarioChat.tsx` - 채팅 UI 컴포넌트
+- [x] `features/scenario-chat/index.ts` - Public API export
 
 #### 페이지 통합
-- [ ] `app/auth/scenario-select/page.tsx` - 실제 WebSocket 연동
-- [ ] `app/topic-select/page.tsx` - 음성 기능 통합
+- [ ] `app/auth/scenario-select/page.tsx` - 실제 WebSocket 연동 (후속 작업)
+- [ ] `app/topic-select/page.tsx` - 음성 기능 통합 (후속 작업)
 
 ### WebSocket 메시지 스펙
 
