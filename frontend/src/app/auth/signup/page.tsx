@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,8 +10,9 @@ import {
   useNicknameCheck,
   registerSchema,
   type RegisterFormData,
-  GuestGuard,
 } from "@/features/auth";
+import { FullLayout } from "@/shared/ui/FullLayout";
+import { Button } from "@/shared/ui";
 
 export default function RegisterPage() {
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -77,181 +77,131 @@ export default function RegisterPage() {
     !nicknameCheck.isAvailable;
 
   return (
-    <GuestGuard>
-      <div className="relative min-h-screen overflow-hidden text-[#1F1C2B]">
-      <Image
-        src="/images/login-bg-02.png"
-        alt="Background"
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover"
-      />
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-10 bottom-10 h-32 w-32 rounded-full bg-white/50 blur-3xl" />
-        <div className="absolute right-10 top-16 h-24 w-24 rounded-full bg-[#f8f0ff] blur-2xl" />
-        <div className="absolute bottom-20 right-24 h-24 w-24 rounded-full bg-[#d5c7ff] opacity-60 blur-2xl" />
-        <div className="absolute left-10 top-24 h-20 w-20 rounded-full bg-[#fdf4c7] opacity-70 blur-2xl" />
-        <div className="absolute bottom-36 left-32 h-16 w-16 rounded-full bg-[#eecbff] opacity-70 blur-xl" />
-      </div>
+    <FullLayout showHeader={false} maxWidth="md:max-w-[450px]">
+        <div className="w-full space-y-8">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-semibold leading-snug md:text-4xl">회원가입</h1>
+          </div>
 
-      <div className="relative flex min-h-screen w-full items-center justify-center px-6 py-12">
-        <div className="relative w-full max-w-[540px] overflow-hidden rounded-[32px] border border-white/60 bg-gradient-to-br from-white/80 via-white/70 to-[#f0e8ff]/80 shadow-[0_20px_80px_rgba(125,106,246,0.25)] backdrop-blur-2xl">
-          <div className="absolute -left-12 top-12 h-28 w-28 rounded-full bg-[#f6e8ff] blur-3xl" />
-          <div className="absolute right-10 top-6 h-16 w-16 rounded-full bg-[#fdf4c7] blur-2xl" />
-
-          <div className="relative space-y-8 px-8 py-10 md:px-12 md:py-12">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-semibold leading-snug md:text-4xl">
-                회원가입
-              </h1>
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+            {/* 아이디 입력 */}
+            <div className="flex flex-col gap-2">
+              <label
+                className="text-sm font-medium text-[#1F1C2B]"
+                style={{ letterSpacing: "-0.2px" }}
+              >
+                아이디
+              </label>
+              <div className="relative">
+                <input
+                  id="login_id"
+                  type="text"
+                  placeholder="아이디를 입력해주세요"
+                  {...register("login_id")}
+                  className="h-[56px] w-full rounded-full border border-[#d4d0df] bg-white px-5 text-base text-[#1F1C2B] shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-[#8c869c] focus:border-[#7B6CF6] focus:outline-none focus:ring-2 focus:ring-[#cfc5ff]"
+                  style={{ letterSpacing: "-0.2px" }}
+                />
+                {loginIdCheck.isChecking && (
+                  <p className="mt-2 px-1 text-sm text-blue-500">확인 중...</p>
+                )}
+                {errors.login_id && (
+                  <p className="mt-2 px-1 text-sm text-red-500">{errors.login_id.message}</p>
+                )}
+                {loginIdCheck.error && !errors.login_id && (
+                  <p className="mt-2 px-1 text-sm text-red-500">{loginIdCheck.error}</p>
+                )}
+                {!loginIdCheck.isChecking &&
+                  !loginIdCheck.error &&
+                  loginIdCheck.isAvailable &&
+                  watchLoginId && (
+                    <p className="mt-2 px-1 text-sm text-green-600">사용 가능한 아이디입니다</p>
+                  )}
+              </div>
             </div>
 
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="flex flex-col gap-6"
-            >
-              {/* 아이디 입력 */}
-              <div className="flex flex-col gap-2">
-                <label
-                  className="text-sm font-medium text-[#1F1C2B]"
-                  style={{ letterSpacing: "-0.2px" }}
-                >
-                  아이디
-                </label>
-                <div className="relative">
-                  <input
-                    id="login_id"
-                    type="text"
-                    placeholder="아이디를 입력해주세요"
-                    {...register("login_id")}
-                    className="h-[56px] w-full rounded-full border border-[#d4d0df] bg-white px-5 text-base text-[#1F1C2B] shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-[#8c869c] focus:border-[#7B6CF6] focus:outline-none focus:ring-2 focus:ring-[#cfc5ff]"
-                    style={{ letterSpacing: "-0.2px" }}
-                  />
-                  {loginIdCheck.isChecking && (
-                    <p className="mt-2 px-1 text-sm text-blue-500">확인 중...</p>
-                  )}
-                  {errors.login_id && (
-                    <p className="mt-2 px-1 text-sm text-red-500">
-                      {errors.login_id.message}
-                    </p>
-                  )}
-                  {loginIdCheck.error && !errors.login_id && (
-                    <p className="mt-2 px-1 text-sm text-red-500">
-                      {loginIdCheck.error}
-                    </p>
-                  )}
-                  {!loginIdCheck.isChecking &&
-                    !loginIdCheck.error &&
-                    loginIdCheck.isAvailable &&
-                    watchLoginId && (
-                      <p className="mt-2 px-1 text-sm text-green-600">
-                        사용 가능한 아이디입니다
-                      </p>
-                    )}
-                </div>
-              </div>
-
-              {/* 비밀번호 입력 */}
-              <div className="flex flex-col gap-2">
-                <label
-                  className="text-sm font-medium text-[#1F1C2B]"
-                  style={{ letterSpacing: "-0.2px" }}
-                >
-                  비밀번호
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type="password"
-                    placeholder="영문+숫자 조합 10자리 이상 입력해주세요"
-                    {...register("password")}
-                    className="h-[56px] w-full rounded-full border border-[#d4d0df] bg-white px-5 text-base text-[#1F1C2B] shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-[#8c869c] focus:border-[#7B6CF6] focus:outline-none focus:ring-2 focus:ring-[#cfc5ff]"
-                    style={{ letterSpacing: "-0.2px" }}
-                  />
-                  {errors.password && (
-                    <p className="mt-2 px-1 text-sm text-red-500">
-                      {errors.password.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* 닉네임 입력 */}
-              <div className="flex flex-col gap-2">
-                <label
-                  className="text-sm font-medium text-[#1F1C2B]"
-                  style={{ letterSpacing: "-0.2px" }}
-                >
-                  닉네임
-                </label>
-                <div className="relative">
-                  <input
-                    id="nickname"
-                    type="text"
-                    placeholder="닉네임을 입력해주세요"
-                    {...register("nickname")}
-                    className="h-[56px] w-full rounded-full border border-[#d4d0df] bg-white px-5 text-base text-[#1F1C2B] shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-[#8c869c] focus:border-[#7B6CF6] focus:outline-none focus:ring-2 focus:ring-[#cfc5ff]"
-                    style={{ letterSpacing: "-0.2px" }}
-                  />
-                  {nicknameCheck.isChecking && (
-                    <p className="mt-2 px-1 text-sm text-blue-500">확인 중...</p>
-                  )}
-                  {errors.nickname && (
-                    <p className="mt-2 px-1 text-sm text-red-500">
-                      {errors.nickname.message}
-                    </p>
-                  )}
-                  {nicknameCheck.error && !errors.nickname && (
-                    <p className="mt-2 px-1 text-sm text-red-500">
-                      {nicknameCheck.error}
-                    </p>
-                  )}
-                  {!nicknameCheck.isChecking &&
-                    !nicknameCheck.error &&
-                    nicknameCheck.isAvailable &&
-                    watchNickname && (
-                      <p className="mt-2 px-1 text-sm text-green-600">
-                        사용 가능한 닉네임입니다
-                      </p>
-                    )}
-                </div>
-              </div>
-
-              {validationError && (
-                <p
-                  className="px-1 text-sm text-red-500"
-                  style={{ letterSpacing: "-0.1px" }}
-                >
-                  *{validationError}
-                </p>
-              )}
-
-              <button
-                type="submit"
-                disabled={isSubmitDisabled}
-                className="h-[56px] w-full rounded-full text-base font-semibold shadow-[0_10px_30px_rgba(118,102,245,0.15)] transition disabled:cursor-not-allowed disabled:opacity-60 enabled:bg-[#7B6CF6] enabled:text-white enabled:hover:bg-[#6B5CE6] disabled:bg-[#d4d0df] disabled:text-[#8c869c]"
+            {/* 비밀번호 입력 */}
+            <div className="flex flex-col gap-2">
+              <label
+                className="text-sm font-medium text-[#1F1C2B]"
+                style={{ letterSpacing: "-0.2px" }}
               >
-                {registerMutation.isPending ? "가입 중..." : "회원가입"}
-              </button>
+                비밀번호
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type="password"
+                  placeholder="영문+숫자 조합 10자리 이상 입력해주세요"
+                  {...register("password")}
+                  className="h-[56px] w-full rounded-full border border-[#d4d0df] bg-white px-5 text-base text-[#1F1C2B] shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-[#8c869c] focus:border-[#7B6CF6] focus:outline-none focus:ring-2 focus:ring-[#cfc5ff]"
+                  style={{ letterSpacing: "-0.2px" }}
+                />
+                {errors.password && (
+                  <p className="mt-2 px-1 text-sm text-red-500">{errors.password.message}</p>
+                )}
+              </div>
+            </div>
 
-              <p
-                className="text-center text-sm text-[#625a75]"
-                style={{ letterSpacing: "-0.1px" }}
+            {/* 닉네임 입력 */}
+            <div className="flex flex-col gap-2">
+              <label
+                className="text-sm font-medium text-[#1F1C2B]"
+                style={{ letterSpacing: "-0.2px" }}
               >
-                이미 계정이 있으신가요?{" "}
-                <Link
-                  href="/auth/login"
-                  className="font-semibold text-[#7B6CF6] hover:underline"
-                >
-                  로그인
-                </Link>
+                닉네임
+              </label>
+              <div className="relative">
+                <input
+                  id="nickname"
+                  type="text"
+                  placeholder="닉네임을 입력해주세요"
+                  {...register("nickname")}
+                  className="h-[56px] w-full rounded-full border border-[#d4d0df] bg-white px-5 text-base text-[#1F1C2B] shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-[#8c869c] focus:border-[#7B6CF6] focus:outline-none focus:ring-2 focus:ring-[#cfc5ff]"
+                  style={{ letterSpacing: "-0.2px" }}
+                />
+                {nicknameCheck.isChecking && (
+                  <p className="mt-2 px-1 text-sm text-blue-500">확인 중...</p>
+                )}
+                {errors.nickname && (
+                  <p className="mt-2 px-1 text-sm text-red-500">{errors.nickname.message}</p>
+                )}
+                {nicknameCheck.error && !errors.nickname && (
+                  <p className="mt-2 px-1 text-sm text-red-500">{nicknameCheck.error}</p>
+                )}
+                {!nicknameCheck.isChecking &&
+                  !nicknameCheck.error &&
+                  nicknameCheck.isAvailable &&
+                  watchNickname && (
+                    <p className="mt-2 px-1 text-sm text-green-600">사용 가능한 닉네임입니다</p>
+                  )}
+              </div>
+            </div>
+
+            {validationError && (
+              <p className="px-1 text-sm text-red-500" style={{ letterSpacing: "-0.1px" }}>
+                *{validationError}
               </p>
-            </form>
-          </div>
+            )}
+
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              disabled={isSubmitDisabled}
+              isLoading={registerMutation.isPending}
+            >
+              {registerMutation.isPending ? "가입 중..." : "회원가입"}
+            </Button>
+
+            <p className="text-center text-sm text-[#625a75]" style={{ letterSpacing: "-0.1px" }}>
+              이미 계정이 있으신가요?{" "}
+              <Link href="/auth/login" className="font-semibold text-[#7B6CF6] hover:underline">
+                로그인
+              </Link>
+            </p>
+          </form>
         </div>
-      </div>
-      </div>
-    </GuestGuard>
+      </FullLayout>
   );
 }

@@ -60,9 +60,31 @@ export function useLoginIdCheck(
 
         setIsAvailable(result.is_available);
         setError(result.is_available ? null : "이미 사용중인 아이디입니다");
-      } catch {
+      } catch (error) {
         if (abortController.signal.aborted) return;
-        setError("아이디 확인 중 오류가 발생했습니다");
+        
+        // 에러 상세 정보 로깅 (개발 환경에서 디버깅용)
+        console.error("아이디 중복 확인 오류:", error);
+        
+        // 에러 타입에 따라 다른 메시지 표시
+        let errorMessage = "아이디 확인 중 오류가 발생했습니다";
+        if (error instanceof Error) {
+          // 네트워크 에러인 경우
+          if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
+            errorMessage = "서버에 연결할 수 없습니다. 네트워크를 확인해주세요.";
+          } else if (error.message.includes("401")) {
+            errorMessage = "인증이 필요합니다.";
+          } else if (error.message.includes("404")) {
+            errorMessage = "API 엔드포인트를 찾을 수 없습니다.";
+          } else if (error.message.includes("500")) {
+            errorMessage = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+          } else {
+            // 기타 에러는 원본 메시지 사용
+            errorMessage = error.message || errorMessage;
+          }
+        }
+        
+        setError(errorMessage);
         setIsAvailable(null);
       } finally {
         if (!abortController.signal.aborted) {
@@ -119,9 +141,31 @@ export function useNicknameCheck(
 
         setIsAvailable(result.is_available);
         setError(result.is_available ? null : "이미 사용중인 닉네임입니다");
-      } catch {
+      } catch (error) {
         if (abortController.signal.aborted) return;
-        setError("닉네임 확인 중 오류가 발생했습니다");
+        
+        // 에러 상세 정보 로깅 (개발 환경에서 디버깅용)
+        console.error("닉네임 중복 확인 오류:", error);
+        
+        // 에러 타입에 따라 다른 메시지 표시
+        let errorMessage = "닉네임 확인 중 오류가 발생했습니다";
+        if (error instanceof Error) {
+          // 네트워크 에러인 경우
+          if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
+            errorMessage = "서버에 연결할 수 없습니다. 네트워크를 확인해주세요.";
+          } else if (error.message.includes("401")) {
+            errorMessage = "인증이 필요합니다.";
+          } else if (error.message.includes("404")) {
+            errorMessage = "API 엔드포인트를 찾을 수 없습니다.";
+          } else if (error.message.includes("500")) {
+            errorMessage = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+          } else {
+            // 기타 에러는 원본 메시지 사용
+            errorMessage = error.message || errorMessage;
+          }
+        }
+        
+        setError(errorMessage);
         setIsAvailable(null);
       } finally {
         if (!abortController.signal.aborted) {

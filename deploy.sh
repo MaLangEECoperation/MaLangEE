@@ -115,6 +115,7 @@ if [[ "$TARGET" == "all" || "$TARGET" == "frontend" ]]; then
     if [ -d "$FRONTEND_DIR" ]; then
         cd "$FRONTEND_DIR" || exit 1
         
+
         # npm install (타임아웃 설정: 5분)
         echo "[INFO] npm install 실행 중... (최대 5분)" | tee -a $LOG_FILE
         timeout 300 npm install 2>&1 | tee -a $LOG_FILE

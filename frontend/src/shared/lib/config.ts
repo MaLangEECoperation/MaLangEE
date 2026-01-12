@@ -14,7 +14,11 @@ export const config = {
   apiBasePath: "/api/v1",
 
   // 완전한 API URL (baseUrl + basePath)
+  // 개발 환경에서는 Next.js proxy 사용하여 CORS 문제 해결
   get apiUrl(): string {
+    if (process.env.NODE_ENV === 'development') {
+      return this.apiBasePath; // /api/v1 (Next.js proxy 사용)
+    }
     return `${this.apiBaseUrl}${this.apiBasePath}`;
   },
 } as const;

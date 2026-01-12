@@ -22,9 +22,12 @@ const notoSans = Noto_Sans({
 
 export const metadata: Metadata = {
   title: "MalangEE - English Free Talking AI Chat-bot",
-  description: "English Free Talking AI Chat-bo",
+  description: "English Free Talking AI Chat-bot",
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
     shortcut: "/favicon.ico",
     apple: "/favicon.ico",
   },
@@ -44,16 +47,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${notoSans.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${notoSans.variable} h-full antialiased`}
         style={{ fontFamily: "var(--font-noto-sans)" }}
       >
         <Providers>
-          {children}
+          <div className="flex min-h-screen items-center justify-center">
+            <div className="py-4">{children}</div>
+          </div>
         </Providers>
       </body>
     </html>
   );
 }
-

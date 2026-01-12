@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, type FC, type ReactNode } from "react";
+import { useEffect, useRef, type FC, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { tokenStorage } from "../model";
 import { useAuth } from "../hook";
 
 interface AuthGuardProps {
@@ -28,24 +29,47 @@ export const AuthGuard: FC<AuthGuardProps> = ({
   fallback,
 }) => {
   const router = useRouter();
+  const hasToken = tokenStorage.exists();
   const { isAuthenticated, isLoading } = useAuth();
+  const hasRedirected = useRef(false);
 
+  // 토큰이 없으면 즉시 리다이렉트
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!hasToken && !hasRedirected.current) {
+      hasRedirected.current = true;
+      console.log("[AuthGuard] 토큰 없음, 리다이렉트:", redirectTo);
       router.replace(redirectTo);
     }
-  }, [isAuthenticated, isLoading, redirectTo, router]);
+  }, [hasToken, redirectTo, router]);
+
+  // 토큰은 있지만 인증 실패한 경우 리다이렉트
+  useEffect(() => {
+    if (hasToken && !isLoading && !isAuthenticated && !hasRedirected.current) {
+      hasRedirected.current = true;
+      console.log("[AuthGuard] 인증 실패, 리다이렉트:", redirectTo);
+      router.replace(redirectTo);
+    }
+  }, [hasToken, isAuthenticated, isLoading, redirectTo, router]);
+
+  // 토큰이 없으면 빈 화면 (리다이렉트 대기)
+  if (!hasToken) {
+    console.log("[AuthGuard] 토큰 없음, null 반환");
+    return null;
+  }
 
   // 로딩 중
   if (isLoading) {
+    console.log("[AuthGuard] 로딩 중");
     return fallback ?? <AuthGuardLoadingFallback />;
   }
 
-  // 인증되지 않음 (리다이렉트 중)
+  // 인증되지 않음 (리다이렉트 실행 또는 예정)
   if (!isAuthenticated) {
-    return fallback ?? <AuthGuardLoadingFallback />;
+    console.log("[AuthGuard] 인증 안됨, null 반환");
+    return null;
   }
 
+  console.log("[AuthGuard] 인증 완료, children 렌더링");
   return <>{children}</>;
 };
 

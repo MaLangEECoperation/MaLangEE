@@ -2,12 +2,13 @@
 export {
   // Schemas
   loginSchema,
-  registerSchema,
+  registerSchema, nicknameUpdateSchema,
   tokenSchema,
   userSchema,
   // Types
   type LoginFormData,
   type RegisterFormData,
+  type NicknameUpdateFormData,
   type Token,
   type User,
   type CheckAvailabilityResponse,
@@ -24,8 +25,8 @@ export {
   useDeleteAccount,
   useCheckLoginId,
   useCheckNickname,
+  useUpdateNickname,
   useCurrentUser,
-  useIsAuthenticated,
 } from "./api";
 
 // Hooks

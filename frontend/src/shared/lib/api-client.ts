@@ -24,7 +24,17 @@ class ApiClient {
     // endpoint에서 시작하는 '/'를 제거하여 baseUrl과 올바르게 결합
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
     const fullUrl = `${this.baseUrl}/${cleanEndpoint}`;
-    const url = new URL(fullUrl);
+    
+    // 상대 경로인 경우 (baseUrl이 '/'로 시작하는 경우)
+    // 브라우저 환경에서는 window.location.origin을 base로 사용
+    let url: URL;
+    if (this.baseUrl.startsWith('/') && typeof window !== 'undefined') {
+      // 상대 경로인 경우 window.location.origin을 base로 사용
+      url = new URL(fullUrl, window.location.origin);
+    } else {
+      // 절대 URL인 경우
+      url = new URL(fullUrl);
+    }
 
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -75,6 +85,13 @@ class ApiClient {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+
+      // 401: 인증 오류 - 토큰이 없거나 유효하지 않음
+      if (response.status === 401) {
+        const error = new Error(errorData.detail || "인증이 필요합니다. 다시 로그인해주세요.");
+        Object.assign(error, { status: 401 });
+        throw error;
+      }
 
       // 400: 일반적인 에러 (예: 이미 존재하는 아이디)
       if (response.status === 400 && errorData.detail) {

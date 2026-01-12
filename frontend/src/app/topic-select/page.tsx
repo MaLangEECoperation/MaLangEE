@@ -28,7 +28,7 @@ export default function TopicSelectPage() {
           <div className="absolute bottom-[20%] left-[20%] h-28 w-28 rounded-full bg-[#fdf4c7] opacity-60 blur-3xl" />
           <div className="absolute bottom-[30%] right-[10%] h-20 w-20 rounded-full bg-[#d5c7ff] opacity-70 blur-2xl" />
           <div className="absolute left-[5%] top-[60%] h-16 w-16 rounded-full bg-[#eecbff] opacity-70 blur-xl" />
-          <div className="absolute right-[5%] bottom-[10%] h-24 w-24 rounded-full bg-[#c6d5ff]/50 blur-3xl" />
+          <div className="absolute bottom-[10%] right-[5%] h-24 w-24 rounded-full bg-[#c6d5ff]/50 blur-3xl" />
         </div>
 
         {/* 메인 콘텐츠 */}
@@ -63,7 +63,7 @@ export default function TopicSelectPage() {
                 <div className="relative flex h-32 w-32 items-center justify-center">
                   <div className="absolute inset-0 rounded-full bg-[#fdf4c7]/30 blur-xl" />
                   <Image
-                    src="/images/mascot.svg"
+                    src="/images/malangee.svg"
                     alt="MalangEE mascot"
                     width={128}
                     height={128}

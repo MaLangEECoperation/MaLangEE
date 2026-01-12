@@ -10,9 +10,9 @@
 
 /* Logo */
 .scenario-logo {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--primary-purple);
+  font-size: 1rem;
+  font-weight: 600;
+  color: #5F51D9;
 }
 
 /* Exit button */
@@ -92,3 +92,19 @@
     font-size: 0.9rem;
   }
 }
+
+/* Wave Animation */
+@keyframes wave {
+  0%,
+  100% {
+    height: 20px;
+  }
+  50% {
+    height: 40px;
+  }
+}
+
+.animate-wave {
+  animation: wave 1s ease-in-out infinite;
+}
+
