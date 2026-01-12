@@ -236,7 +236,7 @@ export default function DashboardPage() {
       {/* 대화 목록 */}
       <div
         ref={scrollContainerRef}
-        className="custom-scrollbar left-0 flex flex-col items-start justify-start w-full max-h-[350px] overflow-y-auto pr-2"
+        className="left-0 flex flex-col items-start justify-start w-full max-h-[350px] overflow-y-auto pr-2"
       >
         {allSessions.length === 0 && isInitialLoading ? (
           <div className="flex w-full items-center justify-center">

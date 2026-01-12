@@ -3,14 +3,12 @@
 import { FC, ReactNode } from "react";
 import { History, LogOut } from "lucide-react";
 import { useAuth } from "@/features/auth/hook/use-auth";
-import "./GlassCard.css";
 
 interface GlassCardProps {
   children: ReactNode;
   headerLeft?: ReactNode;
   headerRight?: ReactNode;
   footer?: ReactNode;
-  withBackground?: boolean;
   className?: string;
   showHeader?: boolean; // header 표시 여부 (기본값 true)
 }
@@ -20,7 +18,6 @@ export const GlassCard: FC<GlassCardProps> = ({
   headerLeft,
   headerRight,
   footer,
-  withBackground = true,
   className = "",
   showHeader = true,
 }) => {
@@ -52,33 +49,21 @@ export const GlassCard: FC<GlassCardProps> = ({
   );
 
   return (
-    <div className="main-page glass-page">
-      {/* Background Blobs */}
-      {withBackground && (
-        <>
-          <div className="blob blob-1" />
-          <div className="blob blob-2" />
-          <div className="blob blob-3" />
-        </>
+    <main className={`main-container glass-card w-full ${className}`}>
+      {/* Header */}
+      {showHeader && (
+        <header className="glass-card-header">
+          {headerLeft || defaultHeaderLeft}
+          <div className="flex-1" />
+          <div className="flex items-center gap-4">{headerRight || defaultHeaderRight}</div>
+        </header>
       )}
 
-      {/* Main Card */}
-      <main className={`main-container glass-card ${className}`}>
-        {/* Header */}
-        {showHeader && (
-          <header className="glass-card-header">
-            {headerLeft || defaultHeaderLeft}
-            <div className="flex-1" />
-            <div className="flex items-center gap-4">{headerRight || defaultHeaderRight}</div>
-          </header>
-        )}
+      {/* Content */}
+      <section className="glass-card-content">{children}</section>
 
-        {/* Content */}
-        <section className="glass-card-content">{children}</section>
-
-        {/* Footer */}
-        {footer && <footer className="glass-card-footer">{footer}</footer>}
-      </main>
-    </div>
+      {/* Footer */}
+      {footer && <footer className="glass-card-footer">{footer}</footer>}
+    </main>
   );
 };
