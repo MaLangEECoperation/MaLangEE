@@ -11,4 +11,5 @@ export { GlassCard } from "./GlassCard";
 export * from "./GlassCard";
 export * from "./MicButton";
 export * from "./SplitViewLayout";
+export * from "./MalangEE";
 
