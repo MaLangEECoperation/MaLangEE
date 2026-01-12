@@ -115,9 +115,10 @@ if [[ "$TARGET" == "all" || "$TARGET" == "frontend" ]]; then
     if [ -d "$FRONTEND_DIR" ]; then
         cd "$FRONTEND_DIR" || exit 1
         
-        # npm install (타임아웃 설정: 5분, legacy-peer-deps로 peer dependency 충돌 해결)
-        echo "[INFO] npm install 실행 중... (최대 5분, --legacy-peer-deps 옵션 사용)" | tee -a $LOG_FILE
-        timeout 300 npm install --legacy-peer-deps 2>&1 | tee -a $LOG_FILE
+
+        # npm install (타임아웃 설정: 5분)
+        echo "[INFO] npm install 실행 중... (최대 5분)" | tee -a $LOG_FILE
+        timeout 300 npm install 2>&1 | tee -a $LOG_FILE
         INSTALL_EXIT_CODE=${PIPESTATUS[0]}
         
         if [ $INSTALL_EXIT_CODE -eq 124 ]; then
