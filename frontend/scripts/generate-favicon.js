@@ -1,7 +1,7 @@
 const sharp = require('sharp');
 const path = require('path');
 
-const inputPath = path.join(__dirname, '../public/images/malangee.gif');
+const inputPath = path.join(__dirname, '../public/images/m.png');
 const outputPath = path.join(__dirname, '../public/favicon.ico');
 
 // SVG를 ICO 파일로 변환
