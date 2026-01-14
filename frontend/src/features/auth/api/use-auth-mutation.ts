@@ -95,15 +95,14 @@ export function useCheckNickname() {
  * 닉네임 변경 mutation
  */
 export function useUpdateNickname() {
-  const router = useRouter();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (data: NicknameUpdateFormData) =>
       authApi.updateCurrentUser({ nickname: data.new_nickname }),
-    onSuccess: () => {
+    onSuccess: (updatedUser) => {
+      queryClient.setQueryData(AUTH_QUERY_KEY, updatedUser);
       queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
-      router.push("/topic-select");
     },
   });
 }

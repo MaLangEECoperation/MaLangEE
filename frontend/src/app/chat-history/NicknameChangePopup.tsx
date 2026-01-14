@@ -36,7 +36,7 @@ const nicknameUpdateResolver: Resolver<NicknameUpdateFormData> = async (values) 
 
 interface NicknameChangePopupProps {
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (nickname: string) => void;
 }
 
 export const NicknameChangePopup: React.FC<NicknameChangePopupProps> = ({
@@ -44,6 +44,7 @@ export const NicknameChangePopup: React.FC<NicknameChangePopupProps> = ({
   onSuccess,
 }) => {
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { data: currentUser } = useCurrentUser();
 
   const {
@@ -76,6 +77,7 @@ export const NicknameChangePopup: React.FC<NicknameChangePopupProps> = ({
 
   const onSubmit = (data: NicknameUpdateFormData) => {
     setValidationError(null);
+    setSuccessMessage(null);
 
     // 현재 닉네임과 새로운 닉네임이 같은지 확인
     if (data.current_nickname === data.new_nickname) {
@@ -96,9 +98,13 @@ export const NicknameChangePopup: React.FC<NicknameChangePopupProps> = ({
     }
 
     updateNicknameMutation.mutate(data, {
-      onSuccess: () => {
-        onSuccess?.();
-        onClose();
+      onSuccess: (updatedUser) => {
+        const nextNickname = updatedUser?.nickname || data.new_nickname;
+        setSuccessMessage("\ub2c9\ub124\uc784\uc774 \ubcc0\uacbd\ub418\uc5c8\uc2b5\ub2c8\ub2e4.");
+        onSuccess?.(nextNickname);
+        setTimeout(() => {
+          onClose();
+        }, 800);
       },
       onError: (error) => {
         if (error instanceof Error) {
@@ -117,7 +123,8 @@ export const NicknameChangePopup: React.FC<NicknameChangePopupProps> = ({
     updateNicknameMutation.isPending ||
     nicknameCheck.isChecking ||
     !!nicknameCheck.error ||
-    !nicknameCheck.isAvailable;
+    !nicknameCheck.isAvailable ||
+    !!successMessage;
 
   return (
     <PopupLayout onClose={onClose} title="닉네임 변경" maxWidth="md">
@@ -186,6 +193,11 @@ export const NicknameChangePopup: React.FC<NicknameChangePopupProps> = ({
         {validationError && (
           <p className="px-1 text-xs text-red-500" style={{ letterSpacing: "-0.1px" }}>
             *{validationError}
+          </p>
+        )}
+        {successMessage && (
+          <p className="px-1 text-xs text-green-600" style={{ letterSpacing: "-0.1px" }}>
+            {successMessage}
           </p>
         )}
 

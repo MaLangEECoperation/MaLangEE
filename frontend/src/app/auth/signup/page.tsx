@@ -6,18 +6,26 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { PopupLayout } from "@/shared/ui/PopupLayout";
 import { MalangEE } from "@/shared/ui";
-import { authApi, useLogin, useLoginIdCheck, useNicknameCheck, usePasswordValidation, registerSchema, type RegisterFormData } from "@/features/auth";
+import {
+  authApi,
+  registerSchema,
+  type RegisterFormData,
+  useLogin,
+  useLoginIdCheck,
+  useNicknameCheck,
+  usePasswordValidation,
+} from "@/features/auth";
 import { FullLayout } from "@/shared/ui/FullLayout";
 import { Button } from "@/shared/ui";
 
-// safeParse를 사용하는 커스텀 resolver (콘솔 에러 방지)
+// safeParse를 적용하는 커스텀 resolver (콘솔 에러 방지)
 const safeZodResolver: Resolver<RegisterFormData> = async (values) => {
   const result = registerSchema.safeParse(values);
-  
+
   if (result.success) {
     return { values: result.data, errors: {} };
   }
-  
+
   // ZodError를 React Hook Form의 에러 형식으로 변환
   const errors: Record<string, { type: string; message: string }> = {};
   result.error.issues.forEach((issue) => {
@@ -29,11 +37,11 @@ const safeZodResolver: Resolver<RegisterFormData> = async (values) => {
       };
     }
   });
-  
+
   return { values: {}, errors };
 };
 
-const NETWORK_ERROR_MESSAGE = "서버에 연결할 수 없습니다. 네트워크를 확인해주세요.";
+const NETWORK_ERROR_MESSAGE = "서버와 연결할 수 없습니다. 네트워크를 확인해주세요.";
 const getCheckErrorMessage = (err?: unknown): string | null => {
   if (!err) return null;
   const message = String(err);
@@ -58,13 +66,61 @@ export default function RegisterPage() {
 
   const watchLoginId = watch("login_id");
   const watchNickname = watch("nickname");
+  const normalizeLoginId = (value: string) =>
+    value.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-  // 중복 확인 훅
+  const loginIdRegister = register("login_id");
   const loginIdCheck = useLoginIdCheck(watchLoginId);
   const nicknameCheck = useNicknameCheck(watchNickname);
   const passwordCheck = usePasswordValidation(watch("password"));
+  const loginIdStatus = (() => {
+    if (loginIdCheck.isChecking) {
+      return { text: "확인 중...", className: "text-blue-500" };
+    }
+    if (errors.login_id) {
+      return { text: errors.login_id.message, className: "text-red-500" };
+    }
+    if (loginIdCheck.error) {
+      return { text: getCheckErrorMessage(loginIdCheck.error), className: "text-red-500" };
+    }
+    if (loginIdCheck.isAvailable && watchLoginId) {
+      return { text: "사용 가능한 아이디입니다", className: "text-green-600" };
+    }
+    return null;
+  })();
 
-  // 회원가입 mutation (로컬에서 처리하여 리다이렉트 제어)
+  const passwordStatus = (() => {
+    if (passwordCheck.isChecking) {
+      return { text: "확인 중...", className: "text-blue-500" };
+    }
+    if (errors.password) {
+      return { text: errors.password.message, className: "text-red-500" };
+    }
+    if (passwordCheck.error) {
+      return { text: passwordCheck.error, className: "text-red-500" };
+    }
+    if (passwordCheck.isValid && watch("password")) {
+      return { text: "사용 가능한 비밀번호입니다", className: "text-green-600" };
+    }
+    return null;
+  })();
+
+  const nicknameStatus = (() => {
+    if (nicknameCheck.isChecking) {
+      return { text: "확인 중...", className: "text-blue-500" };
+    }
+    if (errors.nickname) {
+      return { text: errors.nickname.message, className: "text-red-500" };
+    }
+    if (nicknameCheck.error) {
+      return { text: getCheckErrorMessage(nicknameCheck.error), className: "text-red-500" };
+    }
+    if (nicknameCheck.isAvailable && watchNickname) {
+      return { text: "사용 가능한 닉네임입니다", className: "text-green-600" };
+    }
+    return null;
+  })();
+
   const registerMutation = useMutation({
     mutationFn: (data: RegisterFormData) => authApi.register(data),
     onError: (error) => {
@@ -79,7 +135,7 @@ export default function RegisterPage() {
     },
   });
 
-  // 로그인 뮤테이션 (팝업에서 시도)
+  // 로그인 뮤테이션 (팝업에서 사용)
   const loginMutation = useLogin();
   const [savedCredentials, setSavedCredentials] = useState<{
     username: string;
@@ -95,7 +151,6 @@ export default function RegisterPage() {
     // 방어적 유효성 검사: ZodError가 프로미스에서 uncaught 되는 것을 막기 위해 safeParse 사용
     const parsed = registerSchema.safeParse(data);
     if (!parsed.success) {
-      // 가능한 한 첫 번째 에러 메시지를 보여줍니다
       const firstIssue = parsed.error.issues[0];
       setValidationError(firstIssue.message || "입력 정보를 확인해주세요");
       return;
@@ -104,7 +159,9 @@ export default function RegisterPage() {
     // 유효성 검사 오류가 있는지 확인
     if (loginIdCheck.error || nicknameCheck.error) {
       const message =
-        getCheckErrorMessage(loginIdCheck.error) || getCheckErrorMessage(nicknameCheck.error) || "아이디 또는 닉네임을 확인해주세요";
+        getCheckErrorMessage(loginIdCheck.error) ||
+        getCheckErrorMessage(nicknameCheck.error) ||
+        "아이디 또는 닉네임을 확인해주세요";
       setValidationError(message);
       return;
     }
@@ -115,7 +172,7 @@ export default function RegisterPage() {
       return;
     }
 
-    // 성공 시 팝업을 띄우기 위해 자격증명 저장 후 mutate 호출
+    // 성공 시 회원가입 완료 후 자동 로그인을 위해 인증 정보 저장
     setSavedCredentials({ username: data.login_id, password: data.password });
     registerMutation.mutate(data, {
       onSuccess: () => {
@@ -133,8 +190,7 @@ export default function RegisterPage() {
     !loginIdCheck.isAvailable ||
     !nicknameCheck.isAvailable;
 
-  // 비밀번호 체크는 usePasswordValidation 훅으로 처리
-
+  // 비밀번호 체크는 usePasswordValidation hook으로 처리
   return (
     <FullLayout showHeader={false} maxWidth="md:max-w-[450px]">
       <div className="w-full space-y-8">
@@ -155,28 +211,26 @@ export default function RegisterPage() {
               <input
                 id="login_id"
                 type="text"
-                placeholder="아이디를 입력해주세요"
-                {...register("login_id")}
+                placeholder="아이디를 입력해 주세요"
+                {...loginIdRegister}
+                autoCapitalize="none"
+                inputMode="text"
+                onChange={(event) => {
+                  const normalized = normalizeLoginId(event.target.value);
+                  event.target.value = normalized;
+                  loginIdRegister.onChange(event);
+                }}
                 className="h-[56px] w-full rounded-full border border-[#d4d0df] bg-white px-5 text-base text-[#1F1C2B] shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-[#8c869c] focus:border-[#7B6CF6] focus:outline-none focus:ring-2 focus:ring-[#cfc5ff]"
                 style={{ letterSpacing: "-0.2px" }}
               />
-              {loginIdCheck.isChecking && (
-                <p className="mt-2 px-1 text-sm text-blue-500">확인 중...</p>
-              )}
-              {errors.login_id && (
-                <p className="mt-2 px-1 text-sm text-red-500">{errors.login_id.message}</p>
-              )}
-              {loginIdCheck.error && !errors.login_id && (
-                <p className="mt-2 px-1 text-sm text-red-500">
-                  {getCheckErrorMessage(loginIdCheck.error)}
+              {loginIdStatus && (
+                <p
+                  className={`mt-2 px-1 text-sm ${loginIdStatus.className} truncate whitespace-nowrap`}
+                  title={loginIdStatus.text ?? ""}
+                >
+                  {loginIdStatus.text}
                 </p>
               )}
-              {!loginIdCheck.isChecking &&
-                !loginIdCheck.error &&
-                loginIdCheck.isAvailable &&
-                watchLoginId && (
-                  <p className="mt-2 px-1 text-sm text-green-600">사용 가능한 아이디입니다</p>
-                )}
             </div>
           </div>
 
@@ -197,21 +251,14 @@ export default function RegisterPage() {
                 className="h-[56px] w-full rounded-full border border-[#d4d0df] bg-white px-5 text-base text-[#1F1C2B] shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-[#8c869c] focus:border-[#7B6CF6] focus:outline-none focus:ring-2 focus:ring-[#cfc5ff]"
                 style={{ letterSpacing: "-0.2px" }}
               />
-              {passwordCheck.isChecking && (
-                <p className="mt-2 px-1 text-sm text-blue-500">확인 중...</p>
+              {passwordStatus && (
+                <p
+                  className={`mt-2 px-1 text-sm ${passwordStatus.className} truncate whitespace-nowrap`}
+                  title={passwordStatus.text ?? ""}
+                >
+                  {passwordStatus.text}
+                </p>
               )}
-              {errors.password && (
-                <p className="mt-2 px-1 text-sm text-red-500">{errors.password.message}</p>
-              )}
-              {passwordCheck.error && !errors.password && (
-                <p className="mt-2 px-1 text-sm text-red-500">{passwordCheck.error}</p>
-              )}
-              {!passwordCheck.isChecking &&
-                !passwordCheck.error &&
-                passwordCheck.isValid &&
-                watch("password") && (
-                  <p className="mt-2 px-1 text-sm text-green-600">사용 가능한 비밀번호입니다</p>
-                )}
               {/* 서버/submit 관련 validationError가 비밀번호 관련이면 하단에 표시 */}
               {validationError && validationError.includes("비밀번호") && (
                 <p className="mt-2 px-1 text-sm text-red-500">{validationError}</p>
@@ -231,32 +278,23 @@ export default function RegisterPage() {
               <input
                 id="nickname"
                 type="text"
-                placeholder="닉네임을 입력해주세요"
+                placeholder="닉네임을 입력해 주세요"
                 {...register("nickname")}
                 className="h-[56px] w-full rounded-full border border-[#d4d0df] bg-white px-5 text-base text-[#1F1C2B] shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-[#8c869c] focus:border-[#7B6CF6] focus:outline-none focus:ring-2 focus:ring-[#cfc5ff]"
                 style={{ letterSpacing: "-0.2px" }}
               />
-              {nicknameCheck.isChecking && (
-                <p className="mt-2 px-1 text-sm text-blue-500">확인 중...</p>
-              )}
-              {errors.nickname && (
-                <p className="mt-2 px-1 text-sm text-red-500">{errors.nickname.message}</p>
-              )}
-              {nicknameCheck.error && !errors.nickname && (
-                <p className="mt-2 px-1 text-sm text-red-500">
-                  {getCheckErrorMessage(nicknameCheck.error)}
+              {nicknameStatus && (
+                <p
+                  className={`mt-2 px-1 text-sm ${nicknameStatus.className} truncate whitespace-nowrap`}
+                  title={nicknameStatus.text ?? ""}
+                >
+                  {nicknameStatus.text}
                 </p>
               )}
-              {!nicknameCheck.isChecking &&
-                !nicknameCheck.error &&
-                nicknameCheck.isAvailable &&
-                watchNickname && (
-                  <p className="mt-2 px-1 text-sm text-green-600">사용 가능한 닉네임입니다</p>
-                )}
             </div>
           </div>
 
-          {/* validationError가 비밀번호 관련이 아닐 때만 폼 하단에 표시 */}
+          {/* validationError가 비밀번호 관련이 아닐 때만 하단에 표시 */}
           {validationError && !validationError.includes("비밀번호") && (
             <p className="px-1 text-sm text-red-500" style={{ letterSpacing: "-0.1px" }}>
               *{validationError}
@@ -271,7 +309,7 @@ export default function RegisterPage() {
             disabled={isSubmitDisabled}
             isLoading={registerPending}
           >
-            {registerPending ? "가입 중..." : "회원가입"}
+            {registerPending ? "가입 중.." : "회원가입"}
           </Button>
 
           <p className="text-center text-sm text-[#625a75]" style={{ letterSpacing: "-0.1px" }}>
@@ -288,7 +326,7 @@ export default function RegisterPage() {
         <PopupLayout onClose={() => {}} showCloseButton={false} maxWidth="sm">
           <div className="flex flex-col items-center gap-6 py-2">
             <MalangEE size={120} />
-            <div className="text-xl font-bold text-[#5F51D9]">회원이 된걸 축하해요!</div>
+            <div className="text-xl font-bold text-[#5F51D9]">회원가입을 축하해요!</div>
             {loginError && <p className="text-sm text-red-500">{loginError}</p>}
             <Button
               variant="primary"
@@ -298,13 +336,13 @@ export default function RegisterPage() {
               onClick={() => {
                 setLoginError(null);
 
-                //로그인 페이지로 이동
+                // 로그인 페이지로 이동
                 window.location.href = "/auth/login";
                 return;
 
-                /* 바로 로그인 하는 경우
+                /* 바로 로그인하는 경우
                 if (!savedCredentials) {
-                  // 자격증명이 없으면 로그인 페이지로 이동
+                  // 인증정보가 없으면 로그인 페이지로 이동
                   window.location.href = "/auth/login";
                   return;
                 }

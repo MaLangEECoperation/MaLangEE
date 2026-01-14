@@ -12,11 +12,14 @@
 - 랜딩 페이지 (/)
 - 로그인/회원가입 페이지 (/auth/login, /auth/signup)
 - 시나리오 선택 페이지 (/auth/scenario-select)
-- 대시보드 페이지 (/dashboard)
+- 채팅 기록 페이지 (/chat-history)
+- 채팅 관련 페이지 (/chat/conversation, /chat/complete, /chat/subtitle-settings, /chat/voice-selection, /chat/welcome-back)
 - 토픽 선택 페이지 (/topic-select)
-- 인증 시스템 (JWT, GuestGuard, AuthGuard)
+- 로그아웃 처리 (/logout)
+- 인증 시스템 (JWT, AuthGuard)
 
 ### 개선이 필요한 영역
+
 1. **코드 구조**: FSD 아키텍처 완전 적용 필요
 2. **UI/UX**: 디자인 시스템 일관성, 컴포넌트 추상화
 3. **핵심 기능**: WebSocket 연동, 음성 녹음/재생 기능 미구현
@@ -289,7 +292,7 @@ yarn dev         # 개발 서버 실행
 사용자 대시보드와 다양한 학습 기능 페이지를 구현하는 단계입니다. Quick Response, Think Aloud, Rephrasing, Daily Reflection 등의 학습 모드를 구현합니다.
 
 ### 컨텍스트
-- **현재 상태**: 대시보드에 링크만 존재, 실제 기능 페이지 미구현
+- **현재 상태**: 대시보드 페이지 미구현 (라우트/위젯 없음)
 - **목표 상태**: 각 학습 모드별 완전한 기능 페이지 구현
 - **참고**: 대시보드에서 연결되는 6개 학습 모드
 

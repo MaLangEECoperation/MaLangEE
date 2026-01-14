@@ -10,7 +10,10 @@ export const loginSchema = z.object({
 });
 
 export const registerSchema = z.object({
-  login_id: z.string().min(1, "아이디를 입력해주세요"),
+  login_id: z
+    .string()
+    .min(1, "아이디를 입력해주세요")
+    .regex(/^[a-z0-9]+$/, "아이디는 영문 소문자와 숫자만 사용할 수 있습니다"),
   password: z
     .string()
     .min(10, "영문+숫자 조합 10자리 이상 입력해주세요")

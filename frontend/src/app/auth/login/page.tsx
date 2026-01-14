@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, type Resolver } from "react-hook-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SplitViewLayout } from "@/shared/ui/SplitViewLayout";
 import { Button } from "@/shared/ui";
 import { type LoginFormData, loginSchema, useLogin } from "@/features/auth";
@@ -33,6 +33,22 @@ const loginResolver: Resolver<LoginFormData> = async (values) => {
 export default function LoginPage() {
   const router = useRouter();
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
+  const [slideIndex, setSlideIndex] = useState(0);
+  const slideItems = [
+    {
+      tagline: "Free Talking AI Chat-bot",
+      titleLines: ["해외 원어민과", "대화하는 느낌 그대로!"],
+    },
+    {
+      tagline: "Real-time Speaking Coach",
+      titleLines: ["상황별 시나리오로", "말하기 자신감 업!"],
+    },
+    {
+      tagline: "Instant Feedback",
+      titleLines: ["바로 피드백 받고", "표현력을 키워요"],
+    },
+  ];
+  const slideTextHeight = 120;
 
   const {
     register,
@@ -57,27 +73,55 @@ export default function LoginPage() {
     setShowComingSoonModal(true);
   };
 
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setSlideIndex((prev) => (prev + 1) % slideItems.length);
+    }, 3000);
+
+    return () => window.clearInterval(intervalId);
+  }, [slideItems.length]);
+
   // 왼쪽 콘텐츠
   const leftContent = (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <p className="text-xl text-brand-700" style={{ letterSpacing: "-0.2px" }}>
-          Free Talking AI Chat-bot
-        </p>
-        <h1
-          className="text-3xl font-bold leading-snug tracking-tight"
-          style={{ letterSpacing: "-0.96px" }}
+      <div
+        className="relative overflow-hidden"
+        id="sliding-text"
+        style={{ height: `${slideTextHeight}px` }}
+      >
+        <div
+          className="transition-transform duration-700 ease-out"
+          style={{ transform: `translateY(-${slideIndex * slideTextHeight}px)` }}
         >
-          해외 원어민과
-          <br />
-          대화하는 느낌 그대로!
-        </h1>
+          {slideItems.map((item) => (
+            <div key={item.tagline} className="space-y-2" style={{ height: slideTextHeight }}>
+              <p className="text-brand-700 text-xl" style={{ letterSpacing: "-0.2px" }}>
+                {item.tagline}
+              </p>
+              <h1
+                className="text-3xl font-bold leading-snug tracking-tight"
+                style={{ letterSpacing: "-0.96px" }}
+              >
+                {item.titleLines[0]}
+                <br />
+                {item.titleLines[1]}
+              </h1>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="h-3 w-10 rounded-full bg-brand" />
-        <div className="h-3 w-3 rounded-full bg-white/90" />
-        <div className="h-3 w-3 rounded-full bg-white/90" />
+      <div className="flex items-center gap-2" id="sliding-btn">
+        {slideItems.map((_, index) => (
+          <div
+            key={`slide-dot-${index}`}
+            className={
+              index === slideIndex
+                ? "h-3 w-10 rounded-full bg-brand"
+                : "h-3 w-3 rounded-full bg-white/90"
+            }
+          />
+        ))}
       </div>
     </div>
   );
@@ -85,7 +129,7 @@ export default function LoginPage() {
   // 오른쪽 콘텐츠 (로그인 폼)
   const rightContent = (
     <div className="w-full max-w-md space-y-8">
-      <p className="text-3xl font-semibold leading-snug md:text-4xl">
+      <p id={"hello"} className="text-3xl font-semibold leading-snug md:text-4xl">
         Hello,
         <br />
         I&#39;m MalangEE
@@ -99,7 +143,7 @@ export default function LoginPage() {
               type="text"
               placeholder="아이디"
               {...register("username")}
-              className="h-[56px] w-full rounded-full border border-border-light bg-white px-5 text-base text-text-primary shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-placeholder focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-200"
+              className="border-border-light text-text-primary placeholder:text-placeholder focus:border-brand focus:ring-brand-200 h-[56px] w-full rounded-full border bg-white px-5 text-base shadow-[0_2px_6px_rgba(0,0,0,0.03)] focus:outline-none focus:ring-2"
               style={{ letterSpacing: "-0.2px" }}
             />
             {errors.username && (
@@ -113,7 +157,7 @@ export default function LoginPage() {
               type="password"
               placeholder="비밀번호"
               {...register("password")}
-              className="h-[56px] w-full rounded-full border border-border-light bg-white px-5 text-base text-text-primary shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-placeholder focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-200"
+              className="border-border-light text-text-primary placeholder:text-placeholder focus:border-brand focus:ring-brand-200 h-[56px] w-full rounded-full border bg-white px-5 text-base shadow-[0_2px_6px_rgba(0,0,0,0.03)] focus:outline-none focus:ring-2"
               style={{ letterSpacing: "-0.2px" }}
             />
             {errors.password && (
@@ -122,7 +166,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between px-1 text-sm text-text-secondary">
+        <div className="text-text-secondary flex items-center justify-between px-1 text-sm">
           <a
             href="#"
             onClick={handleFindClick}
@@ -186,12 +230,12 @@ export default function LoginPage() {
 
       {showComingSoonModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="relative mx-4 w-full max-w-sm rounded-[24px] border border-white/60 bg-gradient-to-br from-white/90 via-white/80 to-brand-50/80 shadow-[0_20px_80px_rgba(125,106,246,0.3)] backdrop-blur-2xl">
+          <div className="to-brand-50/80 relative mx-4 w-full max-w-sm rounded-[24px] border border-white/60 bg-gradient-to-br from-white/90 via-white/80 shadow-[0_20px_80px_rgba(125,106,246,0.3)] backdrop-blur-2xl">
             <div className="space-y-6 px-8 py-8">
               <div className="space-y-2">
-                <p className="text-center text-2xl font-semibold text-text-primary">준비중입니다</p>
+                <p className="text-text-primary text-center text-2xl font-semibold">준비중입니다</p>
                 <p
-                  className="text-center text-sm text-text-secondary"
+                  className="text-text-secondary text-center text-sm"
                   style={{ letterSpacing: "-0.1px" }}
                 >
                   해당 기능은 현재 준비 중입니다.
