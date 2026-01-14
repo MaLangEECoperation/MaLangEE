@@ -55,7 +55,7 @@ async def run_cleanup_loop(stop_event: asyncio.Event) -> None:
         return
 
     interval = settings.SESSION_CLEANUP_INTERVAL_SECONDS
-    logger.info(f"Starting session cleanup loop (Interval: {interval}s, TTL: {settings.SESSION_GUEST_TTL_HOURS}h)")
+    logger.info(f"Starting session cleanup loop (Interval: {interval}s, TTL: {settings.SESSION_GUEST_TTL_MINS}h)")
     
     while not stop_event.is_set():
         await soft_delete_expired_sessions()
