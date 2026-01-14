@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import asyncio
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,14 +7,23 @@ from app.core.config import settings
 from app.api.api import api_router
 from app.db.database import engine
 from app.db.models import Base
+from app.services.session_cleanup import run_cleanup_loop
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Create tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    stop_event = asyncio.Event()
+    cleanup_task = asyncio.create_task(run_cleanup_loop(stop_event))
     yield
     # Shutdown
+    stop_event.set()
+    cleanup_task.cancel()
+    try:
+        await cleanup_task
+    except asyncio.CancelledError:
+        pass
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

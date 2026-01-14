@@ -33,11 +33,16 @@ class ConnectionHandler:
        - 사용자/AI 대화 내용(Transcript) 처리 및 로그 출력
        - 에러 핸들링 및 세션 초기화
     """
-    def __init__(self, client_ws: WebSocket, api_key: str, history: list = None, session_id: str = None, title: str = None):
+    def __init__(self, client_ws: WebSocket, api_key: str, history: list = None, session_id: str = None, context: dict = None, voice: str = None):
         self.client_ws = client_ws
         self.api_key = api_key
         self.conversation_manager = ConversationManager()
-        self.tracker = ConversationTracker(session_id=session_id, title=title) 
+        
+        # [Refactor] 세션 컨텍스트 저장 (초기화 시점에 주입하도록 위임)
+        self.context = context
+        self.voice = voice # [New] 보이스 설정
+            
+        self.tracker = ConversationTracker(session_id=session_id) 
         self.openai_ws = None
         self.openai_task = None
         self.history = history or [] # 대화 히스토리 저장
@@ -51,10 +56,38 @@ class ConnectionHandler:
             # 2. 클라이언트 수신 루프
             await self.receive_from_client()
             
+        except WebSocketDisconnect:
+            logger.info("클라이언트 연결이 정상적으로 종료되었습니다.")
         except Exception as e:
             logger.error(f"메인 루프 오류: {e}")
+            await self.send_error_to_client("server_error", str(e))
         finally:
-            return await self.cleanup()
+            return await self.cleanup()  # 반환값 전달 (Session Report)
+
+    async def send_error_to_client(self, code: str, message: str):
+        """클라이언트에게 에러 메시지 전송"""
+        try:
+            await self.client_ws.send_json({
+                "type": "error",
+                "code": code,
+                "message": message
+            })
+            logger.info(f"클라이언트에게 에러 전송: {code} - {message}")
+        except Exception as e:
+            logger.warning(f"에러 메시지 전송 실패 (연결 끊김): {e}")
+
+    async def handle_openai_disconnect(self, reason: str = None):
+        """OpenAI 연결 끊김 처리 (클라이언트에게 알림 -> cleanup)"""
+        logger.warning(f"OpenAI 연결 끊김 감지: {reason}")
+        await self.send_error_to_client(
+            "openai_disconnected", 
+            f"OpenAI connection lost: {reason or 'Unknown error'}"
+        )
+        # 이 함수 호출 후 상위 루프(receive_from_openai)가 종료되고
+        # 결국 start() 메서드가 끝나면서 finally 블록의 cleanup()이 호출될 것임
+        # 하지만 명시적인 흐름 제어를 위해 여기서 즉시 cleanup을 호출하지 않고
+        # 에러 메시지만 보낸 뒤 루프를 빠져나가도록 유도함.
+
 
     async def connect_to_openai(self):
         """OpenAI 연결 및 수신 태스크 시작"""
@@ -71,8 +104,16 @@ class ConnectionHandler:
             )
             logger.info("OpenAI Realtime API에 연결되었습니다.")
             
-            # 세션 초기화
-            await self.conversation_manager.initialize_session(self.openai_ws)
+            # 세션 초기화 (컨텍스트 전달 & 보이스 오버라이드)
+            override_config = {}
+            if self.voice:
+                override_config["voice"] = self.voice
+                
+            await self.conversation_manager.initialize_session(
+                self.openai_ws, 
+                context=self.context,
+                override_config=override_config
+            )
             
             # 히스토리 주입
             # [Voice Change 등 재연결 시] 
@@ -201,6 +242,7 @@ class ConnectionHandler:
                 elif event_type == "input_audio_buffer.speech_stopped":
                     # [Tracker] 사용자 발화 종료 (VAD)
                     self.tracker.stop_user_speech()
+                    await self.client_ws.send_json({"type": "speech.stopped"})
                 elif event_type == "conversation.item.input_audio_transcription.completed":
                     transcript = event.get("transcript", "")
                     logger.info(f"사용자 자막: {transcript}")
@@ -218,7 +260,15 @@ class ConnectionHandler:
 
         except Exception as e:
             logger.error(f"OpenAI 수신 루프 중지됨: {e}")
-            pass
+            await self.handle_openai_disconnect(str(e))
+        finally:
+            # 정상적으로 루프가 끝난 경우에도 연결이 끊긴 것으로 간주
+            if self.openai_ws:
+                try:
+                    await self.openai_ws.close()
+                except Exception:
+                    pass
+
 
     async def cleanup(self):
         """자원 정리"""
@@ -226,21 +276,46 @@ class ConnectionHandler:
             self.openai_task.cancel()
         if self.openai_ws:
             await self.openai_ws.close()
-        
+            
         # [Tracker] 세션 종료 및 리포트 생성 (전송 & 반환)
         if hasattr(self, 'tracker'):
             report = self.tracker.finalize()
             logger.info(f"### Session Report ###\n{json.dumps(report, indent=2, ensure_ascii=False)}")
             
             # 클라이언트에게 리포트 전송 (이미 끊겼을 수도 있으므로 try-except)
+            # 주의: 에러 발생("error" 타입 전송) 직후라면 리포트 전송이 의미 없거나 실패할 수 있음
             try:
+                # 연결이 살아있을 때만 "disconnected" 정류 종료 알림과 함께 리포트 전송
+                # (이미 "error"를 보냈거나 소켓이 닫혔으면 실패할 것임)
                 await self.client_ws.send_json({
-                    "type": "session.report",
+                    "type": "disconnected",
+                    "reason": "Session ended",
                     "report": report
                 })
-                logger.debug("클라이언트에게 세션 리포트 전송 완료")
+                logger.debug("클라이언트에게 세션 리포트 및 종료 알림 전송 완료")
             except Exception as e:
-                logger.warning(f"리포트 전송 실패 (클라이언트 연결 끊김 추정): {e}")
+                pass # 이미 끊긴 경우 무시
 
             return report
         return None
+
+    def get_transcript_context(self, limit: int = 10) -> list:
+        """
+        [Hint Generation]
+        현재 세션의 최근 대화 내역(Context)을 반환합니다.
+        LLM이 다음 발화 힌트를 생성할 때 사용됩니다.
+        """
+        try:
+            # 1. Tracker에서 현재 세션의 메시지 가져오기
+            current_messages = self.tracker.messages if hasattr(self, 'tracker') else []
+            
+            # 2. (옵션) 초기 히스토리(self.history)까지 포함할지 여부 결정
+            # 힌트 생성엔 최신 맥락이 중요하므로 current_messages 위주로 반환
+            
+            # 최근 N개만 추출 (Too many tokens 방지)
+            recent_messages = current_messages[-limit:]
+            
+            return recent_messages
+        except Exception as e:
+            logger.error(f"Context retrieval failed: {e}")
+            return []

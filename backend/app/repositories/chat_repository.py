@@ -1,6 +1,9 @@
 from typing import Optional
+from datetime import datetime
+import json
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import func
 from sqlalchemy.orm import selectinload
 from app.db.models import ConversationSession, ChatMessage
 from app.schemas.chat import SessionCreate
@@ -15,9 +18,29 @@ class ChatRepository:
         result = await self.db.execute(stmt)
         db_session = result.scalars().first()
 
+        scenario_state_json = None
+        if session_data.scenario_state_json is not None:
+            if isinstance(session_data.scenario_state_json, str):
+                scenario_state_json = session_data.scenario_state_json
+            else:
+                scenario_state_json = json.dumps(session_data.scenario_state_json, ensure_ascii=False)
+
+        scenario_completed_at = None
+        if session_data.scenario_completed_at:
+            if isinstance(session_data.scenario_completed_at, datetime):
+                scenario_completed_at = session_data.scenario_completed_at
+            else:
+                try:
+                    scenario_completed_at = datetime.fromisoformat(session_data.scenario_completed_at)
+                except ValueError:
+                    scenario_completed_at = None
+
         if db_session:
+            if db_session.deleted:
+                raise ValueError("Session is deleted")
             # [UPDATE]
-            db_session.title = session_data.title
+            # Title은 업데이트하지 않음 (생성 시 또는 별도 API로만 관리)
+            
             db_session.started_at = session_data.started_at
             db_session.ended_at = session_data.ended_at
             
@@ -28,13 +51,26 @@ class ChatRepository:
             
             if user_id is not None:
                 db_session.user_id = user_id
+
+            if session_data.scenario_place is not None:
+                db_session.scenario_place = session_data.scenario_place
+            if session_data.scenario_partner is not None:
+                db_session.scenario_partner = session_data.scenario_partner
+            if session_data.scenario_goal is not None:
+                db_session.scenario_goal = session_data.scenario_goal
+            if scenario_state_json is not None:
+                db_session.scenario_state_json = scenario_state_json
+            if scenario_completed_at is not None:
+                db_session.scenario_completed_at = scenario_completed_at
             
-            # 기존 메시지는 유지하고, 새로운 메시지만 추가 (Append Only)
-            # 가정: session_data.messages는 항상 전체 히스토리를 담고 있음
-            existing_count = len(db_session.messages)
-            new_messages = session_data.messages[existing_count:]
+            if session_data.voice is not None:
+                db_session.voice = session_data.voice
+            if session_data.show_text is not None:
+                db_session.show_text = session_data.show_text
             
-            for msg in new_messages:
+            # Tracker는 현재 세션의 '새로운' 메시지만 들고 있으므로,
+            # 슬라이싱 없이 그대로 기존 DB 메시지 뒤에 추가(Append)하면 됩니다.
+            for msg in session_data.messages:
                 db_msg = ChatMessage(
                     session_id=session_data.session_id,
                     role=msg.role,
@@ -52,6 +88,13 @@ class ChatRepository:
                 ended_at=session_data.ended_at,
                 total_duration_sec=session_data.total_duration_sec,
                 user_speech_duration_sec=session_data.user_speech_duration_sec,
+                scenario_place=session_data.scenario_place,
+                scenario_partner=session_data.scenario_partner,
+                scenario_goal=session_data.scenario_goal,
+                scenario_state_json=scenario_state_json,
+                scenario_completed_at=scenario_completed_at,
+                voice=session_data.voice,
+                show_text=session_data.show_text,
                 user_id=user_id
             )
             self.db.add(db_session)
@@ -74,7 +117,10 @@ class ChatRepository:
     async def get_recent_session_by_user(self, user_id: int) -> Optional[ConversationSession]:
         stmt = (
             select(ConversationSession)
-            .where(ConversationSession.user_id == user_id)
+            .where(
+                ConversationSession.user_id == user_id,
+                ConversationSession.deleted.is_(False),
+            )
             .order_by(ConversationSession.ended_at.desc())
             .options(selectinload(ConversationSession.messages))
             .limit(1)
@@ -82,14 +128,63 @@ class ChatRepository:
         result = await self.db.execute(stmt)
         return result.scalars().first()
 
-    async def get_session_by_id(self, session_id: str, user_id: int) -> Optional[ConversationSession]:
-        stmt = (
-            select(ConversationSession)
-            .where(
-                ConversationSession.session_id == session_id,
-                ConversationSession.user_id == user_id
-            )
-            .options(selectinload(ConversationSession.messages))
+    async def get_session_by_id(self, session_id: str, user_id: int = None) -> Optional[ConversationSession]:
+        stmt = select(ConversationSession).where(
+            ConversationSession.session_id == session_id,
+            ConversationSession.deleted.is_(False)
         )
+        
+        # user_id가 주어지면 소유자 확인 (보안상 필요할 경우 사용)
+        # 하지만 현재 로직 변경(통합)에 따라 세션 ID만으로 조회하는 경우가 많으므로
+        # user_id가 있을 때만 필터링에 추가하거나, 아예 생략하고 상위에서 검증할 수도 있음.
+        # 여기서는 user_id가 제공된 경우에만 일치 여부를 확인하도록 변경합니다.
+        if user_id is not None:
+            stmt = stmt.where(ConversationSession.user_id == user_id)
+            
+        stmt = stmt.options(selectinload(ConversationSession.messages))
+        
         result = await self.db.execute(stmt)
         return result.scalars().first()
+
+    async def get_sessions_by_user(self, user_id: int, skip: int = 0, limit: int = 20):
+        stmt = (
+            select(ConversationSession, func.count(ChatMessage.id))
+            .outerjoin(ChatMessage, ChatMessage.session_id == ConversationSession.session_id)
+            .where(ConversationSession.user_id == user_id)
+            .group_by(ConversationSession.session_id)
+            .order_by(ConversationSession.ended_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+        result = await self.db.execute(stmt)
+        return result.all()
+
+    async def update_session_owner(self, session_id: str, user_id: int) -> bool:
+        stmt = select(ConversationSession).where(ConversationSession.session_id == session_id)
+        result = await self.db.execute(stmt)
+        session = result.scalars().first()
+        
+        if session:
+            session.user_id = user_id
+            await self.db.commit()
+            await self.db.refresh(session)
+            return True
+        return False
+
+    async def update_preferences(self, session_id: str, voice: Optional[str], show_text: Optional[bool]) -> bool:
+        """
+        사용자 선호 설정(보이스, 자막)을 업데이트합니다.
+        """
+        stmt = select(ConversationSession).where(ConversationSession.session_id == session_id)
+        result = await self.db.execute(stmt)
+        session = result.scalars().first()
+        
+        if session:
+            if voice is not None:
+                session.voice = voice
+            if show_text is not None:
+                session.show_text = show_text
+            
+            await self.db.commit()
+            return True
+        return False

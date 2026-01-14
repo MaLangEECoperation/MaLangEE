@@ -10,6 +10,10 @@ export interface Token {
   token_type: string;
 }
 
+export interface DuplicateCheckResponse {
+  is_available: boolean;
+}
+
 export interface DailyReflection {
   id: number;
   user_id: number;
