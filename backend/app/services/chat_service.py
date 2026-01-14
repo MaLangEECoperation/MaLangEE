@@ -1,13 +1,16 @@
-from typing import Optional, List, Dict, Any
-from app.repositories.chat_repository import ChatRepository
-from app.schemas.chat import SessionCreate, SessionSummary, SessionResponse
-from app.db.models import ConversationSession, User
-from realtime_conversation.connection_handler import ConnectionHandler
-from fastapi import WebSocket
-from fastapi import WebSocket
-from sqlalchemy.future import select
+import sys
+from typing import Any, Dict, List, Optional
+
 from app.core.config import settings
+from app.db.models import ConversationSession, User
+from app.repositories.chat_repository import ChatRepository
+from app.schemas.chat import SessionCreate, SessionResponse, SessionSummary
+from fastapi import WebSocket
+from realtime_conversation.connection_handler import ConnectionHandler
 from realtime_conversation.session_manager import SessionManager
+from realtime_hint.hint_service import generate_hints
+from sqlalchemy.future import select
+
 
 class ChatService:
     def __init__(self, chat_repo: ChatRepository):
@@ -37,7 +40,7 @@ class ChatService:
                 user_speech_duration_sec=session.user_speech_duration_sec,
                 created_at=session.created_at,
                 updated_at=session.updated_at,
-                message_count=count
+                message_count=count,
             )
             summaries.append(summary)
         return summaries
@@ -48,20 +51,37 @@ class ChatService:
             return None
         return SessionResponse.model_validate(session)
 
+    async def get_messages_for_feedback(self, session_id: str, user_id: int) -> tuple[list[dict], Optional[ConversationSession]]:
+        """
+        피드백 생성을 위해 세션의 메시지를 조회합니다.
+
+        Args:
+            session_id: 세션 ID
+            user_id: 사용자 ID
+
+        Returns:
+            (메시지 리스트, 세션 객체) 튜플
+            메시지 형식: [{"role": "user"|"assistant", "content": "..."}]
+        """
+        session = await self.chat_repo.get_session_by_id(session_id, user_id)
+
+        if not session:
+            return [], None
+
+        messages = [{"role": msg.role, "content": msg.content} for msg in session.messages]
+        return messages, session
+
     async def get_history_for_websocket(self, session_id: str, user_id: int) -> List[Dict[str, Any]]:
         """
         WebSocket 연결 시 OpenAI에 주입할 이전 대화 내역을 조회하여 포맷팅합니다.
         """
         session = await self.chat_repo.get_session_by_id(session_id, user_id)
-        
+
         history_messages = []
         if session and session.messages:
             for msg in session.messages:
-                history_messages.append({
-                    "role": msg.role, # 'user' or 'assistant'
-                    "content": msg.content
-                })
-        
+                history_messages.append({"role": msg.role, "content": msg.content})  # 'user' or 'assistant'
+
         return history_messages
 
     async def start_ai_session(self, websocket: WebSocket, user_id: Optional[int], session_id: str = None, voice: str = None, show_text: bool = None):
@@ -75,7 +95,7 @@ class ChatService:
         print(f"[DEBUG] start_ai_session called. session_id={session_id}, user_id={user_id}")
         # 1. OpenAI API Key 확인
         api_key = settings.OPENAI_API_KEY
-        
+
         if not api_key:
             print("Error: OPENAI_API_KEY not found.")
             await websocket.close(code=1008, reason="Server configuration error")
@@ -89,22 +109,22 @@ class ChatService:
         # 3. 최신 세션 정보 및 히스토리 조회
         history_messages = []
         conversation_context = None
-        voice_config = None # DB에서 가져온 보이스 설정
+        voice_config = None  # DB에서 가져온 보이스 설정
 
         if session_id:
             # DB에서 최신 세션 정보 조회
             # user_id 필터 없이 조회 후, 로직에서 소유권 검증 수행
             session_obj = await self.chat_repo.get_session_by_id(session_id)
-            
+
             if not session_obj:
                 print(f"Session {session_id} not found via get_session_by_id.")
-                
+
                 # [DEBUG] 혹시 삭제된 세션인지, 아니면 정말 없는지 확인
                 try:
                     stmt = select(ConversationSession).where(ConversationSession.session_id == session_id)
                     result = await self.chat_repo.db.execute(stmt)
                     debug_session = result.scalars().first()
-                    
+
                     if debug_session:
                         print(f"[DEBUG] Session FOUND but match failed. check: deleted={debug_session.deleted}, user_id={debug_session.user_id}")
                     else:
@@ -128,40 +148,32 @@ class ChatService:
                 "title": session_obj.title,
                 "place": session_obj.scenario_place,
                 "partner": session_obj.scenario_partner,
-                "goal": session_obj.scenario_goal
+                "goal": session_obj.scenario_goal,
             }
-            
+
             # [New] 저장된 Voice 설정 추출
             if session_obj.voice:
                 voice_config = session_obj.voice
-            
+
             # 히스토리 추출
             if session_obj.messages:
                 for msg in session_obj.messages:
-                    history_messages.append({
-                        "role": msg.role,
-                        "content": msg.content
-                    })
+                    history_messages.append({"role": msg.role, "content": msg.content})
 
         # 4. ConnectionHandler 시작
         if ConnectionHandler:
             # context 및 voice 설정 전달
             handler = ConnectionHandler(
-                websocket, 
-                api_key, 
-                history=history_messages, 
-                session_id=session_id,
-                context=conversation_context,
-                voice=voice_config # [New]
+                websocket, api_key, history=history_messages, session_id=session_id, context=conversation_context, voice=voice_config  # [New]
             )
-            
+
             # [Manager] 세션 등록
             if session_id:
                 self.session_manager.add_session(session_id, handler)
 
             try:
                 report = await handler.start()
-                
+
                 # 5. 세션 종료 후 리포트 저장 (Auto-Save)
                 # user_id가 없어도(Guest/Demo) 저장합니다. (DB에는 user_id=NULL로 저장됨)
                 if report:
@@ -170,7 +182,7 @@ class ChatService:
                         # 중요: 종료 시점의 설정값도 저장하고 싶다면 report에 포함되어야 함.
                         # 하지만 이미 시작할 때 update_preferences로 저장했으므로,
                         # 여기서는 변동사항이 없다면 건너뛰어도 됨.
-                        # 다만 SessionCreate에 voice, show_text 필드가 추가되었으므로 
+                        # 다만 SessionCreate에 voice, show_text 필드가 추가되었으므로
                         # Tracker가 이를 채워서 보내준다면 업데이트될 것임.
                         await self.save_chat_log(session_data, user_id)
                         print(f"Session {session_data.session_id} saved (User: {user_id})")
@@ -180,38 +192,30 @@ class ChatService:
                 # [Manager] 세션 해제 (항상 보장)
                 if session_id:
                     self.session_manager.remove_session(session_id)
-                    
+
         else:
             await websocket.close(code=1011, reason="Module error")
-
 
     async def generate_hint(self, session_id: str) -> List[str]:
         """
         [Hint Generation]
         활성 세션의 컨텍스트를 기반으로 LLM을 통해 힌트를 생성합니다.
-        
-        TODO: 실제 LLM 연동 로직 구현 필요
-        현재는 Mock Data를 반환합니다.
         """
         # 1. 활성 세션 핸들러 조회
         handler = self.session_manager.get_session(session_id)
-        
+
         if not handler:
             print(f"Hint generation failed: Session {session_id} not found in memory.")
             return []
-            
-        # 2. 컨텍스트 조회 (최근 대화 5개)
-        context = handler.get_transcript_context(limit=5)
-        print(f"[Hint Logic] Context Retrieved: {len(context)} messages")
-        
-        # 3. [TODO] LLM API 호출
-        # request_to_llm(context) -> returns ["Hint 1", "Hint 2"]
-        # 시스템 프롬프트: "사용자는 영어 회화 학습자입니다. 현재 대화 맥락에 어울리는 답변 문장 3가지를 추천해주세요."
-        
-        # 4. Mock Response 반환
-        return [
-            "I agree with your point.",
-            "That sounds interesting, tell me more.",
-            "I'm not sure about that, but I'll think about it."
-            "이 응답은 mock 데이터 입니다. LLM 연결이 필요 합니다."
-        ]
+
+        # 2. 대화 내용 조회 (최근 5개)
+        messages = handler.get_transcript_context(limit=5)
+        print(f"[Hint] Context Retrieved: {len(messages)} messages")
+
+        # 3. 시나리오 컨텍스트 조회
+        scenario_context = handler.context if hasattr(handler, "context") else None
+
+        # 4. ai-engine LLM 호출
+        hints = generate_hints(messages, scenario_context)
+
+        return hints
