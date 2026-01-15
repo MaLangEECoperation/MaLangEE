@@ -17,8 +17,13 @@ import { useScenarioChat } from "@/features/chat";
 type ConversationState = "ai-speaking" | "user-turn" | "user-speaking";
 
 export default function ConversationPage() {
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
-  const { state: chatState, connect, disconnect, sendText, sendAudioChunk } = useScenarioChat();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  const { state: chatState, connect, disconnect, sendText, sendAudioChunk, initAudio } = useScenarioChat();
 
   const [conversationState, setConversationState] = useState<ConversationState>("ai-speaking");
   const [showHint, setShowHint] = useState(false);
@@ -30,13 +35,15 @@ export default function ConversationPage() {
   const streamRef = useRef<MediaStream | null>(null);
 
   // 세션 스토리지에서 자막 설정 가져오기
-  const getInitialSubtitleSetting = () => {
-    if (typeof window === "undefined") return true;
-    const subtitle = sessionStorage.getItem("subtitleEnabled");
-    return subtitle === null ? true : subtitle === "true";
-  };
+  const [subtitleEnabled, setSubtitleEnabled] = useState(true);
 
-  const [subtitleEnabled] = useState(getInitialSubtitleSetting);
+  useEffect(() => {
+    // 클라이언트 마운트 후 세션 스토리지 값 적용 (Hydration Mismatch 방지)
+    const subtitle = sessionStorage.getItem("subtitleEnabled");
+    if (subtitle !== null) {
+      setSubtitleEnabled(subtitle === "true");
+    }
+  }, []);
   const [isMuted] = useState(false);
 
   // 팝업 상태
@@ -73,7 +80,11 @@ export default function ConversationPage() {
     if (chatState.isAiSpeaking) {
       setConversationState("ai-speaking");
     } else if (chatState.isConnected && chatState.isReady && !chatState.isAiSpeaking) {
-      setConversationState("user-turn");
+      // AI가 말을 멈췄을 때, 사용자가 이미 말하고 있는 중이라면(녹음 중) 상태를 유지해야 함
+      setConversationState((prev) => {
+        if (prev === "user-speaking") return prev;
+        return "user-turn";
+      });
       startInactivityTimer();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -100,6 +111,9 @@ export default function ConversationPage() {
     clearWaitTimer();
     waitTimerRef.current = setTimeout(() => {
       setShowWaitPopup(true);
+      // 대기 팝업이 뜰 때 마이크 중단
+      stopRecording();
+      setConversationState("user-turn"); // 상태를 대기 상태로
     }, 5000);
   };
 
@@ -118,24 +132,70 @@ export default function ConversationPage() {
 
   // 마이크 녹음 시작
   const startRecording = useCallback(async () => {
+    // 헬퍼: 다양한 브라우저 환경 호환성 확보
+    const getMediaStream = async (constraints: MediaStreamConstraints): Promise<MediaStream> => {
+      // 1. 최신 표준 API
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        return navigator.mediaDevices.getUserMedia(constraints);
+      }
+      // 2. 구형 API (Webkit, Moz 등)
+      const legacyApi = (navigator as any).webkitGetUserMedia ||
+        (navigator as any).mozGetUserMedia ||
+        (navigator as any).msGetUserMedia;
+      if (legacyApi) {
+        return new Promise((resolve, reject) => {
+          legacyApi.call(navigator, constraints, resolve, reject);
+        });
+      }
+      // 3. 지원 불가
+      throw new Error("MEDIA_API_NOT_SUPPORTED");
+    };
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const constraints = {
         audio: {
-          sampleRate: 16000,
-          channelCount: 1,
+          sampleRate: { ideal: 16000 },
+          channelCount: { ideal: 1 },
           echoCancellation: true,
           noiseSuppression: true,
         },
-      });
+      };
+
+      let stream: MediaStream;
+      try {
+        stream = await getMediaStream(constraints);
+      } catch (err) {
+        console.warn("[Recording] Preferred constraints failed. Trying basic fallback...", err);
+        // 폴백: 가장 단순한 옵션으로 재시도
+        stream = await getMediaStream({ audio: true });
+      }
 
       streamRef.current = stream;
-      audioContextRef.current = new AudioContext({ sampleRate: 16000 });
+
+      // AudioContext 생성 (Safari/Old Browser 호환)
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      audioContextRef.current = new AudioContextClass({
+        sampleRate: 16000
+      });
 
       const source = audioContextRef.current.createMediaStreamSource(stream);
       const processor = audioContextRef.current.createScriptProcessor(4096, 1, 1);
 
       processor.onaudioprocess = (e) => {
         const inputData = e.inputBuffer.getChannelData(0);
+
+        // [Debug] 마이크 입력 확인 (1초에 수십 번 찍히므로 샘플링하여 출력)
+        // 약 20번에 1번 정도만 로그 출력
+        if (Math.random() < 0.05) {
+          let sum = 0;
+          // 간단한 볼륨 체크
+          for (let i = 0; i < inputData.length; i += 100) sum += Math.abs(inputData[i]);
+          const avg = sum / (inputData.length / 100);
+          if (avg > 0.01) { // 소리가 어느 정도 클 때만
+            console.log("[Recording] Mic Input Level:", avg.toFixed(4));
+          }
+        }
+
         const float32Data = new Float32Array(inputData);
         sendAudioChunk(float32Data, 16000);
       };
@@ -145,6 +205,11 @@ export default function ConversationPage() {
 
     } catch (error) {
       console.error("[Recording] Failed to start:", error);
+      // 보안 정책(HTTPS) 등으로 인해 마이크를 쓸 수 없는 경우 사용자 안내
+      if (error instanceof Error && (error.message === "MEDIA_API_NOT_SUPPORTED" || error.name === "NotAllowedError")) {
+        alert("마이크를 사용할 수 없습니다.\nHTTPS 연결(또는 localhost)인지 확인하거나 마이크 권한을 허용해주세요.");
+      }
+      setConversationState("user-turn");
     }
   }, [sendAudioChunk]);
 
@@ -161,24 +226,21 @@ export default function ConversationPage() {
   }, []);
 
   const handleMicClick = () => {
-    if (conversationState === "ai-speaking") return;
-
     resetTimers();
 
-    if (conversationState === "user-turn") {
-      // 사용자가 말하기 시작
-      setConversationState("user-speaking");
-      setShowHint(false);
-      startRecording();
-    } else if (conversationState === "user-speaking") {
-      // 사용자가 말하기 완료 -> AI 차례
+    if (conversationState === "user-speaking") {
+      // 말하기 종료 (수동 중단)
       stopRecording();
       setTextOpacity(0);
-
       setTimeout(() => {
         setConversationState("ai-speaking");
         setTextOpacity(1);
       }, 300);
+    } else {
+      // 말하기 시작 (대기 중이거나 AI 말하는 중일 때 - Barge-in 포함)
+      setConversationState("user-speaking");
+      setShowHint(false);
+      startRecording();
     }
   };
 
@@ -228,6 +290,7 @@ export default function ConversationPage() {
   const handleContinueChat = () => {
     setShowWaitPopup(false);
     resetTimers();
+    setConversationState("user-turn"); // 다시 대화 가능한 상태로
     startInactivityTimer();
   };
 
@@ -246,7 +309,36 @@ export default function ConversationPage() {
   };
 
   // AI 메시지 표시 (chatState에서 가져옴)
-  const displayMessage = chatState.aiMessage || "Hello! How are you today?";
+  // 초기값이 필요 없다면 빈 문자열로 설정하거나, 상태에 따라 안내 문구를 보여줄 수 있음
+  const displayMessage = chatState.aiMessage;
+
+  // [Audio Autoplay Fix] 화면 클릭 시 AudioContext 초기화 (브라우저 정책 우회)
+  useEffect(() => {
+    const unlockAudio = () => {
+      // 오디오 컨텍스트 Resume 시도
+      // (useScenarioChat 내부 initAudio가 export 되어 있다고 가정)
+      // *만약 useScenarioChat 수정이 아직 반영 안 됐다면 hook에서 initAudio를 반환하도록 수정 필요*
+      // 확인: useScenarioChat.ts 수정 완료됨.
+      if ((chatState as any).initAudio) {
+        (chatState as any).initAudio();
+      } else {
+        // hook에서 initAudio를 직접 반환받아서 호출
+        initAudio();
+      }
+      document.removeEventListener("click", unlockAudio);
+      document.removeEventListener("touchstart", unlockAudio);
+    };
+
+    document.addEventListener("click", unlockAudio);
+    document.addEventListener("touchstart", unlockAudio);
+
+    return () => {
+      document.removeEventListener("click", unlockAudio);
+      document.removeEventListener("touchstart", unlockAudio);
+    };
+  }, [initAudio, chatState]); // initAudio 의존성 추가
+
+  if (!isMounted) return null;
 
   return (
     <>
@@ -308,15 +400,14 @@ export default function ConversationPage() {
         {/* Status Indicator */}
         <div className="mb-3">
           <div
-            className={`inline-flex items-center gap-2 rounded-full px-4 py-2 ${
-              !chatState.isConnected
-                ? "bg-yellow-100 text-yellow-700"
-                : conversationState === "ai-speaking"
-                  ? "bg-blue-100 text-blue-700"
-                  : conversationState === "user-speaking"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-gray-100 text-gray-700"
-            }`}
+            className={`inline-flex items-center gap-2 rounded-full px-4 py-2 ${!chatState.isConnected
+              ? "bg-yellow-100 text-yellow-700"
+              : conversationState === "ai-speaking"
+                ? "bg-blue-100 text-blue-700"
+                : conversationState === "user-speaking"
+                  ? "bg-green-100 text-green-700"
+                  : "bg-gray-100 text-gray-700"
+              }`}
           >
             {conversationState === "ai-speaking" && chatState.isConnected && (
               <div className="flex gap-1">
@@ -342,7 +433,7 @@ export default function ConversationPage() {
             onClick={handleMicClick}
             size="md"
             className={
-              conversationState === "ai-speaking" || !chatState.isConnected
+              !chatState.isConnected
                 ? "pointer-events-none opacity-50"
                 : ""
             }
