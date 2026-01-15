@@ -17,4 +17,5 @@ export { Logo } from "./Logo";
 export { Mascot } from "./Mascot";
 export { GlassmorphicCard } from "./GlassmorphicCard";
 export { PageBackground } from "./PageBackground";
+export { PopupLayout } from "./PopupLayout";
 

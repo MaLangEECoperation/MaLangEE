@@ -3,15 +3,18 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { FullLayout } from "@/shared/ui/FullLayout";
-import { Button, MalangEE } from "@/shared/ui";
+import { Button, MalangEE, PopupLayout } from "@/shared/ui";
 import { useCurrentUser } from "@/features/auth/api/use-current-user";
 import { useGetChatSessions } from "@/features/chat/api/use-chat-sessions";
+import { useAuth } from "@/features/auth/hook/use-auth";
 import "@/shared/styles/scenario.css";
 import { AuthGuard } from "@/features/auth";
 
 export default function WelcomeBackPage() {
   const router = useRouter();
+  const { logout } = useAuth();
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [showEndChatPopup, setShowEndChatPopup] = useState(false);
   const textOpacity = 1;
 
   // 실제 API에서 사용자 정보와 최근 세션 가져오기
@@ -54,6 +57,30 @@ export default function WelcomeBackPage() {
     router.push("/auth/scenario-select");
   };
 
+  const handleEndChat = () => {
+    setShowEndChatPopup(true);
+  };
+
+  const handleEndChatConfirm = () => {
+    setShowEndChatPopup(false);
+    logout();
+  };
+
+  const handleEndChatCancel = () => {
+    setShowEndChatPopup(false);
+  };
+
+  // 헤더 우측 "대화 종료하기" 버튼
+  const headerRightContent = (
+    <button
+      className="text-sm text-[#6A667A] transition-colors hover:text-[#5F51D9]"
+      onClick={handleEndChat}
+      style={{ letterSpacing: "-0.2px" }}
+    >
+      대화 종료하기
+    </button>
+  );
+
   if (isLoading) {
     return (
       <FullLayout showHeader={true} >
@@ -68,8 +95,8 @@ export default function WelcomeBackPage() {
   }
 
   return (
-    <AuthGuard>
-      <FullLayout showHeader={true} maxWidth="md:max-w-[60vw]">
+    <>
+      <FullLayout showHeader={true} maxWidth="md:max-w-[60vw]" headerRight={headerRightContent}>
         {/* Character */}
         <div className="character-box">
           <MalangEE size={150} />
@@ -77,19 +104,20 @@ export default function WelcomeBackPage() {
 
         {/* Text Group */}
         <div className="text-group text-center" style={{ opacity: textOpacity }}>
-          <p className="scenario-desc">{userNickname}님, 기다리고 있었어요!</p>
-          <h1 className="scenario-title">
+          <h1 className="welcome-back-title">
             {isConfirmed ? (
               <>
+                {userNickname}님,
+                <br />
                 {lastSession?.title}을
                 <br />
                 같이 재현해 볼까요?
               </>
             ) : (
               <>
-                {" "}
-                지난번에 했던
-                {lastSession?.title},
+                {userNickname}님, 기다리고 있었어요!
+                <br />
+                지난번에 했던 {lastSession?.title},
                 <br />이 주제로 다시 이야기해볼까요?
               </>
             )}
@@ -120,6 +148,24 @@ export default function WelcomeBackPage() {
           </Button>
         </div>
       </FullLayout>
-    </AuthGuard>
+
+      {/* 대화 종료 확인 팝업 */}
+      {showEndChatPopup && (
+        <PopupLayout onClose={handleEndChatCancel} showCloseButton={false} maxWidth="sm">
+          <div className="flex flex-col items-center gap-6 py-2">
+            <MalangEE status="humm" size={120} />
+            <div className="text-xl font-bold text-[#1F1C2B]">대화를 종료하시겠어요?</div>
+            <div className="flex w-full gap-3">
+              <Button variant="outline-purple" size="md" fullWidth onClick={handleEndChatCancel}>
+                취소
+              </Button>
+              <Button variant="primary" size="md" fullWidth onClick={handleEndChatConfirm}>
+                종료하기
+              </Button>
+            </div>
+          </div>
+        </PopupLayout>
+      )}
+    </>
   );
 }

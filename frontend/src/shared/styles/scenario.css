@@ -57,6 +57,16 @@
   transition: color 0.3s;
 }
 
+/* Welcome Back Page Title - Figma 디자인 기준 */
+.welcome-back-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1F1C2B;
+  line-height: 1.6;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .scenario-title {
@@ -70,6 +80,10 @@
   .character-box {
     width: 110px;
     height: 110px;
+  }
+
+  .welcome-back-title {
+    font-size: 1.25rem;
   }
 }
 
@@ -88,6 +102,10 @@
 
   .scenario-desc {
     font-size: 0.9rem;
+  }
+
+  .welcome-back-title {
+    font-size: 1.1rem;
   }
 }
 
