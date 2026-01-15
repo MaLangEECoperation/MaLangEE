@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, ReactNode } from "react";
 import { GlassCard } from "./GlassCard";
 
 interface FullLayoutProps {
@@ -7,8 +7,7 @@ interface FullLayoutProps {
   showHeader?: boolean; // GlassCard의 header 표시 여부 (기본값 true)
   maxWidth?: string; // 최대 넓이 (예: 'max-w-[350px]', 'max-w-md')
   withBackground?: boolean;
-  glassClassName?: string;
-  glassMaxWidth?: string; // GlassCard의 최대 너비 (기본값: max-w-[550px])
+  headerRight?: ReactNode; // 헤더 우측 커스텀 콘텐츠
 }
 
 export const FullLayout = ({
@@ -16,9 +15,7 @@ export const FullLayout = ({
   bgClass = "bg-login-02", // 기본값
   showHeader = false, // 기본값 true
   withBackground = true,
-  maxWidth="md:max-w-6xl",
-  glassClassName = "p-6 md:p-10",
-  glassMaxWidth = "max-w-full md:max-w-2xl lg:max-w-4xl", // 기본값
+  headerRight,
 }: FullLayoutProps) => {
   useEffect(() => {
     // body에 배경 클래스 적용
@@ -41,11 +38,14 @@ export const FullLayout = ({
         </div>
       )}
 
-      <div className={`relative z-10 w-full ${maxWidth || "md:max-w-5xl"}`}>
-        <GlassCard
-          showHeader={showHeader}
-          className={`w-full ${glassMaxWidth} mx-auto ${glassClassName}`}
-        >
+      <div
+        className={
+          maxWidth
+            ? `w-full sm:w-[90vw] ${maxWidth}`
+            : `w-full sm:w-[90vw] md:min-w-[960px] md:max-w-[80vw]`
+        }
+      >
+        <GlassCard showHeader={showHeader} headerRight={headerRight}>
           {children}
         </GlassCard>
       </div>

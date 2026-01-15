@@ -26,7 +26,11 @@
       "mcp__serena__replace_content",
       "Bash(git fetch:*)",
       "Bash(gh pr create:*)",
-      "Bash(gh issue list:*)"
+      "Bash(gh issue list:*)",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_close"
     ]
   },
   "enableAllProjectMcpServers": true,
