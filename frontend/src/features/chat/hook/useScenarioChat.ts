@@ -8,26 +8,40 @@ import { tokenStorage } from "@/features/auth";
  */
 export type ScenarioMessageType =
   | "ready"
-  | "response.audio.delta"
-  | "input_audio.transcript"
-  | "scenario.completed"
-  | "error"
-  | "message";
+  | "speech.started"      // 사용자 말하기 시작
+  | "audio.delta"         // AI 오디오 데이터
+  | "audio.done"          // AI 오디오 완료
+  | "transcript.done"     // AI 텍스트 (말풍선)
+  | "user.transcript"     // 사용자 텍스트 (말풍선)
+  | "input_audio.transcript" // [호환성] 사용자 STT
+  | "session.report"      // 종료 리포트
+  | "scenario.completed"  // [호환성] 종료 리포트
+  | "text"                // [호환성] 구형 텍스트 메시지
+  | "message"             // [호환성] 구형 메시지
+  | "error";
 
 export interface ScenarioMessage {
   type: ScenarioMessageType;
-  delta?: string; // Base64 PCM16 오디오
+  audio?: string;         // audio.delta (혹은 delta)
+  delta?: string;         // audio.delta 호환용
+  transcript?: string;    // transcript.done, user.transcript
+  text?: string;          // [호환성] text 메시지
+  content?: string;       // [호환성] message 내용
   sample_rate?: number;
-  transcript?: string;
-  text?: string;
-  content?: string;
-  message?: string;
-  json?: {
+  message?: string;       // error message
+  completed?: boolean;    // scenario.completed
+  json?: {                // scenario.completed (호환)
     place?: string;
     conversation_partner?: string;
     conversation_goal?: string;
+    sessionId?: string;
   };
-  completed?: boolean;
+  report?: {              // session.report
+    place?: string;
+    conversation_partner?: string;
+    conversation_goal?: string;
+    [key: string]: any;
+  };
 }
 
 export interface ScenarioChatState {
@@ -63,6 +77,7 @@ export function useScenarioChat() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioQueueRef = useRef<Float32Array[]>([]);
   const isPlayingRef = useRef(false);
+  const activeSourceRef = useRef<AudioBufferSourceNode | null>(null); // 현재 재생 중인 소스 추적
   const connectionIdRef = useRef(0); // 연결 ID로 stale closure 방지
 
   /**
@@ -70,9 +85,40 @@ export function useScenarioChat() {
    */
   const getWebSocketUrl = useCallback(() => {
     const token = tokenStorage.get();
-    // 직접 백엔드 서버 URL 사용 (Next.js proxy는 HTTP만 지원)
-    const baseUrl = "http://49.50.137.35:8080";
-    const wsBaseUrl = baseUrl.replace(/^http/, "ws");
+
+    // 1. 환경 변수에서 WS URL 확인 (최우선)
+    const envWsUrl = process.env.NEXT_PUBLIC_WS_URL;
+    let wsBaseUrl = envWsUrl;
+
+    // 2. WS URL이 없고 API URL만 있다면 API URL 기반으로 생성
+    if (!wsBaseUrl && process.env.NEXT_PUBLIC_API_URL) {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      // 기본적으로 http->ws, https->wss 변환
+      wsBaseUrl = apiUrl.replace(/^http/, "ws");
+
+      // [보안 수정] 현재 페이지가 HTTPS라면, API URL 설정과 관계없이 무조건 WSS를 사용해야 함
+      // (Mixed Content SecurityError 방지)
+      if (window.location.protocol === "https:" && wsBaseUrl.startsWith("ws:")) {
+        wsBaseUrl = wsBaseUrl.replace(/^ws:/, "wss:");
+      }
+    }
+
+    // 3. 둘 다 없다면 현재 브라우저 호스트 기준 (Fallback)
+    if (!wsBaseUrl) {
+      const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+      const host = window.location.hostname;
+      const port = window.location.port ? `:${window.location.port}` : "";
+
+      // 로컬호스트 개발 환경인 경우에만 8080 포트를 기본값으로 고려
+      // (Next.js 3000 -> Django 8080 개발 패턴)
+      if (host === "localhost" || host === "127.0.0.1") {
+        wsBaseUrl = `${protocol}://${host}:8080`;
+      } else {
+        // 프로덕션 환경(도메인 사용)에서는 현재 호스트/포트(443/80)를 그대로 사용
+        // 백엔드가 같은 도메인/포트로 서빙된다고 가정 (예: Nginx Proxy)
+        wsBaseUrl = `${protocol}://${host}${port}`;
+      }
+    }
 
     const url = token
       ? `${wsBaseUrl}/api/v1/ws/scenario?token=${encodeURIComponent(token)}`
@@ -134,16 +180,61 @@ export function useScenarioChat() {
   };
 
   /**
+   * 오디오 컨텍스트 초기화 (사용자 인터랙션 필요)
+   */
+  /**
+   * 오디오 컨텍스트 초기화 (사용자 인터랙션 필요)
+   */
+  const initAudio = useCallback(() => {
+    if (!audioContextRef.current) {
+      // AudioContext 생성 (브라우저 기본 샘플레이트 사용 권장)
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      audioContextRef.current = new AudioContextClass(); // sampleRate 옵션 제거 (호환성 향상)
+      console.log("[Audio] AudioContext created. Rate:", audioContextRef.current.sampleRate);
+    }
+
+    if (audioContextRef.current.state === "suspended") {
+      console.log("[Audio] Resuming AudioContext...");
+      audioContextRef.current.resume().then(() => {
+        console.log("[Audio] AudioContext resumed successfully.");
+      }).catch((err) => {
+        console.warn("[Audio] Failed to resume audio context:", err);
+      });
+    }
+  }, []);
+
+  /**
    * 오디오 재생
    */
   const playAudio = useCallback(async (base64Audio: string, sampleRate: number = 24000) => {
     try {
+      if (!base64Audio) {
+        console.warn("[Audio] Received empty audio data.");
+        return;
+      }
+
       if (!audioContextRef.current) {
-        audioContextRef.current = new AudioContext({ sampleRate });
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        audioContextRef.current = new AudioContextClass();
+        console.log("[Audio] (Auto-create) AudioContext created. Rate:", audioContextRef.current.sampleRate);
+      }
+
+      // 재생 전 상태 확인 및 재개 시도
+      if (audioContextRef.current.state === "suspended") {
+        console.log("[Audio] Context suspended. Attempting resume...");
+        await audioContextRef.current.resume();
       }
 
       const bytes = base64ToBytes(base64Audio);
+      // const float32 = pcm16ToFloat32(bytes);
+      // Float32 변환 로그 확인
       const float32 = pcm16ToFloat32(bytes);
+
+      // [Debug] 오디오 데이터 통계
+      // let maxVal = 0;
+      // for(let i=0; i<float32.length; i+=100) if(Math.abs(float32[i]) > maxVal) maxVal = Math.abs(float32[i]);
+      // console.log(`[Audio] Queuing chunk. Bytes: ${bytes.length}, Samples: ${float32.length}, MaxAmp: ${maxVal.toFixed(4)}, CtxState: ${audioContextRef.current.state}`);
+
       audioQueueRef.current.push(float32);
 
       if (!isPlayingRef.current) {
@@ -152,13 +243,14 @@ export function useScenarioChat() {
         await playNextAudio();
       }
     } catch (error) {
-      console.error("Failed to play audio:", error);
+      console.error("[Audio] Failed to play audio:", error);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const playNextAudio = async () => {
     if (audioQueueRef.current.length === 0) {
+      // console.log("[Audio] Queue empty. Playback finished.");
       isPlayingRef.current = false;
       setState((prev) => ({ ...prev, isAiSpeaking: false }));
       return;
@@ -167,15 +259,43 @@ export function useScenarioChat() {
     const float32 = audioQueueRef.current.shift()!;
     const audioContext = audioContextRef.current!;
 
-    const audioBuffer = audioContext.createBuffer(1, float32.length, audioContext.sampleRate);
+    // 중요: buffer의 sampleRate를 명시적으로 24000(또는 수신된 값)으로 설정해야
+    // 하드웨어가 48000이어도 브라우저가 알아서 리샘플링하여 정상 속도로 재생함.
+    const playbackRate = 24000; // 기본적으로 서버가 24k로 보낸다고 가정
+    const audioBuffer = audioContext.createBuffer(1, float32.length, playbackRate);
     audioBuffer.getChannelData(0).set(float32);
 
     const source = audioContext.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(audioContext.destination);
-    source.onended = () => playNextAudio();
+    source.onended = () => {
+      // 현재 소스가 끝났을 때만 다음 오디오 재생
+      if (activeSourceRef.current === source) {
+        activeSourceRef.current = null;
+        playNextAudio();
+      }
+    };
     source.start();
+    activeSourceRef.current = source;
+    // console.log("[Audio] Playing chunk...", float32.length);
   };
+
+  /**
+   * 오디오 재생 중단 (Barge-in)
+   */
+  const stopAudio = useCallback(() => {
+    if (activeSourceRef.current) {
+      try {
+        activeSourceRef.current.stop();
+      } catch (e) {
+        // ignore
+      }
+      activeSourceRef.current = null;
+    }
+    audioQueueRef.current = [];
+    isPlayingRef.current = false;
+    setState((prev) => ({ ...prev, isAiSpeaking: false }));
+  }, []);
 
   /**
    * WebSocket 메시지 핸들러
@@ -184,42 +304,73 @@ export function useScenarioChat() {
     (event: MessageEvent) => {
       try {
         const message: ScenarioMessage = JSON.parse(event.data);
+        console.log("[WebSocket] Received:", message.type, message);
 
         switch (message.type) {
           case "ready":
             setState((prev) => ({ ...prev, isReady: true, error: null }));
             break;
 
-          case "response.audio.delta":
-            // AI TTS 오디오 스트리밍
-            if (message.delta && message.sample_rate) {
-              playAudio(message.delta, message.sample_rate);
+          case "speech.started":
+            // 사용자가 말하기 시작함 -> AI 오디오 즉시 중단 (Barge-in)
+            console.log("[WebSocket] Barge-in triggered by speech.started");
+            stopAudio();
+            // "듣는 중" 상태 표시 등은 상위 컴포넌트(isAiSpeaking=false)에서 처리됨
+            break;
+
+          case "audio.delta":
+            // AI 목소리 데이터 (audio 필드 혹은 delta 필드 확인)
+            const audioData = message.audio || message.delta;
+            if (audioData) {
+              const rate = message.sample_rate || 24000;
+              playAudio(audioData, rate);
+            }
+            break;
+
+          case "audio.done":
+            // AI 목소리 재생 끝 (필요 시 처리)
+            break;
+
+          case "transcript.done":
+            // AI 텍스트 완료 (AI 말풍선)
+            if (message.transcript) {
+              setState((prev) => ({ ...prev, aiMessage: message.transcript || "" }));
+            }
+            break;
+
+          case "text":
+            // [호환성] AI 텍스트 메시지 ({"type":"text", "text":"..."})
+            if (message.text) {
+              setState((prev) => ({ ...prev, aiMessage: message.text || "" }));
             }
             break;
 
           case "message":
-            // AI 텍스트 메시지
+            // [호환성] 기존 message 타입
             if (message.content) {
               setState((prev) => ({ ...prev, aiMessage: message.content || "" }));
             }
             break;
 
-          case "input_audio.transcript":
-            // 사용자 음성 텍스트 변환 (STT)
+          case "user.transcript":
+          case "input_audio.transcript": // [호환성] 추가
+            // 사용자 텍스트 (내 말풍선)
             if (message.transcript) {
               setState((prev) => ({ ...prev, userTranscript: message.transcript || "" }));
             }
             break;
 
-          case "scenario.completed":
-            // 시나리오 완료
-            if (message.json) {
+          case "session.report":
+          case "scenario.completed": // [호환성] 추가
+            // 세션 종료 리포트
+            const reportData = message.report || message.json;
+            if (reportData) {
               setState((prev) => ({
                 ...prev,
                 scenarioInfo: {
-                  place: message.json?.place,
-                  conversationPartner: message.json?.conversation_partner,
-                  conversationGoal: message.json?.conversation_goal,
+                  place: reportData.place,
+                  conversationPartner: reportData.conversation_partner,
+                  conversationGoal: reportData.conversation_goal,
                 },
               }));
             }
@@ -228,6 +379,10 @@ export function useScenarioChat() {
           case "error":
             setState((prev) => ({ ...prev, error: message.message || "Unknown error" }));
             console.error("[WebSocket] Error:", message.message);
+            break;
+
+          default:
+            console.warn("[WebSocket] Unhandled message type:", message.type);
             break;
         }
       } catch (error) {
@@ -244,13 +399,13 @@ export function useScenarioChat() {
     // 새 연결 ID 생성 (이전 연결의 이벤트 무시용)
     const currentConnectionId = ++connectionIdRef.current;
 
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      return;
-    }
-
-    // 기존 연결이 있으면 정리
+    // [방어 로직] 이미 연결되었거나 연결 중이라면 패스
     if (wsRef.current) {
-      wsRef.current.close();
+      if (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING) {
+        console.log("[WebSocket] Connection already active. Skipping new connection.");
+        return;
+      }
+      // 닫혀있는 소켓 인스턴스가 남아있다면 정리
       wsRef.current = null;
     }
 
@@ -308,6 +463,14 @@ export function useScenarioChat() {
    */
   const disconnect = useCallback(() => {
     if (wsRef.current) {
+      if (wsRef.current.readyState === WebSocket.OPEN) {
+        // 연결 종료 알림 전송 (선택 사항)
+        try {
+          wsRef.current.send(JSON.stringify({ type: "disconnect" }));
+        } catch (e) {
+          // ignore
+        }
+      }
       wsRef.current.close();
       wsRef.current = null;
     }
@@ -337,7 +500,7 @@ export function useScenarioChat() {
       const pcm16 = float32ToPCM16(audioData);
       const base64 = bytesToBase64(pcm16);
       const message = {
-        type: "input_audio_chunk",
+        type: "input_audio_buffer.append", // 변경된 사양 적용
         audio: base64,
         sample_rate: sampleRate,
       };
@@ -366,5 +529,6 @@ export function useScenarioChat() {
     sendText,
     sendAudioChunk,
     clearAiMessage,
+    initAudio, // 오디오 초기화(Unlock) 함수 노출
   };
 }

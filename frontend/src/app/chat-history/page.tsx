@@ -30,8 +30,8 @@ export default function DashboardPage() {
   const { logout } = useAuth();
 
   // 실제 API 호출
-  const { data: sessions, isLoading: isSessionsLoading } = useGetChatSessions(0, 100);
   const { data: currentUser, isLoading: isUserLoading } = useCurrentUser();
+  const { data: sessions, isLoading: isSessionsLoading } = useGetChatSessions(0, 100, currentUser?.id);
 
   // 세션 데이터를 UI 형식으로 변환 (useMemo 사용)
   const allSessions = useMemo<ChatHistoryItem[]>(() => {
@@ -190,12 +190,13 @@ export default function DashboardPage() {
             <div className="flex min-w-20 flex-col items-center  text-sm text-[#6A667A]">
               날짜
             </div>
-            <div className="flex min-w-0 flex-1 items-center justify-between  gap-2">
+            <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
               <div className="flex-1 text-sm text-[#6A667A]">주제</div>
               <div className="flex shrink-0 items-center gap-1 text-sm text-[#6A667A]">
                 말한시간 / 대화시간
               </div>
             </div>
+
           </div>
           <div
             ref={scrollContainerRef}
@@ -219,12 +220,14 @@ export default function DashboardPage() {
                 <div className="flex min-w-0 flex-1 items-center gap-2">
                   {/* 제목 */}
                   <div className="flex min-w-0 flex-1 flex-col items-start justify-center">
-                    <p className="truncate font-semibold text-[#1F1C2B] ">{item.title}</p>
+                    <p className="w-full truncate font-semibold text-[#1F1C2B]">{item.title}</p>
                   </div>
 
                   {/* 시간 */}
                   <div className="flex shrink-0 items-center gap-1">
-                    <span className="text-sm font-normal text-[#6A667A]">{item.duration}</span>
+                    <span className="whitespace-nowrap text-sm font-normal text-[#6A667A]">
+                      {item.duration}
+                    </span>
                   </div>
                 </div>
               </div>
