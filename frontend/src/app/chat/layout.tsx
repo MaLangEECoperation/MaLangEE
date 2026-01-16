@@ -1,8 +1,8 @@
 "use client";
 
-import { ReactNode, useState } from "react";
-import { AuthGuard } from "@/features/auth";
-import { useAuth } from "@/features/auth/hook/use-auth";
+import { ReactNode, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { tokenStorage } from "@/features/auth/model";
 import { FullLayout } from "@/shared/ui/FullLayout";
 import { Button, MalangEE, PopupLayout } from "@/shared/ui";
 import "@/shared/styles/scenario.css";
@@ -12,8 +12,14 @@ interface ChatLayoutProps {
 }
 
 export default function ChatLayout({ children }: ChatLayoutProps) {
-  const { logout } = useAuth();
+  const router = useRouter();
   const [showEndChatPopup, setShowEndChatPopup] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
+
+  // 클라이언트에서만 토큰 확인 (hydration 에러 방지)
+  useEffect(() => {
+    setHasToken(tokenStorage.exists());
+  }, []);
 
   const handleEndChat = () => {
     setShowEndChatPopup(true);
@@ -21,15 +27,17 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
 
   const handleEndChatConfirm = () => {
     setShowEndChatPopup(false);
-    logout();
+    // 토큰 제거 및 로그인 페이지로 이동
+    tokenStorage.remove();
+    router.push("/auth/login");
   };
 
   const handleEndChatCancel = () => {
     setShowEndChatPopup(false);
   };
 
-  // 헤더 우측 "대화 종료하기" 버튼
-  const headerRightContent = (
+  // 헤더 우측 "대화 종료하기" 버튼 (로그인한 사용자만 표시)
+  const headerRightContent = hasToken ? (
     <button
       className="text-sm text-[#6A667A] transition-colors hover:text-[#5F51D9]"
       onClick={handleEndChat}
@@ -37,10 +45,10 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
     >
       대화 종료하기
     </button>
-  );
+  ) : null;
 
   return (
-    <AuthGuard>
+    <>
       <FullLayout showHeader={true} headerRight={headerRightContent}>
         {children}
       </FullLayout>
@@ -62,6 +70,6 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
           </div>
         </PopupLayout>
       )}
-    </AuthGuard>
+    </>
   );
 }

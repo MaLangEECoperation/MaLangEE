@@ -1,21 +1,22 @@
 "use client";
 
+// Welcome back page: Displays the last chat session and allows the user to continue or start a new one.
+
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { Button, MalangEE } from "@/shared/ui";
-import { useCurrentUser } from "@/features/auth/api/use-current-user";
 import { useGetChatSessions } from "@/features/chat/api/use-chat-sessions";
+import { AuthGuard } from "@/features/auth";
 
-export default function WelcomeBackPage() {
+function WelcomeBackPage() {
   const router = useRouter();
   const [isConfirmed, setIsConfirmed] = useState(false);
   const textOpacity = 1;
 
-  // 실제 API에서 사용자 정보와 최근 세션 가져오기
-  const { data: currentUser, isLoading: isUserLoading } = useCurrentUser();
+  // 최근 세션 가져오기
   const { data: sessions, isLoading: isSessionsLoading } = useGetChatSessions(0, 1);
 
-  const isLoading = isUserLoading || isSessionsLoading;
+  const isLoading = isSessionsLoading;
 
   // 가장 최근 세션
   const lastSession = useMemo(() => {
@@ -23,16 +24,10 @@ export default function WelcomeBackPage() {
     return sessions[0];
   }, [sessions]);
 
-  // 사용자 닉네임
-  const userNickname = useMemo(() => {
-    if (!currentUser) return "사용자";
-    return currentUser.nickname || currentUser.login_id || "사용자";
-  }, [currentUser]);
-
   // 대화 기록이 없으면 시나리오 선택 페이지로 리다이렉트
   useEffect(() => {
     if (!isLoading && !lastSession) {
-      router.push("/auth/scenario-select");
+      router.push("/chat/scenario-select");
     }
   }, [isLoading, lastSession, router]);
 
@@ -48,7 +43,7 @@ export default function WelcomeBackPage() {
 
   const handleNewTopic = () => {
     // 새로운 주제 선택 페이지로 이동
-    router.push("/auth/scenario-select");
+    router.push("/chat/scenario-select");
   };
 
   if (isLoading) {
@@ -76,15 +71,13 @@ export default function WelcomeBackPage() {
         <h1 className="welcome-back-title">
           {isConfirmed ? (
             <>
-              {userNickname}님,
-              <br />
               {lastSession?.title}을
               <br />
               같이 재현해 볼까요?
             </>
           ) : (
             <>
-              {userNickname}님, 기다리고 있었어요!
+              기다리고 있었어요!
               <br />
               지난번에 했던 {lastSession?.title},
               <br />이 주제로 다시 이야기해볼까요?
@@ -117,5 +110,13 @@ export default function WelcomeBackPage() {
         </Button>
       </div>
     </>
+  );
+}
+
+export default function WelcomeBackPageWithGuard() {
+  return (
+    <AuthGuard>
+      <WelcomeBackPage />
+    </AuthGuard>
   );
 }

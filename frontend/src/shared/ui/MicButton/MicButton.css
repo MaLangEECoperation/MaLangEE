@@ -40,32 +40,13 @@
 }
 
 /* Wave elements */
-@keyframes pulse-wave {
-  0% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-
-  50% {
-    opacity: 0.4;
-  }
-
-  100% {
-    transform: scale(3.5);
-    opacity: 0;
-  }
-}
-
 .wave {
   position: absolute;
   width: 70px;
   height: 70px;
-  background: rgba(126, 108, 243, 0.6);
-  /* Fallback color with opacity */
-  background: var(--primary-purple-Tp, rgba(126, 108, 243, 0.6));
+  background: var(--primary-purple, #7e6cf3);
   border-radius: 50%;
   opacity: 0;
-  pointer-events: none;
 }
 
 .is-listening .wave {
@@ -78,6 +59,18 @@
 
 .wave-3 {
   animation-delay: 1.6s !important;
+}
+
+@keyframes pulse-wave {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: scale(2.3);
+    opacity: 0;
+  }
 }
 
 /* Main microphone button */
