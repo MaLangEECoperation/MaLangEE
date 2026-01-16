@@ -229,3 +229,5 @@ yarn.lock
 # AI Rules
 .git_rules
 .agent/
+/CLAUDE.md
+.mcp.json
