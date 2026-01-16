@@ -43,7 +43,7 @@ export interface ChatSessionDetail extends ChatSession {
 }
 
 export interface ChatSessionsResponse {
-  sessions: ChatSession[];
+  items: ChatSession[];
   total: number;
 }
 

@@ -33,12 +33,12 @@ export function useGetChatSessions(skip: number = 0, limit: number = 20, userId?
       // 배열인 경우 (현재 API 호환성 유지)
       if (Array.isArray(response)) {
         return {
-          sessions: response,
+          items: response,
           total: response.length, // 현재는 전체 개수를 알 수 없으므로 목록 개수로 대체
         };
       }
 
-      // 객체인 경우 (변경된 API: { sessions: [], total: 100 })
+      // 객체인 경우 (변경된 API: { items: [], total: 100 })
       return response;
     },
     staleTime: 1000 * 60 * 5, // 5분
@@ -70,8 +70,8 @@ export function useInfiniteChatSessions(limit: number = 10, userId?: number) {
       // 배열인 경우 (현재 API)
       if (Array.isArray(response)) {
         return {
-          sessions: response,
-          total: null,
+          items: response,
+          total: 0,
         };
       }
 
@@ -79,9 +79,9 @@ export function useInfiniteChatSessions(limit: number = 10, userId?: number) {
       return response;
     },
     getNextPageParam: (lastPage, allPages) => {
-      const currentSessions = lastPage.sessions;
+      const currentItems = lastPage.items;
       // 가져온 데이터가 limit보다 적으면 더 이상 데이터가 없는 것으로 간주
-      if (currentSessions.length < limit) {
+      if (currentItems.length < limit) {
         return undefined;
       }
       // 다음 skip 값 계산 (현재까지 가져온 페이지 수 * limit)

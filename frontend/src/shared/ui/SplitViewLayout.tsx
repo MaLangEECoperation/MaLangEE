@@ -52,7 +52,7 @@ export const SplitViewLayout = ({
   }, [bgClass]);
 
   return (
-    <div className={`main-page glass-page relative min-h-screen w-full overflow-hidden ${bgClass}`}>
+    <div className={`main-page glass-page relative min-h-screen w-full overflow-x-hidden ${bgClass}`}>
       <div className={`relative z-10 mx-auto w-full px-0 md:px-10 ${maxWidth || "md:max-w-5xl"}`}>
         <div className={`mx-auto grid w-full grid-cols-1 ${gap} md:grid-cols-12`}>
           {/* Left Content Section */}

@@ -45,7 +45,7 @@ export default function DashboardPage() {
     if (!data) return [];
 
     return data.pages.flatMap((page) =>
-      page.sessions.map((session) => {
+      page.items.map((session) => {
         const startDate = new Date(session.started_at);
         const dateString = `${startDate.getFullYear()}.${String(startDate.getMonth() + 1).padStart(2, "0")}.${String(startDate.getDate()).padStart(2, "0")}`;
 
@@ -200,19 +200,18 @@ export default function DashboardPage() {
         <>
           {/* 목록 헤더: 날짜 / 주제 / 말한시간 / 대화시간 */}
           <div className="mb-2 flex w-full items-center border-b border-[#D5D2DE] px-0 py-4 ">
-            <div className="flex min-w-20 flex-col items-center  text-sm text-[#6A667A]">
+            <div className="flex min-w-20 flex-col items-left  text-sm text-[#6A667A]">
               날짜
             </div>
-            <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+            <div className="flex min-w-0 flex-1 flex-col md:flex-row md:items-center justify-between gap-3">
               <div className="flex-1 text-sm text-[#6A667A]">주제</div>
-              <div className="flex shrink-0 items-center gap-1 text-sm text-[#6A667A]">
+              <div className="hidden md:flex shrink-0 items-left gap-2 text-sm text-[#6A667A]">
                 말한시간 / 대화시간
               </div>
             </div>
-
           </div>
           <div
-            className="left-0 flex w-full h-100 flex-col items-start justify-start overflow-y-auto pr-2"
+            className="left-0 flex w-full flex-col items-start justify-start pr-2 md:h-[400px] md:overflow-y-auto"
           >
             {allSessions.map((item) => (
               <div
@@ -221,15 +220,15 @@ export default function DashboardPage() {
                   setSelectedSession(item);
                   setShowDetailPopup(true);
                 }}
-                className="hover:bg-white-50 flex w-full cursor-pointer items-center gap-4 border-b border-[#D5D2DE] px-0 py-4 transition-all"
+                className="flex w-full cursor-pointer items-center gap-2 border-b border-[#D5D2DE] px-0 py-3 transition-all"
               >
                 {/* 날짜 */}
-                <div className="flex min-w-20 flex-col items-center justify-center text-sm text-[#6A667A]">
+                <div className="flex min-w-20 flex-col items-left justify-center text-sm text-primary">
                   {item.date}
                 </div>
 
                 {/* 제목과 시간 */}
-                <div className="flex min-w-0 flex-1 items-center gap-2">
+                <div className="flex min-w-0 flex-1 flex-col md:flex-row md:items-left gap-1 md:gap-2">
                   {/* 제목 */}
                   <div className="flex min-w-0 flex-1 flex-col items-start justify-center">
                     <p className="w-full truncate font-semibold text-[#1F1C2B]">{item.title}</p>
