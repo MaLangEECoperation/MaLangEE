@@ -515,6 +515,22 @@ export function useScenarioChat() {
     setState((prev) => ({ ...prev, aiMessage: "", userTranscript: "" }));
   }, []);
 
+  /**
+   * 세션 설정 업데이트 (음성, 지시사항 변경)
+   */
+  const updateSession = useCallback((config: { voice?: string; instructions?: string }) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      const message = {
+        type: "session.update",
+        config,
+      };
+      wsRef.current.send(JSON.stringify(message));
+      console.log("[WebSocket] Session update sent:", config);
+    } else {
+      console.warn("[WebSocket] Cannot update session: not connected");
+    }
+  }, []);
+
   // 컴포넌트 언마운트 시 정리
   useEffect(() => {
     return () => {
@@ -529,6 +545,7 @@ export function useScenarioChat() {
     sendText,
     sendAudioChunk,
     clearAiMessage,
+    updateSession, // 세션 설정 업데이트 함수 노출
     initAudio, // 오디오 초기화(Unlock) 함수 노출
   };
 }

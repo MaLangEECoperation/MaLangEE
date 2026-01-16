@@ -201,7 +201,7 @@ export default function LoginPage() {
             variant="outline-purple"
             size="lg"
             fullWidth
-            onClick={() => router.push("/auth/scenario-select")}
+            onClick={() => router.push("/chat/scenario-select")}
           >
             바로 체험해보기
           </Button>
@@ -219,8 +219,8 @@ export default function LoginPage() {
         maxWidth="md:max-w-6xl"
         leftColSpan={5}
         rightColSpan={7}
-        glassClassName = "p-6 md:p-10"
-        glassMaxWidth = "max-w-full md:max-w-2xl lg:max-w-4xl"
+        glassClassName="p-6 md:p-10"
+        glassMaxWidth="max-w-full md:max-w-2xl lg:max-w-4xl"
       />
 
       {showComingSoonModal && (

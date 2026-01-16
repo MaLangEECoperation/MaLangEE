@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { MicButton, Button, MalangEE } from "@/shared/ui";
 import { PopupLayout } from "@/shared/ui/PopupLayout";
 import "@/shared/styles/scenario.css";
-import { FullLayout } from "@/shared/ui/FullLayout";
 
 /**
  * 시나리오 선택 페이지 상태
@@ -186,29 +185,26 @@ export default function ScenarioSelectPage() {
 
   return (
     <>
-      <FullLayout showHeader={true} >
-        {/* Character */}
-        <div className="character-box">
-          <MalangEE status={showInactivityMessage ? "humm" : "default"} size={150} />
-        </div>
+      {/* Character */}
+      <div className="character-box">
+        <MalangEE status={showInactivityMessage ? "humm" : "default"} size={150} />
+      </div>
 
-        {/* Text Group */}
-        <div className="text-group text-center" style={{ opacity: textOpacity }}>
-          <h1 className="scenario-title">{getMainTitle()}</h1>
-          <p className="scenario-desc">{getSubDesc()}</p>
-        </div>
+      {/* Text Group */}
+      <div className="text-group text-center" style={{ opacity: textOpacity }}>
+        <h1 className="scenario-title">{getMainTitle()}</h1>
+        <p className="scenario-desc">{getSubDesc()}</p>
+      </div>
 
-        {/* Mic Button - Footer */}
-        <div className="mt-6">
-          <MicButton
-            isListening={isListening}
-            onClick={handleMicClick}
-            size="md"
-            className={currentState === 3 ? "pointer-events-none opacity-50" : ""}
-          />
-        </div>
-
-      </FullLayout>
+      {/* Mic Button - Footer */}
+      <div className="mt-6">
+        <MicButton
+          isListening={isListening}
+          onClick={handleMicClick}
+          size="md"
+          className={currentState === 3 ? "pointer-events-none opacity-50" : ""}
+        />
+      </div>
 
       {/* Login Popup */}
       {showLoginPopup && (
