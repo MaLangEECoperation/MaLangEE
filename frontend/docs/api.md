@@ -3,7 +3,7 @@
 > **Base URL**: `http://49.50.137.35:8080`
 > **API Version**: 1.0.0
 > **OpenAPI**: 3.1.0
-> **Last Updated**: 2026-01-12
+> **Last Updated**: 2026-01-16
 
 ---
 
@@ -302,7 +302,40 @@ Authorization: Bearer <access_token>
 
 ### Chat (대화)
 
-#### 1. 대화 세션 목록 조회
+#### 1. 대화 피드백 생성
+
+세션 ID로 대화 피드백을 생성합니다.
+
+```http
+POST /api/v1/feedback/{session_id}
+Authorization: Bearer <access_token>
+```
+
+**Path Parameters**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `session_id` | string (UUID) | 피드백을 생성할 세션 ID |
+
+**동작 방식**
+1. DB에서 세션의 메시지를 조회합니다.
+2. AI 엔진에 메시지를 전달하여 피드백을 생성합니다.
+3. 피드백 결과를 반환합니다.
+
+**Response** `200 OK`
+
+```json
+{
+  "feedback": "...",
+  "session_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+> 🔐 **인증 필요** - 로그인한 사용자만 피드백을 받을 수 있습니다.
+
+---
+
+#### 2. 대화 세션 목록 조회
 
 사용자의 대화 세션 목록을 조회합니다.
 
@@ -349,7 +382,7 @@ Authorization: Bearer <access_token>
 
 ---
 
-#### 2. 대화 세션 상세 조회
+#### 3. 대화 세션 상세 조회
 
 특정 대화 세션의 메시지를 포함한 상세 정보를 조회합니다.
 
@@ -432,7 +465,7 @@ Authorization: Bearer <access_token>
 
 ---
 
-#### 3. 게스트 세션 사용자 연동
+#### 4. 게스트 세션 사용자 연동
 
 게스트(비로그인)로 진행한 세션을 회원 계정에 연동합니다.
 
@@ -468,7 +501,7 @@ Authorization: Bearer <access_token>
 
 ---
 
-#### 4. 가장 최근 대화 세션 조회
+#### 5. 가장 최근 대화 세션 조회
 
 사용자의 가장 최근 대화 세션을 조회합니다.
 
@@ -506,7 +539,7 @@ null
 
 ---
 
-#### 5. 대화 힌트 생성
+#### 6. 대화 힌트 생성
 
 현재 대화 맥락에 맞는 추천 답변을 LLM으로 생성합니다.
 
@@ -850,6 +883,13 @@ curl -X PUT "http://49.50.137.35:8080/api/v1/chat/sessions/550e8400-e29b-41d4-a7
 curl -X GET "http://49.50.137.35:8080/api/v1/chat/hints/550e8400-e29b-41d4-a716-446655440000"
 ```
 
+#### 피드백 생성
+
+```bash
+curl -X POST "http://49.50.137.35:8080/api/v1/feedback/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
 ---
 
 ### JavaScript (fetch)
@@ -957,6 +997,33 @@ if (guestSessionId && accessToken) {
 }
 ```
 
+#### 피드백 생성
+
+```javascript
+const createFeedback = async (sessionId, accessToken) => {
+  const response = await fetch(
+    `http://49.50.137.35:8080/api/v1/feedback/${sessionId}`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error('피드백 생성 실패');
+  }
+
+  return await response.json();
+};
+
+// 사용 예시
+const sessionId = '550e8400-e29b-41d4-a716-446655440000';
+const feedback = await createFeedback(sessionId, accessToken);
+console.log('피드백:', feedback);
+```
+
 ---
 
 ### TypeScript (axios)
@@ -1050,6 +1117,14 @@ class MaLangEEClient {
     );
     return response.data;
   }
+
+  // 피드백 생성
+  async createFeedback(sessionId: string): Promise<any> {
+    const response = await this.client.post(
+      `/api/v1/feedback/${sessionId}`
+    );
+    return response.data;
+  }
 }
 
 // 사용 예시
@@ -1105,6 +1180,6 @@ console.log(sessions);
 
 ---
 
-**문서 작성일**: 2026-01-12
+**문서 작성일**: 2026-01-16
 **API 버전**: 1.0.0
 **문의**: MaLangEE 개발팀

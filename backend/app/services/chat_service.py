@@ -5,6 +5,7 @@ from app.core.config import settings
 from app.db.models import ConversationSession, User
 from app.repositories.chat_repository import ChatRepository
 from app.schemas.chat import SessionCreate, SessionResponse, SessionSummary
+from app.schemas.common import PaginatedResponse
 from fastapi import WebSocket
 from realtime_conversation.connection_handler import ConnectionHandler
 from realtime_conversation.session_manager import SessionManager
@@ -26,8 +27,8 @@ class ChatService:
     async def get_recent_session(self, user_id: int) -> Optional[ConversationSession]:
         return await self.chat_repo.get_recent_session_by_user(user_id)
 
-    async def get_user_sessions(self, user_id: int, skip: int = 0, limit: int = 20) -> List[SessionSummary]:
-        results = await self.chat_repo.get_sessions_by_user(user_id, skip, limit)
+    async def get_user_sessions(self, user_id: int, skip: int = 0, limit: int = 20) -> PaginatedResponse[SessionSummary]:
+        results, total_count = await self.chat_repo.get_sessions_by_user(user_id, skip, limit)
         summaries = []
         for session, count in results:
             # SQLAlchemy model to Pydantic mapping
@@ -43,7 +44,14 @@ class ChatService:
                 message_count=count,
             )
             summaries.append(summary)
-        return summaries
+        # Calculate has_next
+        has_next = (skip + len(summaries)) < total_count
+
+        return PaginatedResponse(
+            total=total_count,
+            items=summaries,
+            has_next=has_next
+        )
 
     async def get_session_detail(self, session_id: str, user_id: int) -> Optional[SessionResponse]:
         session = await self.chat_repo.get_session_by_id(session_id, user_id)
