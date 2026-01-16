@@ -83,8 +83,8 @@ class ConversationManager:
                 "goal": "..."      # scenario_goal
             }
         """
-        if not context_data:
-            return
+        if context_data is None:
+            context_data = {}
 
         # 원본 템플릿(raw_system_prompt)을 사용하여 치환 수행
         # 매핑:
@@ -117,8 +117,8 @@ class ConversationManager:
         self.openai_ws = openai_ws # 웹소켓 객체 저장 (나중에 업데이트 할 때 사용)
         
         # [New] 세션 컨텍스트 주입 (if provided)
-        if context:
-            self.inject_session_context(context)
+        # [New] 세션 컨텍스트 주입 (기본값 적용을 위해 항상 호출)
+        self.inject_session_context(context)
             
         # [Refactor] 설정 초기화 및 오버라이드 적용
         # 1. 기본값 복사
