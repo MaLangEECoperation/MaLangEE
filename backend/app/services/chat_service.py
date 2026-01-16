@@ -29,20 +29,24 @@ class ChatService:
         partner = session_in.scenario_partner
         goal = session_in.scenario_goal
         
+        # Default Title
+        now_str = datetime.utcnow().isoformat()
+        session_title = f"Scenario Session ({now_str[:10]})"
+
         if session_in.scenario_id:
             scenario = await self.chat_repo.get_scenario_definition(session_in.scenario_id)
             if scenario:
                 place = scenario.place
                 partner = scenario.partner
                 goal = scenario.goal
+                session_title = scenario.title # 시나리오 제목 사용
         
         # 2. Generate Session Data
         new_session_id = str(uuid.uuid4())
-        now_str = datetime.utcnow().isoformat()
         
         session_data = SessionCreate(
             session_id=new_session_id,
-            title=f"Scenario Session ({now_str[:10]})", # 임시 제목
+            title=session_title,
             started_at=now_str,
             ended_at=now_str, # 초기엔 start=end
             total_duration_sec=0.0,
