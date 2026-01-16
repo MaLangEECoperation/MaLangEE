@@ -1,5 +1,8 @@
 import logging
 
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+
 from .feedback_agent import agent
 
 logger = logging.getLogger(__name__)
@@ -14,6 +17,13 @@ feedback_service.py - 대화 후 피드백 생성 서비스
 [주요 기능]
 Backend 서비스에서 메시지 리스트를 전달받아 피드백 생성 (generate_feedback)
 """
+
+# 대화 요약용 LLM
+_summary_llm = ChatOpenAI(model="gpt-4o-mini")
+_summary_prompt = ChatPromptTemplate.from_messages([
+    ("system", "Summarize the following English learning conversation in ONE English sentence. Focus on what topics were practiced."),
+    ("user", "{conversation}")
+])
 
 
 def _convert_messages_to_text(messages: list) -> str:
@@ -40,6 +50,21 @@ def _convert_messages_to_text(messages: list) -> str:
     return "\n".join(lines)
 
 
+def _generate_summary(conversation_text: str) -> str:
+    """
+    대화 내용을 영어 1문장으로 요약합니다.
+
+    Args:
+        conversation_text: 대화 텍스트
+
+    Returns:
+        영어 1문장 요약
+    """
+    chain = _summary_prompt | _summary_llm
+    result = chain.invoke({"conversation": conversation_text})
+    return result.content.strip()
+
+
 def _invoke_agent(conversation_text: str) -> str:
     """
     Agent를 호출하여 피드백을 생성합니다.
@@ -48,7 +73,7 @@ def _invoke_agent(conversation_text: str) -> str:
         conversation_text: 분석할 대화 텍스트
 
     Returns:
-        생성된 피드백 문자열
+        피드백 텍스트
     """
     result = agent.invoke({"messages": [{"role": "user", "content": f"다음 영어 학습 대화를 분석해주세요:\n\n{conversation_text}"}]})
     return result["messages"][-1].content
@@ -65,7 +90,8 @@ def generate_feedback(messages: list[dict], session_id: str | None = None) -> di
     Returns:
         {
             "session_id": str | None,
-            "feedback": str,
+            "scenario_summary": str,  # 대화 내용 영어 1줄 요약
+            "feedback": str,          # TOP 3 피드백
             "message_count": int
         }
     """
@@ -73,15 +99,29 @@ def generate_feedback(messages: list[dict], session_id: str | None = None) -> di
 
     if not messages:
         logger.info("대화 내용 없음")
-        return {"session_id": session_id, "feedback": "대화 내용이 없습니다.", "message_count": 0}
+        return {
+            "session_id": session_id,
+            "scenario_summary": "",
+            "feedback": "대화 내용이 없습니다.",
+            "message_count": 0,
+        }
 
     # 메시지를 Agent 입력 형식으로 변환
     conversation_text = _convert_messages_to_text(messages)
 
-    # Agent 호출
+    # 1. 대화 요약 생성 (별도 LLM 호출)
+    logger.info("대화 요약 생성 중...")
+    scenario_summary = _generate_summary(conversation_text)
+
+    # 2. Agent 호출 (피드백 생성)
     logger.info("Agent 호출 중...")
     feedback = _invoke_agent(conversation_text)
 
     logger.info(f"피드백 생성 완료 - session_id: {session_id}")
 
-    return {"session_id": session_id, "feedback": feedback, "message_count": len(messages)}
+    return {
+        "session_id": session_id,
+        "scenario_summary": scenario_summary,
+        "feedback": feedback,
+        "message_count": len(messages),
+    }
