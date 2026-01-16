@@ -9,6 +9,7 @@ from app.schemas.chat import (
     SessionSummary,
     SyncSessionResponse,
 )
+from app.schemas.common import PaginatedResponse
 from app.services.chat_service import ChatService
 from fastapi import APIRouter, Depends, HTTPException, Query, WebSocket
 
@@ -41,7 +42,7 @@ async def sync_guest_session(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/sessions", response_model=List[SessionSummary], summary="사용자 대화 세션 목록 조회")
+@router.get("/sessions", response_model=PaginatedResponse[SessionSummary], summary="사용자 대화 세션 목록 조회")
 async def get_user_sessions(
     skip: int = 0,
     limit: int = 20,

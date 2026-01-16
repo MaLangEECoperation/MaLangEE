@@ -139,6 +139,12 @@ class ChatRepository:
         return result.scalars().first()
 
     async def get_sessions_by_user(self, user_id: int, skip: int = 0, limit: int = 20):
+        # 1. Total Count Query
+        count_stmt = select(func.count(ConversationSession.session_id)).where(ConversationSession.user_id == user_id)
+        count_result = await self.db.execute(count_stmt)
+        total_count = count_result.scalar()
+
+        # 2. Data Query (Paginated)
         stmt = (
             select(ConversationSession, func.count(ChatMessage.id))
             .outerjoin(ChatMessage, ChatMessage.session_id == ConversationSession.session_id)
@@ -149,7 +155,7 @@ class ChatRepository:
             .limit(limit)
         )
         result = await self.db.execute(stmt)
-        return result.all()
+        return result.all(), total_count
 
     async def update_session_owner(self, session_id: str, user_id: int) -> bool:
         stmt = select(ConversationSession).where(ConversationSession.session_id == session_id)
