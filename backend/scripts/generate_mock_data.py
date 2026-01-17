@@ -126,8 +126,25 @@ if __name__ == "__main__":
 
     if args.production:
         print("Switching to PRODUCTION mode (PostgreSQL)")
+        
+        # Map DB_* env vars (from config.sh) to POSTGRES_* env vars (expected by app)
+        if os.getenv("DB_USER"):
+            os.environ["POSTGRES_USER"] = os.getenv("DB_USER")
+        if os.getenv("DB_PASSWORD"):
+            os.environ["POSTGRES_PASSWORD"] = os.getenv("DB_PASSWORD")
+        if os.getenv("DB_HOST"):
+            os.environ["POSTGRES_SERVER"] = os.getenv("DB_HOST")
+        if os.getenv("DB_PORT"):
+            os.environ["POSTGRES_PORT"] = os.getenv("DB_PORT")
+        if os.getenv("DB_NAME"):
+            os.environ["POSTGRES_DB"] = os.getenv("DB_NAME")
+
         from app.core.config import settings
         settings.USE_SQLITE = False
+        
+        # Print debug info
+        print(f"Connecting to: {settings.POSTGRES_SERVER}/{settings.POSTGRES_DB} as {settings.POSTGRES_USER}")
+        
         # Re-initialize engine with new settings
         from app.db import database
         database.engine = database.create_async_engine(
