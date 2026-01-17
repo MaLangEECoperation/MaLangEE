@@ -23,14 +23,14 @@
 - 관련 features/widgets 폴더도 제거
 
 ### 4. 라우팅 변경
-- 로그인 후 `/chat-history`로 이동 (완료)
+- 로그인 후 `/dashboard`로 이동 (완료)
 
 ## 현재 유지되는 페이지
 - `/` - 랜딩
 - `/auth/login` - 로그인
 - `/auth/signup` - 회원가입
 - `/auth/scenario-select` - 시나리오 선택
-- `/chat-history` - 대화 기록 (로그인 후 메인)
+- `/dashboard` - 대화 기록 (로그인 후 메인)
 - `/chat/conversation` - 시나리오 대화 (WebSocket LLM 연결)
 - `/chat/complete` - 대화 완료
 - `/chat/voice-selection` - 음성 선택

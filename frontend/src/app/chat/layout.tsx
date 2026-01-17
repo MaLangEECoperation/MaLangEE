@@ -55,7 +55,7 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
 
   return (
     <>
-      <FullLayout showHeader={true} headerRight={headerRightContent} bgClass="bg-scenario-01">
+      <FullLayout showHeader={true} headerRight={headerRightContent}>
         {children}
       </FullLayout>
 

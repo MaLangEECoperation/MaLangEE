@@ -44,17 +44,17 @@ export const GlassCard: FC<GlassCardProps> = ({
 
   const defaultHeaderLeft = (
     <div className="scenario-logo">
-      <Link href={"/chat-history"} className="inline-block">
-      <Image src="/images/logo.png" alt="MalangEE Logo" width={100} height={30} />
+      <Link href={"/dashboard"} className="inline-block">
+        <Image src="/images/logo.png" alt="MalangEE Logo" width={100} height={30} />
       </Link>
     </div>
   );
 
   const defaultHeaderRight = (
-    <div className="flex items-center gap-4 hidden">
+    <div className="flex hidden items-center gap-4">
       <button
         className="text-[#6A667A] transition-colors hover:text-[#5F51D9]"
-        onClick={() => (location.href = "/chat-history")}
+        onClick={() => (location.href = "/dashboard")}
         title="대화이력"
       >
         <History size={20} />

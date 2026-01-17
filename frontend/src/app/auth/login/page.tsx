@@ -203,7 +203,7 @@ export default function LoginPage() {
             variant="outline-purple"
             size="lg"
             fullWidth
-            onClick={() => router.push("/chat/scenario-select")}
+            onClick={() => router.push("/scenario-select")}
           >
             바로 체험해보기
           </Button>

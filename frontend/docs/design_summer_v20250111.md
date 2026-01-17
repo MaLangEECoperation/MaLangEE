@@ -59,7 +59,7 @@
 
 ### 2. 채팅 기록 기능 구현
 
-#### 2.1 채팅 기록 페이지 (`src/app/chat-history/page.tsx`)
+#### 2.1 채팅 기록 페이지 (`src/app/dashboard/page.tsx`)
 - **기능**:
   - 사용자 프로필 표시 (닉네임, 통계)
   - 대화 내역 목록 (무한 스크롤)
@@ -70,7 +70,7 @@
 - **레이아웃**: SplitViewLayout 사용 (4:8 비율)
 - **데이터**: 디버그 모드에서 테스트 데이터 사용, 프로덕션에서 API 연동
 
-#### 2.2 대화 상세 팝업 (`src/app/chat-history/ChatDetailPopup.tsx`)
+#### 2.2 대화 상세 팝업 (`src/app/dashboard/ChatDetailPopup.tsx`)
 - **기능**:
   - 대화 제목, 날짜, 시간 표시
   - 대화 요약 표시
@@ -78,14 +78,14 @@
   - 전문보기 버튼 → ChatTranscriptPopup 연동
 - **레이아웃**: PopupLayout 사용 (max-width: 2xl)
 
-#### 2.3 전문 스크립트 팝업 (`src/app/chat-history/ChatTranscriptPopup.tsx`)
+#### 2.3 전문 스크립트 팝업 (`src/app/dashboard/ChatTranscriptPopup.tsx`)
 - **기능**:
   - 대화 전문을 테이블 형식으로 표시
   - 타임스탬프, 화자, 내용 표시
   - 스크롤 가능한 대화 목록
 - **레이아웃**: PopupLayout 사용 (max-width: 2xl)
 
-#### 2.4 닉네임 변경 팝업 (`src/app/chat-history/NicknameChangePopup.tsx`)
+#### 2.4 닉네임 변경 팝업 (`src/app/dashboard/NicknameChangePopup.tsx`)
 - **기능**:
   - 기존 닉네임 표시 (읽기 전용)
   - 새로운 닉네임 입력 및 실시간 중복 확인
@@ -189,7 +189,7 @@ interface ChatHistoryItem {
 #### 6.1 페이지 구조 정리
 - **삭제**: `src/app/dashboard/page.tsx` (사용하지 않음)
 - **삭제**: `src/app/change-nickname/` (팝업으로 대체)
-- **추가**: `src/app/chat-history/` (대화 기록 페이지)
+- **추가**: `src/app/dashboard/` (대화 기록 페이지)
 - **추가**: `src/app/logout/` (로그아웃 페이지)
 
 #### 6.2 네비게이션 개선

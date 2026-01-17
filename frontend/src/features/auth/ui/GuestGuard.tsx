@@ -24,7 +24,7 @@ interface GuestGuardProps {
  */
 export const GuestGuard: FC<GuestGuardProps> = ({
   children,
-  redirectTo = "/chat-history",
+  redirectTo = "/dashboard",
 }) => {
   const router = useRouter();
   const hasToken = tokenStorage.exists();

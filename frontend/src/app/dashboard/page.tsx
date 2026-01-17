@@ -115,7 +115,7 @@ export default function DashboardPage() {
   const formatDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
+    const secs = Math.round(seconds % 60); // 초 단위 반올림
     return `${hours}시간 ${minutes}분 ${secs}초`;
   };
 
@@ -171,7 +171,7 @@ export default function DashboardPage() {
         size="md"
         fullWidth
         className="mt-10"
-        onClick={() => router.push("/chat/scenario-select")}
+        onClick={() => router.push("/chat/topic")}
       >
         말랭이랑 새로운 대화를 해볼까요?
       </Button>

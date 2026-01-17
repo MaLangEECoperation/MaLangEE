@@ -99,7 +99,7 @@ describe("GuestGuard", () => {
     );
 
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith("/chat-history");
+      expect(mockReplace).toHaveBeenCalledWith("/dashboard");
     });
   });
 

@@ -8,9 +8,9 @@ import "@/shared/styles/scenario.css";
 import {FullLayout} from "@/shared/ui/FullLayout";
 import {useScenarioChat} from "@/features/chat";
 import {useInactivityTimer} from "@/shared/hooks";
-import {Step1} from "@/app/demo/steps/Step1";
-import {Step2} from "@/app/demo/steps/Step2";
-import {Step3} from "@/app/demo/steps/Step3";
+import {Step1} from "@/app/scenario-select/steps/Step1";
+import {Step2} from "@/app/scenario-select/steps/Step2";
+import {Step3} from "@/app/scenario-select/steps/Step3";
 
 export default function ScenarioSelectPage() {
     const router = useRouter();

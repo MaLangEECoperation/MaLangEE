@@ -11,7 +11,7 @@
 ### 완료된 기능
 - 랜딩 페이지 (/)
 - 로그인/회원가입 페이지 (/auth/login, /auth/signup)
-- 시나리오 선택 페이지 (/auth/scenario-select)
+- 시나리오 선택 페이지 (/scenario-select)
 - 대시보드 페이지 (/dashboard)
 - 토픽 선택 페이지 (/topic-select)
 - 인증 시스템 (JWT, GuestGuard, AuthGuard)
@@ -229,7 +229,7 @@ yarn build       # 빌드 성공
 - [ ] `features/scenario-chat/index.ts` - Public API export
 
 #### 페이지 통합
-- [ ] `app/auth/scenario-select/page.tsx` - 실제 WebSocket 연동
+- [ ] `app/scenario-select/page.tsx` - 실제 WebSocket 연동
 - [ ] `app/topic-select/page.tsx` - 음성 기능 통합
 
 ### WebSocket 메시지 스펙

@@ -52,7 +52,9 @@ export const SplitViewLayout = ({
   }, [bgClass]);
 
   return (
-    <div className={`main-page glass-page relative min-h-screen w-full overflow-x-hidden ${bgClass}`}>
+    <div
+      className={`main-page glass-page relative min-h-screen w-full overflow-x-hidden ${bgClass}`}
+    >
       <div className={`relative z-10 mx-auto w-full px-0 md:px-10 ${maxWidth || "md:max-w-5xl"}`}>
         <div className={`mx-auto grid w-full grid-cols-1 ${gap} md:grid-cols-12`}>
           {/* Left Content Section */}
@@ -60,8 +62,8 @@ export const SplitViewLayout = ({
             className={`flex flex-col items-center justify-center gap-6 text-center md:items-start md:text-left ${colSpans[leftColSpan] || "md:col-span-6"} ${leftClassName}`}
           >
             <>
-              <div className="text-lg font-semibold text-[#5F51D9] mb-4">
-                <Link href={"/chat-history"} className="inline-block">
+              <div className="mb-4 text-lg font-semibold text-[#5F51D9]">
+                <Link href={"/dashboard"} className="inline-block">
                   <Image src="/images/logo.png" alt="MalangEE Logo" width={100} height={50} />
                 </Link>
               </div>

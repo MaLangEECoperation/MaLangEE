@@ -1,7 +1,7 @@
 ﻿﻿# Repository Guidelines
 
 ## 프로젝트 구조 & 라우트
-- `src/app`: Next.js App Router. 라우트: [`/`](/), [`/auth/login`](/auth/login), [`/auth/signup`](/auth/signup), [`/auth/scenario-select`](/auth/scenario-select), [`/topic-select`](/topic-select), [`/chat/conversation`](/chat/conversation), [`/chat/complete`](/chat/complete), [`/chat/subtitle-settings`](/chat/subtitle-settings), [`/chat/voice-selection`](/chat/voice-selection), [`/chat/welcome-back`](/chat/welcome-back), [`/chat-history`](/chat-history), [`/logout`](/logout).
+- `src/app`: Next.js App Router. 라우트: [`/`](/), [`/auth/login`](/auth/login), [`/auth/signup`](/auth/signup), [`/scenario-select`](/scenario-select), [`/topic-select`](/topic-select), [`/chat/conversation`](/chat/conversation), [`/chat/complete`](/chat/complete), [`/chat/subtitle-settings`](/chat/subtitle-settings), [`/chat/voice-selection`](/chat/voice-selection), [`/chat/welcome-back`](/chat/welcome-back), [`/dashboard`](/dashboard), [`/logout`](/logout).
 - `src/features`: `auth`, `chat` 모듈만 존재. 그 외 도메인은 아직 없음.
 - `src/shared`: `ui`, `lib`, `types`, `api`, `styles` 공통 레이어.
 - `src/entities`, `src/widgets`: 현재 `__init__.ts`만 있는 placeholder 상태.
@@ -10,10 +10,10 @@
 - `e2e`: Playwright E2E 테스트. `docs`: 설계/운영/스타일 문서.
 
 ## 핵심 페이지 흐름 (실제 구현 기준)
-- 게스트 체험: [`/auth/scenario-select`](/auth/scenario-select) -> (로그인 유도 팝업) -> [`/auth/login`](/auth/login) 또는 [`/auth/signup`](/auth/signup).
-- 로그인: [`/auth/login`](/auth/login) -> 성공 시 [`/chat-history`](/chat-history).
-- 회원가입: [`/auth/signup`](/auth/signup) -> 성공 팝업에서 즉시 로그인 시도 -> 성공 시 [`/chat-history`](/chat-history).
-- 대화 재개: [`/chat-history`](/chat-history) -> 버튼으로 [`/chat/welcome-back`](/chat/welcome-back).
+- 게스트 체험: [`/scenario-select`](/scenario-select) -> (로그인 유도 팝업) -> [`/auth/login`](/auth/login) 또는 [`/auth/signup`](/auth/signup).
+- 로그인: [`/auth/login`](/auth/login) -> 성공 시 [`/dashboard`](/dashboard).
+- 회원가입: [`/auth/signup`](/auth/signup) -> 성공 팝업에서 즉시 로그인 시도 -> 성공 시 [`/dashboard`](/dashboard).
+- 대화 재개: [`/dashboard`](/dashboard) -> 버튼으로 [`/chat/welcome-back`](/chat/welcome-back).
 - 로그아웃: [`/logout`](/logout) 진입 시 토큰/캐시 삭제 후 [`/auth/login`](/auth/login)으로 이동.
 
 ## 권한/인증

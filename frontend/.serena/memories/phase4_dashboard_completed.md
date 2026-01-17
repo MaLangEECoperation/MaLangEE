@@ -38,7 +38,7 @@
 
 ### 3. 인증 플로우 수정
 - `features/auth/api/use-auth-mutation.ts` 수정
-- 로그인 성공 후 /dashboard로 리다이렉트 (기존: /chat-history)
+- 로그인 성공 후 /dashboard로 리다이렉트 (기존: /dashboard)
 
 ## 디자인 특징
 - Tailwind CSS v4 테마 색상 사용
