@@ -32,12 +32,12 @@ export default function ConversationPage() {
       console.log("[SessionId] Using URL sessionId:", urlSessionId);
       setSessionId(urlSessionId);
       // localStorage에도 동기화 (폴백용)
-      localStorage.setItem("currentSessionId", urlSessionId);
+      localStorage.setItem("chatSessionId", urlSessionId);
       return;
     }
 
     // 2순위: localStorage에서 sessionId 읽기
-    const savedSessionId = localStorage.getItem("currentSessionId");
+    const savedSessionId = localStorage.getItem("chatSessionId");
     console.log("[SessionId] localStorage value:", savedSessionId);
 
     if (savedSessionId) {
@@ -51,7 +51,7 @@ export default function ConversationPage() {
     // 3순위: 새로 생성 (폴백)
     const newSessionId = crypto.randomUUID();
     console.log("[SessionId] Creating new sessionId:", newSessionId);
-    localStorage.setItem("currentSessionId", newSessionId);
+    localStorage.setItem("chatSessionId", newSessionId);
     setSessionId(newSessionId);
     // URL에 sessionId 추가
     router.replace(`/chat/conversation?sessionId=${newSessionId}`, { scroll: false });

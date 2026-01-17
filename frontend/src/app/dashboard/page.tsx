@@ -132,6 +132,26 @@ export default function DashboardPage() {
     setShowLogoutPopup(false);
   };
 
+  const handleNewChatClick = () => {
+    // 공통 저장 정보 (회원 진입)
+    localStorage.setItem("entryType", "member");
+    if (currentUser?.login_id) {
+      localStorage.setItem("loginId", currentUser.login_id);
+    }
+
+    if (allSessions.length > 0) {
+      // 대화 기록이 있으면 마지막 세션 ID 저장 후 welcome-back으로 이동
+      const lastSession = allSessions[0]; // 최신순 정렬 가정
+      localStorage.setItem("chatSessionId", lastSession.id);
+      router.push("/chat/welcome-back");
+    } else {
+      // 대화 기록이 없으면 시나리오 선택으로 이동
+      // 이전 세션 ID가 남아있을 수 있으므로 제거
+      localStorage.removeItem("chatSessionId");
+      router.push("/scenario-select");
+    }
+  };
+
   // 왼쪽 컨텐츠
   const leftContent = (
     <div className="w-full max-w-sm tracking-tight">
@@ -171,7 +191,7 @@ export default function DashboardPage() {
         size="md"
         fullWidth
         className="mt-10"
-        onClick={() => router.push("/chat/topic")}
+        onClick={handleNewChatClick}
       >
         말랭이랑 새로운 대화를 해볼까요?
       </Button>

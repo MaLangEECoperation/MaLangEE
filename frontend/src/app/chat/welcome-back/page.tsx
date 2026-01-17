@@ -2,54 +2,83 @@
 
 // Welcome back page: Displays the last chat session and allows the user to continue or start a new one.
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Button, MalangEE } from "@/shared/ui";
-import { useGetChatSessions, useGetChatSession } from "@/features/chat/api/use-chat-sessions";
-import { AuthGuard } from "@/features/auth";
+import { useGetChatSession } from "@/features/chat/api/use-chat-sessions";
+import { AuthGuard, useCurrentUser } from "@/features/auth";
 
 function WelcomeBackPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const sessionId = searchParams.get("sessionId");
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const textOpacity = 1;
 
-  // 1. 특정 세션 ID가 있을 경우 해당 세션 조회
-  const { data: specificSession, isLoading: isSpecificLoading } = useGetChatSession(sessionId || "");
+  // 현재 사용자 정보 조회
+  const { data: currentUser } = useCurrentUser();
 
-  // 2. 세션 ID가 없을 경우 최근 세션 조회
-  const { data: sessions, isLoading: isSessionsLoading } = useGetChatSessions(0, 1);
+  // 로컬 스토리지에서 sessionId 가져오기 및 entryType 설정
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedSessionId = localStorage.getItem("chatSessionId");
+      setSessionId(storedSessionId);
 
-  const isLoading = sessionId ? isSpecificLoading : isSessionsLoading;
+      // entryType 설정
+      if (currentUser) {
+        localStorage.setItem("entryType", "member");
+        if (currentUser.login_id) {
+          localStorage.setItem("loginId", currentUser.login_id);
+        }
+      } else {
+        localStorage.setItem("entryType", "guest");
+      }
+    }
+  }, [currentUser]);
 
-  // 표시할 세션 결정
-  const lastSession = useMemo(() => {
-    if (sessionId) return specificSession || null;
-    if (!sessions || !sessions.items || sessions.items.length === 0) return null;
-    return sessions.items[0];
-  }, [sessionId, specificSession, sessions]);
+  // 세션 상세 정보 조회
+  const { data: sessionDetail, isLoading } = useGetChatSession(sessionId || "");
+
+  // 세션 정보 로컬 스토리지 저장 (voice, subtitleEnabled)
+  useEffect(() => {
+    if (sessionDetail) {
+      // any 타입으로 캐스팅하여 API 응답 구조에 유연하게 대응
+      const detail = sessionDetail as any;
+
+      // voice 설정 (없으면 기본값 'nova')
+      if (detail.voice) {
+        localStorage.setItem("selectedVoice", detail.voice);
+      } else {
+        localStorage.setItem("selectedVoice", "nova");
+      }
+
+      // subtitleEnabled 설정 (boolean -> string)
+      if (detail.show_text) {
+        localStorage.setItem("subtitleEnabled", String(detail.show_text));
+      } else {
+        localStorage.setItem("subtitleEnabled", "true");
+      }
+    }
+  }, [sessionDetail]);
 
   // 대화 기록이 없으면 시나리오 선택 페이지로 리다이렉트
   useEffect(() => {
-    if (!isLoading && !lastSession) {
+    if (!isLoading && sessionId && !sessionDetail) {
+      // 세션 ID는 있는데 조회가 안되는 경우 (삭제됨 등)
+      router.push("/scenario-select");
+    } else if (isLoading && !sessionId) {
+      // 세션 ID가 없는 경우
       router.push("/scenario-select");
     }
-  }, [isLoading, lastSession, router]);
+  }, [isLoading, sessionId, sessionDetail, router]);
 
   const handleContinueChat = () => {
     // 텍스트 변경
     setIsConfirmed(true);
 
-    // 1초 후 자막 설정 페이지로 이동 (sessionId 전달)
+    // 1초 후 대화 페이지로 이동
     setTimeout(() => {
-      const targetSessionId = sessionId || lastSession?.session_id;
-      if (targetSessionId) {
-        router.push(`/chat/subtitle-settings?sessionId=${targetSessionId}`);
-      } else {
-        router.push("/chat/subtitle-settings");
-      }
-    }, 1000);
+      router.push("/chat/conversation");
+    }, 100);
   };
 
   const handleNewTopic = () => {
@@ -57,7 +86,7 @@ function WelcomeBackPage() {
     router.push("/scenario-select");
   };
 
-  if (isLoading) {
+  if (isLoading || !sessionDetail) {
     return (
       <>
         <div className="character-box">
@@ -69,6 +98,12 @@ function WelcomeBackPage() {
       </>
     );
   }
+
+  // sessionDetail 구조에 따라 title 접근 (API 응답 구조 확인 필요)
+  // 현재 useGetChatSession은 ChatSessionDetail을 반환하며, 이는 { session: ChatSession, messages: ChatMessage[] } 구조임
+  // 하지만 API 응답 예시에 따르면 최상위에 title이 있을 수도 있음. 안전하게 접근.
+  const title =
+    (sessionDetail as any).title || (sessionDetail as any).session?.title || "이전 대화";
 
   return (
     <>
@@ -82,7 +117,7 @@ function WelcomeBackPage() {
         <h1 className="welcome-back-title">
           {isConfirmed ? (
             <>
-              {lastSession?.title}을
+              {title}을
               <br />
               같이 재현해 볼까요?
             </>
@@ -90,7 +125,7 @@ function WelcomeBackPage() {
             <>
               기다리고 있었어요!
               <br />
-              지난번에 했던 {lastSession?.title},
+              지난번에 했던 {title},
               <br />이 주제로 다시 이야기해볼까요?
             </>
           )}

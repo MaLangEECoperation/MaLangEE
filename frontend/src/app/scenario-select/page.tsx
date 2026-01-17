@@ -403,8 +403,6 @@ export default function ScenarioSelectPage() {
           {stepIndex === 2 && <Step2 textOpacity={textOpacity} onNext={() => setStepIndex(3)} />}
 
           {stepIndex === 3 && <Step3 textOpacity={textOpacity} onNext={() => setStepIndex(4)} />}
-
-
         </FullLayout>
 
         {/* 디버깅용 이벤트 상태 표시 */}
@@ -445,15 +443,15 @@ export default function ScenarioSelectPage() {
                 <div className="bg-brand-50 border-brand-200 space-y-2 rounded-2xl border p-4 text-left">
                   <p className="text-text-secondary text-sm">
                     <span className="text-brand mr-2 font-bold">미션:</span>
-                    {chatState.scenarioResult.conversationGoal || "대화하기"}
+                    {chatState.scenarioResult.conversationGoal || "알수없음"}
                   </p>
                   <p className="text-text-secondary text-sm">
                     <span className="text-brand mr-2 font-bold">상대:</span>
-                    {chatState.scenarioResult.conversationPartner || "말랭이"}
+                    {chatState.scenarioResult.conversationPartner || "알수없음"}
                   </p>
                   <p className="text-text-secondary text-sm">
                     <span className="text-brand mr-2 font-bold">장소:</span>
-                    {chatState.scenarioResult.place || "어딘가"}
+                    {chatState.scenarioResult.place || "알수없음"}
                   </p>
                 </div>
               </div>

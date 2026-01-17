@@ -292,7 +292,7 @@ export function useGeneralChat(options: UseGeneralChatOptions) {
               wsRef.current.send(JSON.stringify({
                 type: "session.update",
                 session: {
-                  instructions: "You must respond only in English. You are an English conversation tutor helping users practice English. Always speak in English regardless of what language the user speaks.",
+                  instructions: "You must respond only in English. You are an English conversation tutor helping users practice English. Always speak in English regardless of what language the user speaks. If the user's input is empty or unclear, ask them to clarify or suggest a topic.",
                   turn_detection: {
                     type: "server_vad",
                     threshold: 0.7,
@@ -302,6 +302,17 @@ export function useGeneralChat(options: UseGeneralChatOptions) {
                 }
               }));
               console.log("[WebSocket] Sent session.update: English-only + silence_duration 2500ms");
+              
+              // 세션 생성 직후 AI가 먼저 발화하도록 요청 (response.create)
+              // 이는 대화 재개 시 AI가 먼저 말을 걸게 하기 위함
+              wsRef.current.send(JSON.stringify({
+                type: "response.create",
+                response: {
+                  modalities: ["text", "audio"],
+                  instructions: "Greet the user warmly and ask if they want to continue the previous conversation or talk about something else. If there is no previous context, just say hello and ask how they are doing."
+                }
+              }));
+              console.log("[WebSocket] Sent response.create to initiate conversation");
             }
             break;
 

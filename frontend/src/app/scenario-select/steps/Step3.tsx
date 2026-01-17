@@ -90,7 +90,7 @@ export function Step3({ textOpacity, onNext }: Step3Props) {
   const handleNextStep = () => {
     stopSample();
     const selectedVoice = currentVoice?.id || "alloy";
-    sessionStorage.setItem("selectedVoice", selectedVoice);
+    localStorage.setItem("selectedVoice", selectedVoice);
     router.push("/chat/conversation");
   };
 

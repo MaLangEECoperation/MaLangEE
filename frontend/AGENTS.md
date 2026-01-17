@@ -1,9 +1,10 @@
-﻿﻿# Repository Guidelines
+﻿# Repository Guidelines
 
 ## 프로젝트 구조 & 라우트
-- `src/app`: Next.js App Router. 라우트: [`/`](/), [`/auth/login`](/auth/login), [`/auth/signup`](/auth/signup), [`/scenario-select`](/scenario-select), [`/topic-select`](/topic-select), [`/chat/conversation`](/chat/conversation), [`/chat/complete`](/chat/complete), [`/chat/subtitle-settings`](/chat/subtitle-settings), [`/chat/voice-selection`](/chat/voice-selection), [`/chat/welcome-back`](/chat/welcome-back), [`/dashboard`](/dashboard), [`/logout`](/logout).
-- `src/features`: `auth`, `chat` 모듈만 존재. 그 외 도메인은 아직 없음.
-- `src/shared`: `ui`, `lib`, `types`, `api`, `styles` 공통 레이어.
+- `src/app`: Next.js App Router.
+  - 라우트: [`/`](/), [`/auth/login`](/auth/login), [`/auth/signup`](/auth/signup), [`/scenario-select`](/scenario-select), [`/chat/conversation`](/chat/conversation), [`/chat/complete`](/chat/complete), [`/chat/welcome-back`](/chat/welcome-back), [`/dashboard`](/dashboard), [`/logout`](/logout).
+- `src/features`: `auth`, `chat` 모듈 존재.
+- `src/shared`: `ui`, `lib`, `types`, `api`, `styles`, `hooks` 공통 레이어.
 - `src/entities`, `src/widgets`: 현재 `__init__.ts`만 있는 placeholder 상태.
 - `public/images`, `public/favicon.ico`: 정적 리소스.
 - `scripts`: 운영 보조 쉘 스크립트와 `generate-favicon.js`.
@@ -19,8 +20,8 @@
 ## 권한/인증
 - 토큰 저장: `localStorage`의 `access_token` 사용(`tokenStorage`).
 - 인증 유지: `useCurrentUser`는 토큰이 있을 때만 실행, 401/403이면 토큰 삭제.
-- 보호 라우트: [`/topic-select`](/topic-select)은 `AuthGuard`로 감싼 유일한 보호 페이지.
-- 게스트 가드: `GuestGuard`는 구현되어 있으나 현재 라우트에서 사용되지 않음.
+- 보호 라우트: `AuthGuard` 사용.
+- 게스트 가드: `GuestGuard` 구현됨.
 
 ## 데이터 소스 & API
 - API 기본 URL: `config.apiUrl` (dev는 `/api/v1` 프록시, prod는 `NEXT_PUBLIC_API_URL + /api/v1`).
@@ -63,5 +64,5 @@
 - [docs/ws.md](docs/ws.md): WebSocket 엔드포인트(`/api/v1/chat/ws/chat`, `/api/v1/chat/ws/guest-chat`).
 - [docs/tailwind.md](docs/tailwind.md): Tailwind v4 토큰/색상/그라데이션.
 - [docs/design_summer_v20250111.md](docs/design_summer_v20250111.md): 디자인 브랜치 변경 내역.
-- [docs/IMPROVEMENT_PLAN.md](docs/IMPROVEMENT_PLAN.md): 개선 로드맵(대시보드/음성 기능 등은 현재 코드에 없음).
+- [docs/IMPROVEMENT_PLAN.md](docs/IMPROVEMENT_PLAN.md): 개선 로드맵.
 - [docs/BusinessReport.md](docs/BusinessReport.md): 기획/UX 분석 문서.
