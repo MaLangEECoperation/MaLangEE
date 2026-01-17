@@ -14,8 +14,8 @@ from faker import Faker
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.database import AsyncSessionLocal
-from app.db.models import ConversationSession, ChatMessage, User
+from app.db.database import AsyncSessionLocal, engine
+from app.db.models import ConversationSession, ChatMessage, User, Base
 
 fake = Faker('ko_KR')  # Use Korean locale
 
@@ -43,6 +43,10 @@ async def get_user_id(db: AsyncSession, user_identifier: str):
         return None
 
 async def create_mock_data(user_identifier: str = None, session_count: int = 10, messages_per_session: int = 40):
+    # Ensure tables exist
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+        
     async with AsyncSessionLocal() as db:
         # Resolve real user_id
         real_user_id = await get_user_id(db, user_identifier)
