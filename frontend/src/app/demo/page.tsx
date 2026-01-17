@@ -240,6 +240,12 @@ export default function ScenarioSelectPage() {
         if (stepIndex === 1 && phase === "topic") {
             // scenario.completed 이벤트가 발생하면 isCompleted가 true가 됨
             if (chatState.isCompleted) {
+                // sessionId 추출 및 저장
+                const sessionId = chatState.scenarioResult?.sessionId;
+                if (sessionId) {
+                    localStorage.setItem("currentSessionId", sessionId);
+                }
+
                 // Topic 선정 완료 -> 자막 설정(Step 2)으로 이동
                 setStepIndex(2);
                 // 녹음 중지
@@ -453,7 +459,14 @@ export default function ScenarioSelectPage() {
           )}
 
           {stepIndex === 3 && (
-              <Step3 textOpacity={textOpacity} onNext={() => setStepIndex(4)} />
+              <Step3
+                textOpacity={textOpacity}
+                onNext={() => {
+                  disconnect();        // 시나리오 WebSocket 해제
+                  stopRecording();     // 마이크 중지
+                  router.push('/chat/conversation');
+                }}
+              />
           )}
 
           {stepIndex === 4 && (

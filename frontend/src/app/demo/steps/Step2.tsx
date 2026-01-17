@@ -9,7 +9,7 @@ interface Step2Props {
 
 export function Step2({ textOpacity, onNext }: Step2Props) {
   const handleChoice = (enabled: boolean) => {
-    sessionStorage.setItem("subtitleEnabled", enabled.toString());
+    localStorage.setItem("subtitleEnabled", enabled.toString());
     onNext();
   };
 

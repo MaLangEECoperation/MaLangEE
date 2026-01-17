@@ -2,73 +2,71 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { tokenStorage } from "@/features/auth";
-import { translateToKorean } from "@/shared/lib/translate";
 
 /**
- * WebSocket 메시지 타입 (03-FRONTEND_SCENARIO_GUIDE.md 기준)
+ * WebSocket 메시지 타입 (OpenAI Realtime API 표준)
  */
-export type ScenarioMessageType =
-  | "ready"
+export type GeneralChatMessageType =
+  | "session.created"
+  | "session.updated"
+  | "conversation.item.created"
   | "response.audio.delta"
   | "response.audio.done"
-  | "response.audio_transcript.delta"
-  | "response.audio_transcript.done"
-  | "input_audio.transcript"
-  | "scenario.completed"
-  | "speech.started" // 사용자 발화 시작 (Barge-in용)
+  | "response.text.delta"
+  | "response.text.done"
+  | "input_audio_buffer.speech_started"
+  | "input_audio_buffer.speech_stopped"
   | "error";
 
-export interface ScenarioMessage {
-  type: ScenarioMessageType;
+export interface GeneralChatMessage {
+  type: GeneralChatMessageType;
   delta?: string;           // response.audio.delta
   sample_rate?: number;     // response.audio.delta
-  transcript_delta?: string; // response.audio_transcript.delta
-  transcript?: string;      // response.audio_transcript.done, input_audio.transcript
-  json?: {                  // scenario.completed
-    place: string | null;
-    conversation_partner: string | null;
-    conversation_goal: string | null;
-    sessionId?: string;
+  text_delta?: string;      // response.text.delta
+  text?: string;            // response.text.done
+  session?: {               // session.created
+    id: string;
+    model: string;
+    voice: string;
   };
-  completed?: boolean;      // scenario.completed
   message?: string;         // error
 }
 
-export interface ScenarioChatState {
+export interface GeneralChatState {
   isConnected: boolean;
   isReady: boolean;
   aiMessage: string;
-  aiMessageKR: string;      // AI 메시지 한국어 번역본
   userTranscript: string;
   isAiSpeaking: boolean;
   isUserSpeaking: boolean;
-  isCompleted: boolean;
   error: string | null;
-  lastEvent: string | null; // 디버깅용 마지막 이벤트 타입
-  scenarioResult: {
-    place: string | null;
-    conversationPartner: string | null;
-    conversationGoal: string | null;
-    sessionId?: string;
-  } | null;
+  lastEvent: string | null;
+  sessionInfo: { id: string; model: string; voice: string; } | null;
+}
+
+interface UseGeneralChatOptions {
+  sessionId: string;
+  voice?: string;
+  showText?: boolean;
+  autoConnect?: boolean;
 }
 
 /**
- * 시나리오 대화 WebSocket 훅 (MaLangEE 전용)
+ * 일반 대화 WebSocket 훅 (MaLangEE 전용)
  */
-export function useScenarioChat() {
-  const [state, setState] = useState<ScenarioChatState>({
+export function useGeneralChat(options: UseGeneralChatOptions) {
+  const { sessionId, voice = "alloy", showText = true, autoConnect = true } = options;
+
+  const [state, setState] = useState<GeneralChatState>({
     isConnected: false,
     isReady: false,
     aiMessage: "",
-    aiMessageKR: "",
     userTranscript: "",
     isAiSpeaking: false,
     isUserSpeaking: false,
-    isCompleted: false,
     error: null,
     lastEvent: null,
-    scenarioResult: null,
+    sessionInfo: null,
   });
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -76,7 +74,7 @@ export function useScenarioChat() {
   const nextStartTimeRef = useRef<number>(0);
   const activeSourcesRef = useRef<AudioBufferSourceNode[]>([]);
   const connectionIdRef = useRef(0);
-  
+
   // 재연결 관련 refs
   const reconnectCountRef = useRef(0);
   const maxReconnectAttempts = 5;
@@ -110,11 +108,17 @@ export function useScenarioChat() {
       }
     }
 
-    const path = token ? "/api/v1/ws/scenario" : "/api/v1/ws/guest-scenario";
-    const query = token ? `?token=${encodeURIComponent(token)}` : "";
-    
-    return `${wsBaseUrl}${path}${query}`;
-  }, []);
+    const endpoint = token
+      ? `/api/v1/chat/ws/chat/${sessionId}`
+      : `/api/v1/chat/ws/guest-chat/${sessionId}`;
+
+    const params = new URLSearchParams();
+    if (token) params.append("token", token);
+    params.append("voice", voice);
+    params.append("show_text", showText.toString());
+
+    return `${wsBaseUrl}${endpoint}?${params.toString()}`;
+  }, [sessionId, voice, showText]);
 
   /**
    * PCM16 → Float32
@@ -173,7 +177,7 @@ export function useScenarioChat() {
     const binary = atob(base64);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    
+
     const float32 = pcm16ToFloat32(bytes);
     const buffer = ctx.createBuffer(1, float32.length, sampleRate);
     buffer.copyToChannel(float32 as Float32Array<ArrayBuffer>, 0);
@@ -181,10 +185,10 @@ export function useScenarioChat() {
     const source = ctx.createBufferSource();
     source.buffer = buffer;
     source.connect(ctx.destination);
-    
+
     const startTime = Math.max(nextStartTimeRef.current, ctx.currentTime);
     source.start(startTime);
-    
+
     nextStartTimeRef.current = startTime + buffer.duration;
     activeSourcesRef.current.push(source);
 
@@ -202,22 +206,31 @@ export function useScenarioChat() {
   const handleMessage = useCallback(
     (event: MessageEvent) => {
       try {
-        const payload: ScenarioMessage = JSON.parse(event.data);
+        const payload: GeneralChatMessage = JSON.parse(event.data);
         console.log("[WebSocket] Received:", payload.type, payload);
 
         setState(prev => ({ ...prev, lastEvent: payload.type }));
 
         switch (payload.type) {
-          case "ready":
+          case "session.created":
             reconnectCountRef.current = 0;
-            setState((prev) => ({ ...prev, isReady: true, error: null }));
+            setState((prev) => ({
+              ...prev,
+              isReady: true,
+              error: null,
+              sessionInfo: payload.session || null
+            }));
             break;
 
-          case "speech.started":
+          case "input_audio_buffer.speech_started":
             // 사용자 발화 시작 감지 시 AI 음성 즉시 중단 (Barge-in)
             console.log("[WebSocket] Barge-in triggered");
             stopAudio();
             setState(prev => ({ ...prev, isUserSpeaking: true }));
+            break;
+
+          case "input_audio_buffer.speech_stopped":
+            setState(prev => ({ ...prev, isUserSpeaking: false }));
             break;
 
           case "response.audio.delta":
@@ -228,43 +241,20 @@ export function useScenarioChat() {
             }
             break;
 
-          case "response.audio_transcript.delta":
-            if (payload.transcript_delta) {
-              setState(prev => ({ ...prev, aiMessage: prev.aiMessage + payload.transcript_delta }));
+          case "response.text.delta":
+            if (payload.text_delta) {
+              setState(prev => ({ ...prev, aiMessage: prev.aiMessage + payload.text_delta }));
             }
             break;
 
-          case "response.audio_transcript.done":
-            if (payload.transcript) {
-              const englishText = payload.transcript;
-              setState(prev => ({ ...prev, aiMessage: englishText }));
-              
-              // 문장이 완료되면 한국어로 번역
-              translateToKorean(englishText).then(translated => {
-                setState(prev => ({ ...prev, aiMessageKR: translated }));
-              });
+          case "response.text.done":
+            if (payload.text) {
+              setState(prev => ({ ...prev, aiMessage: payload.text || "" }));
             }
             break;
 
-          case "input_audio.transcript":
-            if (payload.transcript) {
-              setState(prev => ({ ...prev, userTranscript: payload.transcript || "", isUserSpeaking: false }));
-            }
-            break;
-
-          case "scenario.completed":
-            if (payload.json) {
-              setState(prev => ({
-                ...prev,
-                isCompleted: true,
-                scenarioResult: {
-                  place: payload.json?.place || null,
-                  conversationPartner: payload.json?.conversation_partner || null,
-                  conversationGoal: payload.json?.conversation_goal || null,
-                  sessionId: payload.json?.sessionId,
-                }
-              }));
-            }
+          case "conversation.item.created":
+            // 대화 항목 추가 (필요시 처리)
             break;
 
           case "error":
@@ -309,7 +299,7 @@ export function useScenarioChat() {
 
       ws.onclose = (event) => {
         if (connectionIdRef.current !== currentConnectionId) return;
-        
+
         setState((prev) => ({ ...prev, isConnected: false, isReady: false, lastEvent: `close (${event.code})` }));
         wsRef.current = null;
 
@@ -365,15 +355,6 @@ export function useScenarioChat() {
     }
   }, []);
 
-  /**
-   * 텍스트 전송 (text)
-   */
-  const sendText = useCallback((text: string) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: "text", text }));
-    }
-  }, []);
-
   const initAudio = useCallback(() => {
     if (!audioContextRef.current) {
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
@@ -385,17 +366,19 @@ export function useScenarioChat() {
   }, []);
 
   useEffect(() => {
+    if (autoConnect) {
+      connect();
+    }
     return () => {
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
       disconnect();
     };
-  }, [disconnect]);
+  }, [autoConnect, connect, disconnect]);
 
   return {
     state,
     connect,
     disconnect,
-    sendText,
     sendAudioChunk,
     initAudio,
   };

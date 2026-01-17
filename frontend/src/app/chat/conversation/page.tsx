@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { MicButton, Button, MalangEE, MalangEEStatus } from "@/shared/ui";
 import { PopupLayout } from "@/shared/ui/PopupLayout";
 import { useRouter } from "next/navigation";
-import { useScenarioChat } from "@/features/chat";
+import { useGeneralChat } from "@/features/chat";
 
 /**
  * 대화 상태
@@ -18,12 +18,42 @@ export default function ConversationPage() {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
+  // sessionId 읽기 (localStorage에서 가져오기)
+  const [sessionId] = useState(() => {
+    // scenario.completed에서 저장한 sessionId 사용
+    const savedSessionId = localStorage.getItem("currentSessionId");
+    if (savedSessionId) {
+      return savedSessionId;
+    }
+    // 없으면 새로 생성 (폴백)
+    const newSessionId = crypto.randomUUID();
+    localStorage.setItem("currentSessionId", newSessionId);
+    return newSessionId;
+  });
+
+  // localStorage에서 설정 읽기
+  const [selectedVoice, setSelectedVoice] = useState("alloy");
+  const [subtitleEnabled, setSubtitleEnabled] = useState(true);
+
+  useEffect(() => {
+    const subtitle = localStorage.getItem("subtitleEnabled");
+    const voice = localStorage.getItem("selectedVoice");
+
+    if (subtitle !== null) setSubtitleEnabled(subtitle === "true");
+    if (voice !== null) setSelectedVoice(voice);
+  }, []);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
-  const { state: chatState, connect, disconnect, sendText, sendAudioChunk, initAudio } = useScenarioChat();
 
-  const [conversationState, setConversationState] = useState<ConversationState>("ai-speaking");
+  const { state: chatState, connect, disconnect, sendAudioChunk, initAudio } = useGeneralChat({
+    sessionId,
+    voice: selectedVoice,
+    showText: subtitleEnabled,
+  });
+
+  const [conversationState, setConversationState] = useState<ConversationState>("user-turn");
   const [showHint, setShowHint] = useState(false);
   const hintMessage = "Try saying: I'm doing great, thanks for asking!";
   const [textOpacity, setTextOpacity] = useState(1);
@@ -31,17 +61,6 @@ export default function ConversationPage() {
   // 마이크 녹음 관련
   const audioContextRef = useRef<AudioContext | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-
-  // 세션 스토리지에서 자막 설정 가져오기
-  const [subtitleEnabled, setSubtitleEnabled] = useState(true);
-
-  useEffect(() => {
-    // 클라이언트 마운트 후 세션 스토리지 값 적용 (Hydration Mismatch 방지)
-    const subtitle = sessionStorage.getItem("subtitleEnabled");
-    if (subtitle !== null) {
-      setSubtitleEnabled(subtitle === "true");
-    }
-  }, []);
   const [isMuted] = useState(false);
 
   // 팝업 상태
@@ -64,14 +83,7 @@ export default function ConversationPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // WebSocket 상태에 따른 대화 상태 업데이트 (최초 준비 시에만 실행)
-  useEffect(() => {
-    if (chatState.isReady && conversationState === "ai-speaking") {
-      // AI가 준비되면 초기 메시지 전송
-      sendText("Hello! Start a conversation with me.");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chatState.isReady]);
+  // 일반 대화는 사용자가 먼저 발화하므로 초기 메시지 전송 불필요
 
   // AI 말하기 상태 동기화
   useEffect(() => {
