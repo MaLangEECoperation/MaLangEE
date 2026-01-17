@@ -174,7 +174,7 @@ export function useScenarioChat() {
     
     const float32 = pcm16ToFloat32(bytes);
     const buffer = ctx.createBuffer(1, float32.length, sampleRate);
-    buffer.copyToChannel(float32, 0);
+    buffer.copyToChannel(float32 as Float32Array<ArrayBuffer>, 0);
 
     const source = ctx.createBufferSource();
     source.buffer = buffer;

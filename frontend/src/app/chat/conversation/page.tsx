@@ -195,7 +195,7 @@ export default function ConversationPage() {
         }
 
         const float32Data = new Float32Array(inputData);
-        sendAudioChunk(float32Data, 16000);
+        sendAudioChunk(float32Data);
       };
 
       source.connect(processor);

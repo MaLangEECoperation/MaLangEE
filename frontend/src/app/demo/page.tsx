@@ -41,6 +41,7 @@ export default function ScenarioSelectPage() {
         disconnect,
         sendText,
         sendAudioChunk,
+        initAudio,
     } = useScenarioChat();
     const hintMessage = "예: 공항 체크인 상황을 연습하고 싶어요.";
     const hasError = Boolean(chatState.error);
@@ -189,7 +190,7 @@ export default function ScenarioSelectPage() {
                 }
                 const rms = Math.sqrt(sum / float32Data.length);
                 updateLocalSpeaking(rms);
-                sendAudioChunk(float32Data, 16000);
+                sendAudioChunk(float32Data);
             };
 
             source.connect(processor);
@@ -235,14 +236,10 @@ export default function ScenarioSelectPage() {
     }, [chatState.isAiSpeaking]);
 
     useEffect(() => {
-        // Phase가 topic일 때 시나리오가 선택되면 다음 단계(자막 설정)로 이동
+        // Phase가 topic일 때 scenario.completed 이벤트를 받으면 다음 단계(자막 설정)로 이동
         if (stepIndex === 1 && phase === "topic") {
-            // 수정: 타입 단언을 사용하여 scenarioInfo 속성 접근 허용
-            const scenarioSelected = Boolean((chatState as any).scenarioInfo);
-
-            // 사용자 발화가 있어도(fallbackSelected) 일단 진행할지 여부:
-            // 시나리오 선택 모드에서는 확실히 scenarioInfo가 나왔을 때 넘어가는 게 맞음
-            if (scenarioSelected) {
+            // scenario.completed 이벤트가 발생하면 isCompleted가 true가 됨
+            if (chatState.isCompleted) {
                 // Topic 선정 완료 -> 자막 설정(Step 2)으로 이동
                 setStepIndex(2);
                 // 녹음 중지
@@ -251,8 +248,7 @@ export default function ScenarioSelectPage() {
             }
         }
     }, [
-        (chatState as any).scenarioInfo,
-        chatState.userTranscript,
+        chatState.isCompleted,
         phase,
         stepIndex,
         stopRecording
@@ -281,19 +277,19 @@ export default function ScenarioSelectPage() {
 
         // AI가 먼저 말을 걸도록 텍스트 전송
         // 주제정보가 있다면 포함해서 보내는 것이 좋음
-        const scenarioInfo = (chatState as any).scenarioInfo;
+        const scenarioResult = chatState.scenarioResult;
         let prompt = "여행이나 식당같은 주제로 대화를 시작해볼까요?";
 
-        if (scenarioInfo) {
-             const place = scenarioInfo.place || "장소";
-             const partner = scenarioInfo.conversationPartner || "상대방";
-             const goal = scenarioInfo.conversationGoal || "목표";
+        if (scenarioResult) {
+             const place = scenarioResult.place || "장소";
+             const partner = scenarioResult.conversationPartner || "상대방";
+             const goal = scenarioResult.conversationGoal || "목표";
              prompt = `지금부터 상황극을 시작합니다. 당신은 ${place}에서 ${partner} 역할을 맡아주세요. 사용자의 목표는 ${goal}입니다. 먼저 사용자에게 말을 걸어주세요.`;
         }
 
         sendText(prompt);
         initialPromptSentRef.current = true;
-    }, [chatState.isReady, phase, sendText, chatState]);
+    }, [chatState.isReady, phase, sendText, chatState.scenarioResult]);
 
     useEffect(() => {
         if (!chatState.aiMessage) return;
@@ -447,6 +443,7 @@ export default function ScenarioSelectPage() {
               stopRecording={stopRecording}
               setIsListening={setIsListening}
               setTextOpacity={setTextOpacity}
+              initAudio={initAudio}
               onNext={() => {}} // 자막 설정으로 자동 이동됨 (useEffect)
             />
           )}
@@ -470,11 +467,15 @@ export default function ScenarioSelectPage() {
               phase="conversation"
               showInactivityMessage={showInactivityMessage}
               showNotUnderstood={showNotUnderstood}
+              aiMessage={chatState.aiMessage}
+              aiMessageKR={chatState.aiMessageKR}
+              userTranscript={chatState.userTranscript}
               resetTimers={resetTimers}
               startRecording={startRecording}
               stopRecording={stopRecording}
               setIsListening={setIsListening}
               setTextOpacity={setTextOpacity}
+              initAudio={initAudio}
               onNext={() => {}}
             />
           )}

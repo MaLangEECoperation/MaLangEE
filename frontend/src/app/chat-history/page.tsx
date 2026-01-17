@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pencil } from "lucide-react";
 import { SplitViewLayout } from "@/shared/ui/SplitViewLayout";
 import { Button, MalangEE, PopupLayout } from "@/shared/ui";
@@ -171,7 +171,7 @@ export default function DashboardPage() {
         size="md"
         fullWidth
         className="mt-10"
-        onClick={() => router.push("/chat/welcome-back")}
+        onClick={() => router.push("/demo")}
       >
         말랭이랑 새로운 대화를 해볼까요?
       </Button>
