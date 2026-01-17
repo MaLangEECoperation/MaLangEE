@@ -18,18 +18,22 @@ export default function ConversationPage() {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
-  // sessionId 읽기 (localStorage에서 가져오기)
-  const [sessionId] = useState(() => {
+  // sessionId 상태 (초기값은 null, 클라이언트에서 설정)
+  const [sessionId, setSessionId] = useState<string>("");
+
+  // sessionId 초기화 (localStorage에서 읽기 - 클라이언트에서만 실행)
+  useEffect(() => {
     // scenario.completed에서 저장한 sessionId 사용
     const savedSessionId = localStorage.getItem("currentSessionId");
     if (savedSessionId) {
-      return savedSessionId;
+      setSessionId(savedSessionId);
+    } else {
+      // 없으면 새로 생성 (폴백)
+      const newSessionId = crypto.randomUUID();
+      localStorage.setItem("currentSessionId", newSessionId);
+      setSessionId(newSessionId);
     }
-    // 없으면 새로 생성 (폴백)
-    const newSessionId = crypto.randomUUID();
-    localStorage.setItem("currentSessionId", newSessionId);
-    return newSessionId;
-  });
+  }, []);
 
   // localStorage에서 설정 읽기
   const [selectedVoice, setSelectedVoice] = useState("alloy");
@@ -73,15 +77,17 @@ export default function ConversationPage() {
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
   const waitTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // WebSocket 연결 및 초기화
+  // WebSocket 연결 및 초기화 (sessionId가 설정된 후에만 연결)
   useEffect(() => {
+    if (!sessionId) return; // sessionId가 없으면 연결하지 않음
+
     connect();
     return () => {
       disconnect();
       stopRecording();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [sessionId]); // sessionId가 설정되면 연결
 
   // 일반 대화는 사용자가 먼저 발화하므로 초기 메시지 전송 불필요
 
