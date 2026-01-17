@@ -285,6 +285,24 @@ export function useGeneralChat(options: UseGeneralChatOptions) {
               error: null,
               sessionInfo: payload.session || null
             }));
+            // [Fix] 세션 설정 업데이트
+            // 1. VAD: silence_duration_ms 증가 (사용자가 말을 끝낼 때까지 더 오래 기다림)
+            // 2. Instructions: 영어로만 응답하도록 지시
+            if (wsRef.current?.readyState === WebSocket.OPEN) {
+              wsRef.current.send(JSON.stringify({
+                type: "session.update",
+                session: {
+                  instructions: "You must respond only in English. You are an English conversation tutor helping users practice English. Always speak in English regardless of what language the user speaks.",
+                  turn_detection: {
+                    type: "server_vad",
+                    threshold: 0.7,
+                    prefix_padding_ms: 300,
+                    silence_duration_ms: 2500
+                  }
+                }
+              }));
+              console.log("[WebSocket] Sent session.update: English-only + silence_duration 2500ms");
+            }
             break;
 
           case "speech.started":
