@@ -121,6 +121,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate mock data for MaLangEE")
     # Changed type to str to allow login_id logic
     parser.add_argument("--user-id", type=str, help="User ID (int) or login_id (str) to assign sessions to", default=None)
+    parser.add_argument("--production", action="store_true", help="Force use of production database (PostgreSQL)")
     parser.add_argument("--db-name", type=str, help="Database name")
     parser.add_argument("--db-user", type=str, help="Database user")
     parser.add_argument("--db-password", type=str, help="Database password")
