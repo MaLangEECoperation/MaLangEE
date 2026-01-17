@@ -10,6 +10,14 @@ from datetime import datetime, timedelta
 # This ensures 'app' package is loaded from backend/app, not ai-engine/app.py
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from dotenv import load_dotenv
+
+# Load environment variables from .env and .env.local explicitly
+# This must be done BEFORE importing app.core.config
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(backend_dir, ".env"))
+load_dotenv(os.path.join(backend_dir, ".env.local"))
+
 from faker import Faker
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
