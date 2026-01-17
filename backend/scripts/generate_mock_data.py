@@ -5,21 +5,51 @@ import os
 import uuid
 import random
 from datetime import datetime, timedelta
-from faker import Faker
 
-# Add backend directory to sys.path to allow imports from app
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Fix path priority: Insert backend directory at the BEGINNING of sys.path
+# This ensures 'app' package is loaded from backend/app, not ai-engine/app.py
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from faker import Faker
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import AsyncSessionLocal
-from app.db.models import ConversationSession, ChatMessage
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.models import ConversationSession, ChatMessage, User
 
 fake = Faker('ko_KR')  # Use Korean locale
 
-async def create_mock_data(user_id: int = None, session_count: int = 10, messages_per_session: int = 40):
+async def get_user_id(db: AsyncSession, user_identifier: str):
+    """
+    Resolves a user identifier to a database ID.
+    Accepts numeric ID string or login_id.
+    """
+    if not user_identifier:
+        return None
+    
+    # If it's a digit, assume it's the Primary Key ID
+    if user_identifier.isdigit():
+        return int(user_identifier)
+        
+    # Otherwise, try to find by login_id
+    print(f"Looking up user by login_id: {user_identifier}")
+    result = await db.execute(select(User).where(User.login_id == user_identifier))
+    user = result.scalars().first()
+    
+    if user:
+        return user.id
+    else:
+        print(f"Warning: User with login_id='{user_identifier}' not found.")
+        return None
+
+async def create_mock_data(user_identifier: str = None, session_count: int = 10, messages_per_session: int = 40):
     async with AsyncSessionLocal() as db:
+        # Resolve real user_id
+        real_user_id = await get_user_id(db, user_identifier)
+        
         print(f"Starting mock data generation...")
-        print(f"User ID: {user_id if user_id else 'None (Anonymous)'}")
+        print(f"Target Identifier: {user_identifier}")
+        print(f"Resolved User ID: {real_user_id if real_user_id else 'None (Anonymous)'}")
         print(f"Sessions: {session_count}")
         print(f"Messages per session: {messages_per_session}")
 
@@ -45,7 +75,7 @@ async def create_mock_data(user_id: int = None, session_count: int = 10, message
                 deleted=False,
                 voice="alloy",
                 show_text=True,
-                user_id=user_id
+                user_id=real_user_id
             )
             db.add(session)
             
@@ -77,7 +107,8 @@ async def create_mock_data(user_id: int = None, session_count: int = 10, message
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate mock data for MaLangEE")
-    parser.add_argument("--user-id", type=int, help="User ID to assign sessions to", default=None)
+    # Changed type to str to allow login_id logic
+    parser.add_argument("--user-id", type=str, help="User ID (int) or login_id (str) to assign sessions to", default=None)
     args = parser.parse_args()
 
-    asyncio.run(create_mock_data(user_id=args.user_id))
+    asyncio.run(create_mock_data(user_identifier=args.user_id))
