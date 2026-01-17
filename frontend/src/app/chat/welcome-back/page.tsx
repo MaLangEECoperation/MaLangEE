@@ -2,27 +2,33 @@
 
 // Welcome back page: Displays the last chat session and allows the user to continue or start a new one.
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { Button, MalangEE } from "@/shared/ui";
-import { useGetChatSessions } from "@/features/chat/api/use-chat-sessions";
+import { useGetChatSessions, useGetChatSession } from "@/features/chat/api/use-chat-sessions";
 import { AuthGuard } from "@/features/auth";
 
 function WelcomeBackPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get("sessionId");
   const [isConfirmed, setIsConfirmed] = useState(false);
   const textOpacity = 1;
 
-  // 최근 세션 가져오기
+  // 1. 특정 세션 ID가 있을 경우 해당 세션 조회
+  const { data: specificSession, isLoading: isSpecificLoading } = useGetChatSession(sessionId || "");
+
+  // 2. 세션 ID가 없을 경우 최근 세션 조회
   const { data: sessions, isLoading: isSessionsLoading } = useGetChatSessions(0, 1);
 
-  const isLoading = isSessionsLoading;
+  const isLoading = sessionId ? isSpecificLoading : isSessionsLoading;
 
-  // 가장 최근 세션
+  // 표시할 세션 결정
   const lastSession = useMemo(() => {
+    if (sessionId) return specificSession || null;
     if (!sessions || !sessions.items || sessions.items.length === 0) return null;
     return sessions.items[0];
-  }, [sessions]);
+  }, [sessionId, specificSession, sessions]);
 
   // 대화 기록이 없으면 시나리오 선택 페이지로 리다이렉트
   useEffect(() => {
