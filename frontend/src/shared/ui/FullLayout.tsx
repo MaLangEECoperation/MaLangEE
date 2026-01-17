@@ -14,7 +14,7 @@ export const FullLayout = ({
   children,
   bgClass = "bg-login-02", // 기본값
   showHeader = false, // 기본값 true
-  withBackground = true,
+  withBackground = false,
   headerRight,
   maxWidth = "max-w-full md:max-w-3xl lg:max-w-5xl",
 }: FullLayoutProps) => {
