@@ -29,6 +29,7 @@ langgraph = "^1.0.6"
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
 pytest-asyncio = "^0.23.8"
+Faker = "^22.0.0"
 
 [build-system]
 requires = ["poetry-core"]
