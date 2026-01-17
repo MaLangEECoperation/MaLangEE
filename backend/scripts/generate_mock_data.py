@@ -162,4 +162,56 @@ if __name__ == "__main__":
         # Re-import to ensure we use the updated objects
         from app.db.database import AsyncSessionLocal, engine
 
-    asyncio.run(create_mock_data(user_identifier=args.user_id))
+    async def verify_and_run(user_identifier: str):
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                # Try to run the data generation
+                await create_mock_data(user_identifier=user_identifier)
+                return
+            except Exception as e:
+                # Check for password authentication error
+                error_str = str(e)
+                if "password authentication failed" in error_str or "InvalidPasswordError" in error_str:
+                    print(f"\n[!] Authentication failed (Attempt {attempt + 1}/{max_retries})")
+                    print(f"[!] The script cannot connect with password: '{settings.POSTGRES_PASSWORD}'")
+                    
+                    import getpass
+                    new_password = getpass.getpass("Enter the correct PostgreSQL password for user 'malangee_user': ")
+                    
+                    if new_password:
+                        # Update settings and engine with new password
+                        settings.POSTGRES_PASSWORD = new_password
+                        
+                        # Re-create engine string
+                        new_db_url = f"postgresql+asyncpg://{settings.POSTGRES_USER}:{new_password}@{settings.POSTGRES_SERVER}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
+                        
+                        print(f"Retrying connection with new password...")
+                        from app.db import database
+                        database.engine = database.create_async_engine(
+                            new_db_url,
+                            echo=True, # Turn off echo for retry to reduce noise
+                            pool_size=20,
+                            max_overflow=10,
+                            pool_recycle=3600,
+                            pool_pre_ping=True,
+                            pool_timeout=30
+                        )
+                        database.AsyncSessionLocal = database.sessionmaker(
+                            database.engine, class_=database.AsyncSession, expire_on_commit=False
+                        )
+                        # Update global engine/session reference
+                        global engine, AsyncSessionLocal
+                        engine = database.engine
+                        AsyncSessionLocal = database.AsyncSessionLocal
+                    else:
+                        print("No password entered. Exiting.")
+                        sys.exit(1)
+                else:
+                    # Non-auth error, raise it
+                    raise e
+        
+        print("\n[!] Maximum retry attempts reached. Please check your database credentials.")
+        sys.exit(1)
+
+    asyncio.run(verify_and_run(user_identifier=args.user_id))
