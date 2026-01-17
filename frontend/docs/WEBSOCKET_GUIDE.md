@@ -3,11 +3,14 @@
 ## 📋 목차
 1. [개요](#개요)
 2. [WebSocket 엔드포인트](#websocket-엔드포인트)
-3. [연결 방법](#연결-방법)
-4. [메시지 프로토콜](#메시지-프로토콜)
-5. [세션 관리](#세션-관리)
-6. [에러 처리](#에러-처리)
-7. [사용 예제](#사용-예제)
+3. [API별 반환 이벤트 차이점](#api별-반환-이벤트-차이점)
+4. [연결 방법](#연결-방법)
+5. [이벤트 흐름도](#이벤트-흐름도)
+6. [메시지 프로토콜](#메시지-프로토콜)
+7. [세션 관리](#세션-관리)
+8. [에러 처리](#에러-처리)
+9. [사용 예제](#사용-예제)
+10. [고급 기능](#고급-기능)
 
 ---
 
@@ -104,6 +107,43 @@ ws://localhost:8000/api/v1/ws/guest-scenario
 
 ---
 
+### 📊 API별 반환 이벤트 차이점
+
+모든 WebSocket 엔드포인트는 **동일한 기본 이벤트**를 반환하지만, 일부 차이점이 있습니다:
+
+#### 공통 이벤트 (모든 API)
+다음 이벤트는 4개의 모든 WebSocket 엔드포인트에서 공통으로 반환됩니다:
+
+- ✅ `audio.delta` - 오디오 스트리밍
+- ✅ `audio.done` - 오디오 전송 완료
+- ✅ `transcript.done` - AI 응답 자막
+- ✅ `user.transcript` - 사용자 발화 자막
+- ✅ `speech.started` - 발화 시작 감지
+- ✅ `speech.stopped` - 발화 종료 감지
+- ✅ `disconnected` - 세션 종료 및 리포트
+- ✅ `error` - 에러 발생
+
+#### 일반 대화 vs 시나리오 대화
+
+| 특징 | 일반 대화 | 시나리오 대화 |
+|------|----------|--------------|
+| **엔드포인트** | `/ws/chat/{session_id}`<br>`/ws/guest-chat/{session_id}` | `/ws/scenario`<br>`/ws/guest-scenario` |
+| **세션 ID** | URL 파라미터로 전달 | 서버에서 자동 생성 |
+| **컨텍스트** | 자유 대화 | 시나리오 기반 역할극 |
+| **리포트 필드** | 기본 통계 | 시나리오 진행 상태 포함 |
+| **추가 이벤트** | - | 시나리오 완료 이벤트 (향후 추가 예정) |
+
+#### 회원 vs 게스트
+
+| 특징 | 회원용 | 게스트용 |
+|------|--------|----------|
+| **인증** | JWT 토큰 필요 | 불필요 |
+| **세션 저장** | `user_id`와 연결되어 영구 저장 | `user_id=NULL`로 임시 저장 |
+| **세션 동기화** | - | `/api/v1/chat/sessions/{session_id}/sync`로 회원 계정에 연동 가능 |
+| **반환 이벤트** | 동일 | 동일 |
+
+---
+
 ## 🔌 연결 방법
 
 ### JavaScript (Browser)
@@ -142,22 +182,37 @@ ws.onmessage = (event) => {
   
   // 메시지 타입별 처리
   switch(data.type) {
-    case 'session.created':
-      console.log('세션 생성됨:', data.session);
-      break;
-    case 'response.audio.delta':
+    case 'audio.delta':
       // 오디오 스트리밍 데이터 처리
       playAudio(data.delta);
       break;
-    case 'response.text.delta':
-      // 텍스트 스트리밍 데이터 처리
-      displayText(data.delta);
+    case 'audio.done':
+      // 오디오 재생 완료
+      console.log('오디오 재생 완료');
       break;
-    case 'conversation.item.created':
-      console.log('대화 항목 생성:', data.item);
+    case 'transcript.done':
+      // AI 응답 텍스트 자막 처리
+      displayAIText(data.transcript);
+      break;
+    case 'user.transcript':
+      // 사용자 발화 텍스트 자막 처리
+      displayUserText(data.transcript);
+      break;
+    case 'speech.started':
+      // 사용자 발화 시작
+      showRecordingIndicator();
+      break;
+    case 'speech.stopped':
+      // 사용자 발화 종료
+      hideRecordingIndicator();
+      break;
+    case 'disconnected':
+      // 세션 종료 및 리포트
+      console.log('세션 종료:', data.report);
+      displaySessionReport(data.report);
       break;
     case 'error':
-      console.error('에러:', data.error);
+      console.error('에러:', data.code, data.message);
       break;
   }
 };
@@ -256,9 +311,88 @@ asyncio.run(chat_client())
 
 ---
 
-## 📨 메시지 프로토콜
+## � 이벤트 흐름도
+
+### 일반적인 대화 시나리오
+
+다음은 사용자가 음성으로 질문하고 AI가 응답하는 전체 이벤트 흐름입니다:
+
+```
+1. [연결 시작]
+   클라이언트: WebSocket 연결 요청
+   서버: 연결 수락 (ws.accept())
+   
+2. [사용자 발화 시작]
+   사용자: 마이크에 대고 말하기 시작
+   클라이언트 → 서버: { type: "input_audio_buffer.append", audio: "..." }
+   서버 → 클라이언트: { type: "speech.started" }
+   
+3. [사용자 발화 중]
+   클라이언트 → 서버: { type: "input_audio_buffer.append", audio: "..." } (연속 전송)
+   
+4. [사용자 발화 종료]
+   사용자: 말하기 멈춤 (VAD 감지)
+   서버 → 클라이언트: { type: "speech.stopped" }
+   
+5. [사용자 발화 텍스트 변환]
+   서버 → 클라이언트: { type: "user.transcript", transcript: "오늘 날씨 어때?" }
+   
+6. [AI 응답 시작]
+   서버 → 클라이언트: { type: "audio.delta", delta: "..." } (첫 번째 청크)
+   서버 → 클라이언트: { type: "audio.delta", delta: "..." } (두 번째 청크)
+   서버 → 클라이언트: { type: "audio.delta", delta: "..." } (계속...)
+   
+7. [AI 응답 완료]
+   서버 → 클라이언트: { type: "audio.done" }
+   서버 → 클라이언트: { type: "transcript.done", transcript: "오늘은 맑고 화창한 날씨입니다." }
+   
+8. [대화 반복]
+   2~7 단계 반복
+   
+9. [연결 종료]
+   클라이언트: ws.close() 또는 사용자가 종료 버튼 클릭
+   서버 → 클라이언트: { type: "disconnected", reason: "Session ended", report: {...} }
+```
+
+### 에러 발생 시나리오
+
+```
+[정상 흐름 중 에러 발생]
+   서버 → 클라이언트: { type: "error", code: "openai_disconnected", message: "..." }
+   
+[클라이언트 처리]
+   - 에러 메시지 표시
+   - 재연결 시도 (선택)
+   - 또는 연결 종료
+```
+
+### 힌트 요청 시나리오
+
+```
+1. [사용자 5초 이상 무응답]
+   서버 → 클라이언트: { type: "speech.stopped" }
+   
+2. [클라이언트 타이머 시작]
+   setTimeout(() => {
+     // 5초 후 힌트 API 호출
+   }, 5000)
+   
+3. [힌트 요청]
+   클라이언트 → REST API: GET /api/v1/chat/hints/{session_id}
+   
+4. [힌트 응답]
+   REST API → 클라이언트: { hints: ["How are you?", "What's the weather?", "Tell me a joke"] }
+   
+5. [힌트 표시]
+   클라이언트: UI에 힌트 버튼 표시
+```
+
+---
+
+## �📨 메시지 프로토콜
 
 WebSocket 통신은 **OpenAI Realtime API** 프로토콜을 따릅니다.
+
 
 ### 클라이언트 → 서버 (송신)
 
@@ -309,90 +443,277 @@ WebSocket 통신은 **OpenAI Realtime API** 프로토콜을 따릅니다.
 
 ### 서버 → 클라이언트 (수신)
 
-#### 1. 세션 생성 완료
+#### 📋 이벤트 목록 개요
+
+| 이벤트 타입 | 발생 시점 | 설명 |
+|------------|----------|------|
+| `audio.delta` | AI 응답 중 | 오디오 스트리밍 청크 |
+| `audio.done` | AI 응답 완료 | 오디오 전송 완료 |
+| `transcript.done` | AI 응답 완료 | AI 응답 텍스트 자막 |
+| `user.transcript` | 사용자 발화 완료 | 사용자 발화 텍스트 자막 |
+| `speech.started` | 사용자 발화 시작 | VAD가 음성 감지 시작 |
+| `speech.stopped` | 사용자 발화 종료 | VAD가 음성 감지 종료 |
+| `disconnected` | 연결 종료 | 세션 종료 및 리포트 |
+| `error` | 에러 발생 | 서버 또는 OpenAI 에러 |
+
+---
+
+#### 1. 오디오 스트리밍 (audio.delta)
+
+**발생 시점**: AI가 음성으로 응답하는 동안 실시간으로 전송됩니다.
+
+**용도**:
+- 실시간 오디오 재생
+- PCM16 형식의 Base64 인코딩된 오디오 청크
+
+**페이로드**:
 ```json
 {
-  "type": "session.created",
-  "session": {
-    "id": "sess_xxx",
-    "model": "gpt-4o-realtime-preview",
-    "modalities": ["text", "audio"],
-    "voice": "alloy"
+  "type": "audio.delta",
+  "delta": "UklGRiQAAABXQVZFZm10IBAAAAABAAEA..." // Base64 encoded PCM16 audio
+}
+```
+
+**처리 방법**:
+```javascript
+if (data.type === 'audio.delta') {
+  // Base64 디코딩 후 오디오 재생
+  const audioData = base64ToArrayBuffer(data.delta);
+  playAudioChunk(audioData);
+}
+```
+
+---
+
+#### 2. 오디오 전송 완료 (audio.done)
+
+**발생 시점**: AI의 한 응답에 대한 모든 오디오 청크 전송이 완료되었을 때
+
+**용도**:
+- 오디오 재생 완료 처리
+- UI 상태 업데이트 (예: 로딩 스피너 제거)
+
+**페이로드**:
+```json
+{
+  "type": "audio.done"
+}
+```
+
+---
+
+#### 3. AI 응답 자막 (transcript.done)
+
+**발생 시점**: AI의 음성 응답이 완료되고 텍스트 변환이 완료되었을 때
+
+**용도**:
+- 자막 표시 (`show_text=true`일 때)
+- 대화 내역 저장
+- 학습 피드백 생성
+
+**페이로드**:
+```json
+{
+  "type": "transcript.done",
+  "transcript": "안녕하세요! 무엇을 도와드릴까요?"
+}
+```
+
+**처리 방법**:
+```javascript
+if (data.type === 'transcript.done') {
+  // 채팅 UI에 AI 메시지 추가
+  addMessageToChat('assistant', data.transcript);
+}
+```
+
+---
+
+#### 4. 사용자 발화 자막 (user.transcript)
+
+**발생 시점**: 사용자의 음성 입력이 텍스트로 변환되었을 때
+
+**용도**:
+- 사용자 발화 내용 확인
+- 자막 표시
+- 대화 내역 저장
+
+**페이로드**:
+```json
+{
+  "type": "user.transcript",
+  "transcript": "오늘 날씨 어때?"
+}
+```
+
+**처리 방법**:
+```javascript
+if (data.type === 'user.transcript') {
+  // 채팅 UI에 사용자 메시지 추가
+  addMessageToChat('user', data.transcript);
+  
+  // WPM(Words Per Minute) 분석 완료
+  // 서버에서 자동으로 발화 속도에 따라 AI 응답 스타일 조정
+}
+```
+
+---
+
+#### 5. 발화 시작 감지 (speech.started)
+
+**발생 시점**: VAD(Voice Activity Detection)가 사용자의 음성을 감지했을 때
+
+**용도**:
+- 녹음 중 UI 표시
+- 사용자 피드백 제공 (예: 마이크 아이콘 활성화)
+
+**페이로드**:
+```json
+{
+  "type": "speech.started"
+}
+```
+
+**처리 방법**:
+```javascript
+if (data.type === 'speech.started') {
+  // UI 업데이트: 녹음 중 표시
+  showRecordingIndicator();
+  
+  // 힌트 타이머 리셋 (사용자가 말하기 시작했으므로)
+  clearHintTimeout();
+}
+```
+
+---
+
+#### 6. 발화 종료 감지 (speech.stopped)
+
+**발생 시점**: VAD가 사용자의 음성이 멈춘 것을 감지했을 때
+
+**용도**:
+- 녹음 종료 UI 표시
+- 힌트 타이머 시작 (5초 무응답 시 힌트 표시)
+
+**페이로드**:
+```json
+{
+  "type": "speech.stopped"
+}
+```
+
+**처리 방법**:
+```javascript
+if (data.type === 'speech.stopped') {
+  // UI 업데이트: 녹음 종료
+  hideRecordingIndicator();
+  
+  // 5초 후 힌트 표시 타이머 시작
+  startHintTimeout();
+}
+```
+
+---
+
+#### 7. 세션 종료 및 리포트 (disconnected)
+
+**발생 시점**: WebSocket 연결이 종료될 때
+
+**용도**:
+- 세션 통계 확인
+- 학습 진행도 표시
+- 대화 요약 정보 제공
+
+**페이로드**:
+```json
+{
+  "type": "disconnected",
+  "reason": "Session ended",
+  "report": {
+    "session_id": "uuid-v4",
+    "total_duration_sec": 900.5,
+    "user_speech_duration_sec": 450.2,
+    "message_count": 24,
+    "user_message_count": 12,
+    "assistant_message_count": 12,
+    "avg_wpm": 120.5,
+    "started_at": "2026-01-17T09:00:00Z",
+    "ended_at": "2026-01-17T09:15:00Z"
   }
 }
 ```
 
-#### 2. 세션 업데이트
-```json
-{
-  "type": "session.updated",
-  "session": {
-    "id": "sess_xxx",
-    "voice": "nova"
-  }
+**처리 방법**:
+```javascript
+if (data.type === 'disconnected') {
+  // 세션 통계 표시
+  displaySessionReport(data.report);
+  
+  // 학습 진행도 업데이트
+  updateProgress(data.report);
+  
+  // 피드백 생성 API 호출 (선택)
+  generateFeedback(data.report.session_id);
 }
 ```
 
-#### 3. 대화 항목 생성
-```json
-{
-  "type": "conversation.item.created",
-  "item": {
-    "id": "item_xxx",
-    "type": "message",
-    "role": "assistant",
-    "content": [
-      {
-        "type": "text",
-        "text": "안녕하세요! 무엇을 도와드릴까요?"
-      }
-    ]
-  }
-}
-```
+---
 
-#### 4. 응답 오디오 스트리밍
-```json
-{
-  "type": "response.audio.delta",
-  "delta": "base64_encoded_audio_chunk",
-  "item_id": "item_xxx",
-  "output_index": 0,
-  "content_index": 0
-}
-```
+#### 8. 에러 (error)
 
-#### 5. 응답 텍스트 스트리밍
-```json
-{
-  "type": "response.text.delta",
-  "delta": "안녕",
-  "item_id": "item_xxx",
-  "output_index": 0,
-  "content_index": 0
-}
-```
+**발생 시점**: 서버 또는 OpenAI API에서 에러가 발생했을 때
 
-#### 6. 응답 완료
-```json
-{
-  "type": "response.done",
-  "response": {
-    "id": "resp_xxx",
-    "status": "completed",
-    "output": [...]
-  }
-}
-```
+**용도**:
+- 에러 처리
+- 사용자에게 에러 메시지 표시
+- 재연결 시도
 
-#### 7. 에러
+**페이로드**:
 ```json
 {
   "type": "error",
-  "error": {
-    "type": "invalid_request_error",
-    "message": "에러 메시지",
-    "code": "error_code"
+  "code": "openai_disconnected",
+  "message": "OpenAI connection lost: Connection timeout"
+}
+```
+
+**에러 코드 목록**:
+
+| 코드 | 설명 | 대응 방법 |
+|------|------|----------|
+| `server_error` | 서버 내부 오류 | 재연결 시도 |
+| `openai_disconnected` | OpenAI 연결 끊김 | 재연결 시도 |
+| `invalid_request_error` | 잘못된 요청 | 요청 형식 확인 |
+| `authentication_error` | 인증 실패 | 토큰 재발급 |
+| `rate_limit_error` | API 사용량 초과 | 잠시 후 재시도 |
+
+**처리 방법**:
+```javascript
+if (data.type === 'error') {
+  console.error('WebSocket 에러:', data.code, data.message);
+  
+  // 에러 타입별 처리
+  switch(data.code) {
+    case 'openai_disconnected':
+    case 'server_error':
+      // 재연결 시도
+      attemptReconnect();
+      break;
+      
+    case 'authentication_error':
+      // 로그인 페이지로 리다이렉트
+      redirectToLogin();
+      break;
+      
+    case 'rate_limit_error':
+      // 사용자에게 알림 후 잠시 대기
+      showRateLimitWarning();
+      setTimeout(() => attemptReconnect(), 5000);
+      break;
+      
+    default:
+      // 일반 에러 메시지 표시
+      showErrorMessage(data.message);
   }
 }
 ```
@@ -630,10 +951,20 @@ class VoiceChat {
     this.ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       
-      if (data.type === 'response.audio.delta') {
+      if (data.type === 'audio.delta') {
         this.playAudio(data.delta);
-      } else if (data.type === 'response.text.delta') {
-        this.displayText(data.delta);
+      } else if (data.type === 'transcript.done') {
+        this.displayText(data.transcript, 'assistant');
+      } else if (data.type === 'user.transcript') {
+        this.displayText(data.transcript, 'user');
+      } else if (data.type === 'speech.started') {
+        this.onSpeechStarted();
+      } else if (data.type === 'speech.stopped') {
+        this.onSpeechStopped();
+      } else if (data.type === 'disconnected') {
+        this.onDisconnected(data.report);
+      } else if (data.type === 'error') {
+        console.error('WebSocket 에러:', data.code, data.message);
       }
     };
   }
@@ -759,12 +1090,12 @@ let hintTimeout;
 
 ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
-  
+
   // 사용자 발화 감지 시 타이머 리셋
   if (data.type === 'input_audio_buffer.speech_started') {
     clearTimeout(hintTimeout);
   }
-  
+
   // 사용자 발화 종료 시 5초 타이머 시작
   if (data.type === 'input_audio_buffer.speech_stopped') {
     hintTimeout = setTimeout(async () => {
@@ -773,7 +1104,7 @@ ws.onmessage = (event) => {
         `http://localhost:8000/api/v1/chat/hints/${sessionId}`
       );
       const { hints } = await hintResponse.json();
-      
+
       // 힌트 표시
       displayHints(hints);
     }, 5000);
@@ -785,7 +1116,7 @@ function displayHints(hints) {
   hints.forEach((hint, index) => {
     console.log(`${index + 1}. ${hint}`);
   });
-  
+
   // UI에 힌트 버튼 표시
   // 사용자가 힌트 클릭 시 해당 텍스트를 대화에 추가
 }
@@ -859,14 +1190,14 @@ GET /api/v1/chat/sessions/{session_id}
 
 ### Q3: WebSocket 연결이 자주 끊깁니다.
 
-**A:** 
+**A:**
 - 네트워크 상태 확인
 - 서버 로그 확인 (`uvicorn` 출력)
 - 재연결 로직 구현 (위 예제 참고)
 
 ### Q4: 오디오가 재생되지 않습니다.
 
-**A:** 
+**A:**
 - Base64 디코딩이 올바른지 확인
 - 오디오 형식이 PCM16인지 확인
 - 브라우저 오디오 권한 확인
