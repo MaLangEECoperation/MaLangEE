@@ -14,7 +14,7 @@ agent_system: |
      - 어색한 표현 → expression_improver
   4. 모든 문장 분석이 끝나면:
      - 오류가 있었다면 → generate_summary로 TOP 3 정리
-     - 오류가 없었다면 → "Great job! 오류 없이 잘 말했어요!" 라고 응답
+     - 오류가 없었다면 → feedback은 "Great job! 오류 없이 잘 말했어요!"
 
   중요:
   - 오류가 있는 문장은 반드시 도구로 분석하세요.
