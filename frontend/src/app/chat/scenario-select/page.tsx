@@ -1,339 +1,596 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { MicButton, Button, MalangEE } from "@/shared/ui";
-import { PopupLayout } from "@/shared/ui/PopupLayout";
-import { useScenarioChat } from "@/features/chat";
+import {useCallback, useEffect, useRef, useState} from "react";
+import {useRouter} from "next/navigation";
+import {Button, MalangEE} from "@/shared/ui";
+import {PopupLayout} from "@/shared/ui/PopupLayout";
 import "@/shared/styles/scenario.css";
-
-/**
- * 시나리오 선택 페이지 상태
- * 0: 초기 상태 (대기)
- * 1: 음성 인식 중 (듣는 중)
- * 2: 인식 실패 (에러)
- * 3: 인식 성공 및 분석 중 (성공)
- */
-type ScenarioState = 0 | 1 | 2 | 3;
+import {FullLayout} from "@/shared/ui/FullLayout";
+import {useScenarioChat} from "@/features/chat";
+import {useInactivityTimer} from "@/shared/hooks";
+import {Step1} from "@/app/demo/steps/Step1";
+import {Step2} from "@/app/demo/steps/Step2";
+import {Step3} from "@/app/demo/steps/Step3";
 
 export default function ScenarioSelectPage() {
-  const router = useRouter();
-  const { state: chatState, connect, disconnect, sendAudioChunk, initAudio } = useScenarioChat();
-  
-  const [currentState, setCurrentState] = useState<ScenarioState>(0);
-  const [isListening, setIsListening] = useState(false);
-  const [textOpacity, setTextOpacity] = useState(1);
-  const [showLoginPopup, setShowLoginPopup] = useState(false);
-  const [showInactivityMessage, setShowInactivityMessage] = useState(false);
-  const [showWaitPopup, setShowWaitPopup] = useState(false);
-  const [showEndChatPopup, setShowEndChatPopup] = useState(false);
+    const router = useRouter();
+    const [phase, setPhase] = useState<"topic" | "conversation">("topic");
+    const [isListening, setIsListening] = useState(false);
+    const [textOpacity, setTextOpacity] = useState(1);
+    const [showLoginPopup, setShowLoginPopup] = useState(false);
+    const [showNotUnderstood, setShowNotUnderstood] = useState(false);
+    const [isLocalSpeaking, setIsLocalSpeaking] = useState(false);
+    const [showEndChatPopup, setShowEndChatPopup] = useState(false);
+    const [showScenarioResultPopup, setShowScenarioResultPopup] = useState(false);
+    const [stepIndex, setStepIndex] = useState<1 | 2 | 3 | 4>(1);
 
-  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const waitTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+    // 커스텀 훅 사용
+    const {
+        showInactivityMessage,
+        showWaitPopup,
+        startInactivityTimer,
+        resetTimers: resetInactivityTimers,
+        setShowWaitPopup
+    } = useInactivityTimer();
 
-  // WebSocket 연결
-  useEffect(() => {
-    connect();
-    return () => {
-      disconnect();
-      stopRecording();
+    const loginTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const notUnderstoodTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const localSpeakingTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const initialPromptSentRef = useRef(false);
+    const aiSpeakingRef = useRef(false);
+    const lastAiMessageRef = useRef("");
+    const localSpeakingRef = useRef(false);
+    const audioContextRef = useRef<AudioContext | null>(null);
+    const streamRef = useRef<MediaStream | null>(null);
+    const {
+        state: chatState,
+        connect,
+        disconnect,
+        sendText,
+        sendAudioChunk,
+        initAudio,
+    } = useScenarioChat();
+    const hintMessage = "예: 공항 체크인 상황을 연습하고 싶어요.";
+    const hasError = Boolean(chatState.error);
+
+    const clearLoginTimer = () => {
+        if (loginTimerRef.current) {
+            clearTimeout(loginTimerRef.current);
+            loginTimerRef.current = null;
+        }
     };
-  }, [connect, disconnect]);
 
-  // 사용자가 메시지를 보낸 시점(발화 텍스트 수신 시점)부터 15초 타이머 시작
-  useEffect(() => {
-    if (chatState.userTranscript) {
-      resetTimers();
-      startInactivityTimer();
-    }
-  }, [chatState.userTranscript]);
+    const clearNotUnderstoodTimer = () => {
+        if (notUnderstoodTimerRef.current) {
+            clearTimeout(notUnderstoodTimerRef.current);
+            notUnderstoodTimerRef.current = null;
+        }
+    };
 
-  // 시나리오 완료 시 처리
-  useEffect(() => {
-    if (chatState.isCompleted) {
-      resetTimers();
-      setCurrentState(3);
-      setIsListening(false);
-      setTimeout(() => {
-        setShowLoginPopup(true);
-      }, 1500);
-    }
-  }, [chatState.isCompleted]);
+    const clearLocalSpeakingTimer = () => {
+        if (localSpeakingTimerRef.current) {
+            clearTimeout(localSpeakingTimerRef.current);
+            localSpeakingTimerRef.current = null;
+        }
+    };
 
-  // 비활동 타이머 시작 (사용자 발화 후 15초)
-  const startInactivityTimer = () => {
-    clearInactivityTimer();
-    inactivityTimerRef.current = setTimeout(() => {
-      setShowInactivityMessage(true);
-      // 비활동 메시지 표시 후 5초 뒤 응답 대기 팝업
-      startWaitTimer();
-    }, 15000);
-  };
+    // 컴포넌트 언마운트 시 타이머 정리
+    useEffect(() => {
+        return () => {
+            clearLoginTimer();
+            clearNotUnderstoodTimer();
+            clearLocalSpeakingTimer();
+        };
+    }, []);
 
-  // 비활동 타이머 정리
-  const clearInactivityTimer = () => {
-    if (inactivityTimerRef.current) {
-      clearTimeout(inactivityTimerRef.current);
-      inactivityTimerRef.current = null;
-    }
-  };
+    const updateLocalSpeaking = useCallback((level: number) => {
+        const threshold = 0.02;
+        const hangMs = 400;
 
-  // 응답 대기 타이머 시작 (5초 후 팝업 표시)
-  const startWaitTimer = () => {
-    clearWaitTimer();
-    waitTimerRef.current = setTimeout(() => {
-      setShowWaitPopup(true);
-      stopRecording();
-      setIsListening(false);
-    }, 5000);
-  };
+        if (level >= threshold) {
+            clearLocalSpeakingTimer();
+            if (!localSpeakingRef.current) {
+                localSpeakingRef.current = true;
+                setIsLocalSpeaking(true);
+            }
+            return;
+        }
 
-  // 응답 대기 타이머 정리
-  const clearWaitTimer = () => {
-    if (waitTimerRef.current) {
-      clearTimeout(waitTimerRef.current);
-      waitTimerRef.current = null;
-    }
-  };
+        if (localSpeakingRef.current && !localSpeakingTimerRef.current) {
+            localSpeakingTimerRef.current = setTimeout(() => {
+                localSpeakingRef.current = false;
+                setIsLocalSpeaking(false);
+                localSpeakingTimerRef.current = null;
+            }, hangMs);
+        }
+    }, []);
 
-  // 사용자 활동 시작 (타이머 초기화)
-  const resetTimers = () => {
-    clearInactivityTimer();
-    clearWaitTimer();
-    setShowInactivityMessage(false);
-  };
+    const startRecording = useCallback(async () => {
+        if (streamRef.current) return;
+        const getMediaStream = async (constraints: MediaStreamConstraints): Promise<MediaStream> => {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                return navigator.mediaDevices.getUserMedia(constraints);
+            }
+            const legacyApi = (navigator as any).webkitGetUserMedia ||
+                (navigator as any).mozGetUserMedia ||
+                (navigator as any).msGetUserMedia;
+            if (legacyApi) {
+                return new Promise((resolve, reject) => {
+                    legacyApi.call(navigator, constraints, resolve, reject);
+                });
+            }
+            throw new Error("MEDIA_API_NOT_SUPPORTED");
+        };
 
-  // 마이크 녹음 시작
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-      
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      audioContextRef.current = new AudioContextClass({ sampleRate: 16000 });
-      
-      const source = audioContextRef.current.createMediaStreamSource(stream);
-      const processor = audioContextRef.current.createScriptProcessor(4096, 1, 1);
-      
-      processor.onaudioprocess = (e) => {
-        const inputData = e.inputBuffer.getChannelData(0);
-        sendAudioChunk(new Float32Array(inputData));
-      };
-      
-      source.connect(processor);
-      processor.connect(audioContextRef.current.destination);
-    } catch (error) {
-      console.error("Mic error:", error);
-      setIsListening(false);
-      setCurrentState(2);
-    }
-  };
+        try {
+            const constraints = {
+                audio: {
+                    sampleRate: {ideal: 16000},
+                    channelCount: {ideal: 1},
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                },
+            };
 
-  const stopRecording = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
-    }
-  };
+            let stream: MediaStream;
+            try {
+                stream = await getMediaStream(constraints);
+            } catch (err) {
+                console.warn("[Recording] Preferred constraints failed. Trying basic fallback...", err);
+                stream = await getMediaStream({audio: true});
+            }
 
-  const handleMicClick = () => {
-    if (currentState === 3) return;
-    initAudio();
-    resetTimers();
-    setTextOpacity(0);
+            streamRef.current = stream;
 
-    setTimeout(() => {
-      if (!isListening) {
-        setCurrentState(1);
-        setIsListening(true);
-        startRecording();
-      } else {
+            const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+            audioContextRef.current = new AudioContextClass({sampleRate: 16000});
+
+            const source = audioContextRef.current.createMediaStreamSource(stream);
+            const processor = audioContextRef.current.createScriptProcessor(4096, 1, 1);
+
+            processor.onaudioprocess = (e) => {
+                const inputData = e.inputBuffer.getChannelData(0);
+                const float32Data = new Float32Array(inputData);
+                let sum = 0;
+                for (let i = 0; i < float32Data.length; i += 1) {
+                    sum += float32Data[i] * float32Data[i];
+                }
+                const rms = Math.sqrt(sum / float32Data.length);
+                updateLocalSpeaking(rms);
+                sendAudioChunk(float32Data);
+            };
+
+            source.connect(processor);
+            processor.connect(audioContextRef.current.destination);
+        } catch (error) {
+            console.error("[Recording] Failed to start:", error);
+            if (error instanceof Error && (error.message === "MEDIA_API_NOT_SUPPORTED" || error.name === "NotAllowedError")) {
+                alert("마이크 사용이 필요합니다.\nHTTPS 연결(또는 localhost)인지 확인하고 마이크 권한을 허용해주세요.");
+            }
+            setIsListening(false);
+            setIsLocalSpeaking(false);
+            localSpeakingRef.current = false;
+            clearLocalSpeakingTimer();
+        }
+    }, [sendAudioChunk, updateLocalSpeaking]);
+
+    const stopRecording = useCallback(() => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach((track) => track.stop());
+            streamRef.current = null;
+        }
+        if (audioContextRef.current) {
+            audioContextRef.current.close();
+            audioContextRef.current = null;
+        }
+        setIsLocalSpeaking(false);
+        localSpeakingRef.current = false;
+        clearLocalSpeakingTimer();
+    }, []);
+
+    useEffect(() => {
+        connect();
+        return () => {
+            stopRecording();
+            disconnect();
+        };
+    }, [connect, disconnect, stopRecording]);
+
+    useEffect(() => {
+        aiSpeakingRef.current = chatState.isAiSpeaking;
+    }, [chatState.isAiSpeaking]);
+
+    // 사용자 활동 시작 (타이머 초기화)
+    const resetTimers = useCallback(() => {
+        resetInactivityTimers();
+        setShowNotUnderstood(false);
+    }, [resetInactivityTimers]);
+
+    // 비활동 타이머 로직
+    useEffect(() => {
+        if (stepIndex !== 1 && stepIndex !== 4) return;
+
+        if (chatState.isAiSpeaking || chatState.isUserSpeaking || isLocalSpeaking) {
+            resetTimers();
+            return;
+        }
+
+        startInactivityTimer();
+    }, [chatState.isAiSpeaking, chatState.isUserSpeaking, isLocalSpeaking, stepIndex, startInactivityTimer, resetTimers]);
+
+    useEffect(() => {
+        // Phase가 topic일 때 시나리오가 선택되면 결과 팝업 표시
+        if (stepIndex === 1 && phase === "topic") {
+            if (chatState.isCompleted) {
+                resetTimers();
+                setIsListening(false);
+                stopRecording();
+                setShowScenarioResultPopup(true);
+            }
+        }
+    }, [
+        chatState.isCompleted,
+        phase,
+        stepIndex,
+        stopRecording,
+        resetTimers
+    ]);
+
+    // 팝업이 떠있을 때 타이머 초기화 (사용자 확인 대기 중)
+    useEffect(() => {
+        if (showScenarioResultPopup || showLoginPopup || showWaitPopup || showEndChatPopup) {
+            resetTimers();
+        }
+    }, [showScenarioResultPopup, showLoginPopup, showWaitPopup, showEndChatPopup, resetTimers]);
+
+    useEffect(() => {
+        if (stepIndex === 4 && phase === "topic") {
+           setPhase("conversation");
+           setIsListening(true);
+           startInactivityTimer();
+            if (!loginTimerRef.current) {
+                loginTimerRef.current = setTimeout(() => {
+                    resetTimers(); // 비활동 타이머 초기화
+                    setShowLoginPopup(true);
+                    setIsListening(false);
+                    stopRecording();
+                }, 10 * 60 * 1000);
+            }
+        }
+    }, [stepIndex, phase, startInactivityTimer, stopRecording, resetTimers]);
+
+    useEffect(() => {
+        if (phase !== "conversation") return;
+        if (!chatState.isReady || initialPromptSentRef.current) return;
+
+        sendText("Hello! Start a conversation with me.");
+        initialPromptSentRef.current = true;
+    }, [chatState.isReady, phase, sendText]);
+
+    useEffect(() => {
+        if (!chatState.aiMessage) return;
+
+        lastAiMessageRef.current = chatState.aiMessage;
+        setShowNotUnderstood(false);
+        clearNotUnderstoodTimer();
+    }, [chatState.aiMessage]);
+
+    useEffect(() => {
+        if (!chatState.userTranscript) return;
+
+        setShowNotUnderstood(false);
+        clearNotUnderstoodTimer();
+        const snapshotAiMessage = lastAiMessageRef.current;
+
+        notUnderstoodTimerRef.current = setTimeout(() => {
+            if (aiSpeakingRef.current) return;
+            if (lastAiMessageRef.current !== snapshotAiMessage) return;
+            setShowNotUnderstood(true);
+        }, 5000);
+    }, [chatState.userTranscript]);
+
+    useEffect(() => {
+        if (phase !== "conversation") return;
+
+        const userSpeaking = chatState.isUserSpeaking || isLocalSpeaking;
+
+        if (userSpeaking) {
+            setIsListening(true);
+            setShowNotUnderstood(false);
+            return;
+        }
+
+        if (chatState.isAiSpeaking) {
+            setIsListening(false);
+            setShowNotUnderstood(false);
+        }
+    }, [chatState.isAiSpeaking, chatState.isUserSpeaking, isLocalSpeaking, phase]);
+
+    const endChatAndGoLogin = useCallback(() => {
+        resetTimers();
+        clearLoginTimer();
+        setShowWaitPopup(false);
+        setShowEndChatPopup(false);
         setIsListening(false);
         stopRecording();
-        // 수동으로 마이크를 껐을 때도 타이머 시작 (서버 응답 대기)
+        disconnect();
+        router.push("/auth/login");
+    }, [disconnect, router, stopRecording, resetTimers]);
+
+    const handleStopChat = () => {
+        endChatAndGoLogin();
+    };
+
+    const handleLogin = () => {
+        endChatAndGoLogin();
+    };
+
+    const handleContinueChat = () => {
+        setShowWaitPopup(false);
+        resetTimers();
         startInactivityTimer();
-      }
-      setTextOpacity(1);
-    }, 300);
-  };
+        setIsListening(true);
+        startRecording();
+    };
 
-  const getMainTitle = () => {
-    if (showInactivityMessage) return "말랭이가 대답을 기다리고 있어요.";
+    const handleStopFromWait = () => {
+        endChatAndGoLogin();
+    };
 
-    switch (currentState) {
-      case 0: return "어떤 상황을 연습하고 싶은지\n편하게 말해보세요.";
-      case 1: return "장소나 상황 또는 키워드로\n말씀해 주세요.";
-      case 2: return "말랭이가 잘 이해하지 못했어요.";
-      case 3: return "좋아요! 상황을 파악했어요.\n잠시만 기다려주세요.";
-      default: return "";
-    }
-  };
+    const handleContinueFromEnd = () => {
+        setShowEndChatPopup(false);
+        resetTimers();
+        startInactivityTimer();
+        setIsListening(true);
+        startRecording();
+    };
 
-  const getSubDesc = () => {
-    if (showInactivityMessage) return "Cheer up!";
+    const handleStopFromEnd = () => {
+        endChatAndGoLogin();
+    };
 
-    switch (currentState) {
-      case 0: return "마이크를 누르면 바로 시작돼요";
-      case 1: return "다 듣고 나면 마이크를 다시 눌러주세요";
-      case 2: return "다시 한번 말씀해 주시겠어요?";
-      case 3: return "곧 연습을 시작할게요!";
-      default: return "";
-    }
-  };
+    return (
+      <>
+        <FullLayout showHeader={true}>
+          {/* Character */}
+          <div className="character-box relative">
+            <MalangEE status={showInactivityMessage ? "humm" : "default"} size={120} />
 
-  const handleStopChat = () => router.push("/auth/signup");
-  const handleLogin = () => router.push("/auth/login");
-  const handleContinueChat = () => {
-    setShowWaitPopup(false);
-    resetTimers();
-    startInactivityTimer();
-  };
-  const handleStopFromWait = () => router.push("/auth/signup");
-  const handleContinueFromEnd = () => {
-    setShowEndChatPopup(false);
-    resetTimers();
-    startInactivityTimer();
-  };
-  const handleStopFromEnd = () => router.push("/auth/signup");
-
-  return (
-    <>
-      <div className="character-box">
-        <MalangEE status={showInactivityMessage ? "humm" : chatState.isAiSpeaking ? "talking" : "default"} size={150} />
-      </div>
-
-      <div className="text-group text-center" style={{ opacity: textOpacity }}>
-        <h1 className="scenario-title whitespace-pre-line">{getMainTitle()}</h1>
-        <p className="scenario-desc text-sm text-text-secondary mt-2">{getSubDesc()}</p>
-      </div>
-
-      <div className="relative mt-6 flex flex-col items-center">
-        {/* 자막 말풍선 (마이크 위쪽) */}
-        {(chatState.aiMessage || chatState.userTranscript) && (
-          <div className="absolute bottom-full mb-6 w-full max-w-[320px] animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="relative bg-white/90 backdrop-blur-md p-4 rounded-3xl shadow-xl border border-white/60 text-center">
-              {/* 말풍선 꼬리 */}
-              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white/90 rotate-45 border-r border-b border-white/60" />
-              
-              {chatState.userTranscript && (
-                <p className="text-xs text-text-secondary mb-2 italic">나: {chatState.userTranscript}</p>
-              )}
-              {chatState.aiMessage && (
-                <div className="flex flex-col gap-1.5">
-                  <p className="text-sm text-text-primary leading-relaxed font-semibold">
-                    {chatState.aiMessage}
-                  </p>
-                  {chatState.aiMessageKR && (
-                    <p className="text-[11px] text-brand font-medium leading-tight">
-                      {chatState.aiMessageKR}
-                    </p>
-                  )}
+            {showInactivityMessage && (
+              <div className="absolute -bottom-[25px] left-1/2 z-10 -translate-x-1/2">
+                <div className="relative rounded-2xl border-2 border-yellow-300 bg-yellow-50 px-6 py-3 shadow-lg">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <div className="h-0 w-0 border-b-[12px] border-l-[12px] border-r-[12px] border-b-yellow-300 border-l-transparent border-r-transparent"></div>
+                    <div className="absolute left-1/2 top-[2px] h-0 w-0 -translate-x-1/2 border-b-[10px] border-l-[10px] border-r-[10px] border-b-yellow-50 border-l-transparent border-r-transparent"></div>
+                  </div>
+                  <p className="whitespace-nowrap text-sm text-gray-700">{hintMessage}</p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
+
+          {/*
+             Step 1: Topic Selection (Use Step1 component in 'topic' phase)
+             Step 2: Subtitle (Use Step2 component)
+             Step 3: Voice (Use Step3 component)
+             Step 4: Conversation (Use Step4 component in 'conversation' phase)
+          */}
+
+          {stepIndex === 1 && (
+            <Step1
+              textOpacity={textOpacity}
+              isListening={isListening}
+              isLocalSpeaking={isLocalSpeaking}
+              isAiSpeaking={chatState.isAiSpeaking}
+              isUserSpeaking={chatState.isUserSpeaking}
+              hasError={hasError}
+              phase="topic"
+              showInactivityMessage={showInactivityMessage}
+              showNotUnderstood={showNotUnderstood}
+              aiMessage={chatState.aiMessage}
+              aiMessageKR={chatState.aiMessageKR}
+              userTranscript={chatState.userTranscript}
+              resetTimers={resetTimers}
+              startRecording={startRecording}
+              stopRecording={stopRecording}
+              setIsListening={setIsListening}
+              setTextOpacity={setTextOpacity}
+              initAudio={initAudio}
+              onNext={() => {}} // 자막 설정으로 자동 이동됨 (useEffect)
+            />
+          )}
+
+          {stepIndex === 2 && <Step2 textOpacity={textOpacity} onNext={() => setStepIndex(3)} />}
+
+          {stepIndex === 3 && <Step3 textOpacity={textOpacity} onNext={() => setStepIndex(4)} />}
+
+
+        </FullLayout>
+
+        {/* 디버깅용 이벤트 상태 표시 */}
+        <div className="pointer-events-none fixed bottom-4 left-4 right-4 z-50 flex justify-center">
+          <div className="flex items-center gap-3 rounded-full bg-black/70 px-3 py-1 text-[10px] text-white backdrop-blur-md">
+            <div className="flex items-center gap-1">
+              <div
+                className={`h-1.5 w-1.5 rounded-full ${chatState.isConnected ? "bg-green-500" : "bg-red-500"}`}
+              />
+              <span>{chatState.isConnected ? "CONNECTED" : "DISCONNECTED"}</span>
+            </div>
+            {chatState.lastEvent && (
+              <div className="border-l border-white/20 pl-3">
+                LAST EVENT:{" "}
+                <span className="font-mono text-yellow-400">
+                  {chatState.lastEvent.toUpperCase()}
+                </span>
+              </div>
+            )}
+            {chatState.isAiSpeaking && (
+              <div className="animate-pulse border-l border-white/20 pl-3 text-blue-400">
+                AI SPEAKING...
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 시나리오 결과 확인 팝업 */}
+        {showScenarioResultPopup && chatState.scenarioResult && (
+          <PopupLayout
+            onClose={() => setShowScenarioResultPopup(false)}
+            maxWidth="md"
+            showCloseButton={false}
+          >
+            <div className="flex flex-col items-center gap-6 py-6">
+              <div className="space-y-4 text-center">
+                <p className="text-text-primary text-xl font-bold">좋아요! 상황을 파악했어요.</p>
+                <div className="bg-brand-50 border-brand-200 space-y-2 rounded-2xl border p-4 text-left">
+                  <p className="text-text-secondary text-sm">
+                    <span className="text-brand mr-2 font-bold">미션:</span>
+                    {chatState.scenarioResult.conversationGoal || "대화하기"}
+                  </p>
+                  <p className="text-text-secondary text-sm">
+                    <span className="text-brand mr-2 font-bold">상대:</span>
+                    {chatState.scenarioResult.conversationPartner || "말랭이"}
+                  </p>
+                  <p className="text-text-secondary text-sm">
+                    <span className="text-brand mr-2 font-bold">장소:</span>
+                    {chatState.scenarioResult.place || "어딘가"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex w-full gap-3">
+                <Button
+                  onClick={() => {
+                    setShowScenarioResultPopup(false);
+                    setStepIndex(1); // 주제 다시 정하기
+                    connect(); // 재연결
+                  }}
+                  variant="outline-purple"
+                  className="h-14 flex-1 rounded-full border-2 border-gray-300 text-base font-semibold text-gray-700 transition hover:bg-gray-50"
+                >
+                  주제 다시 정하기
+                </Button>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={() => {
+                    setShowScenarioResultPopup(false);
+                    setStepIndex(2); // 자막 설정하기로 이동
+                  }}
+                  className="flex-1"
+                >
+                  다음단계
+                </Button>
+              </div>
+            </div>
+          </PopupLayout>
         )}
 
-        <MicButton
-          isListening={isListening}
-          onClick={handleMicClick}
-          size="md"
-          className={currentState === 3 ? "pointer-events-none opacity-50" : ""}
-        />
-      </div>
+        {/* Login Popup */}
+        {showLoginPopup && (
+          <PopupLayout
+            onClose={() => setShowLoginPopup(false)}
+            maxWidth="md"
+            showCloseButton={false}
+          >
+            <div className="flex flex-col items-center gap-6 py-6">
+              {/* Text */}
+              <div className="text-center">
+                <p className="text-xl font-semibold leading-relaxed text-gray-800">
+                  로그인을 하면 대화를 저장하고
+                  <br />
+                  이어 말할 수 있어요
+                </p>
+              </div>
 
-      {/* 디버깅용 이벤트 상태 표시 */}
-      <div className="fixed bottom-4 left-4 right-4 flex justify-center pointer-events-none">
-        <div className="bg-black/70 text-white text-[10px] px-3 py-1 rounded-full backdrop-blur-md flex gap-3 items-center">
-          <div className="flex items-center gap-1">
-            <div className={`w-1.5 h-1.5 rounded-full ${chatState.isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-            <span>{chatState.isConnected ? 'CONNECTED' : 'DISCONNECTED'}</span>
-          </div>
-          {chatState.lastEvent && (
-            <div className="border-l border-white/20 pl-3">
-              LAST EVENT: <span className="text-yellow-400 font-mono">{chatState.lastEvent.toUpperCase()}</span>
+              {/* Buttons - 한 행에 2개 */}
+              <div className="flex w-full gap-3">
+                <Button
+                  onClick={handleStopChat}
+                  variant="outline"
+                  className="h-14 flex-1 rounded-full border-2 border-gray-300 text-base font-semibold text-gray-700 transition hover:bg-gray-50"
+                >
+                  대화 그만하기
+                </Button>
+                <Button variant="primary" size="xl" onClick={handleLogin} className="flex-1">
+                  로그인하기
+                </Button>
+              </div>
             </div>
-          )}
-          {chatState.isAiSpeaking && (
-            <div className="border-l border-white/20 pl-3 text-blue-400 animate-pulse">
-              AI SPEAKING...
-            </div>
-          )}
-        </div>
-      </div>
+          </PopupLayout>
+        )}
 
-      {/* Popups (Login, Wait, End) - 기존과 동일 */}
-      {showLoginPopup && (
-        <PopupLayout onClose={() => setShowLoginPopup(false)} maxWidth="md" showCloseButton={false}>
-          <div className="flex flex-col items-center gap-6 py-6">
-            <div className="text-center">
-              <p className="text-xl font-semibold text-gray-800 leading-relaxed">
-                로그인을 하면 대화를 저장하고
-                <br />
-                이어 말할 수 있어요
-              </p>
-            </div>
-            <div className="flex w-full gap-3">
-              <Button onClick={handleStopChat} variant="outline" className="h-14 flex-1 rounded-full border-2 border-gray-300 text-base font-semibold text-gray-700 transition hover:bg-gray-50">
-                대화 그만하기
-              </Button>
-              <Button variant="primary" size="xl" onClick={handleLogin} className="flex-1">
-                로그인하기
-              </Button>
-            </div>
-          </div>
-        </PopupLayout>
-      )}
+        {/* Wait Popup - 응답 대기 팝업 */}
+        {showWaitPopup && (
+          <PopupLayout
+            onClose={() => setShowWaitPopup(false)}
+            maxWidth="md"
+            showCloseButton={false}
+          >
+            <div className="flex flex-col items-center gap-6 py-6">
+              {/* Text */}
+              <div className="text-center">
+                <p className="text-xl font-semibold leading-relaxed text-gray-800">
+                  대화가 잠시 멈췄어요.
+                  <br />
+                  계속 이야기 할까요?
+                </p>
+              </div>
 
-      {showWaitPopup && (
-        <PopupLayout onClose={() => setShowWaitPopup(false)} maxWidth="md" showCloseButton={false}>
-          <div className="flex flex-col items-center gap-6 py-6">
-            <div className="text-center">
-              <p className="text-xl font-semibold text-gray-800 leading-relaxed">
-                대화가 잠시 멈췄어요.
-                <br />
-                계속 이야기 할까요?
-              </p>
+              {/* Buttons - 한 행에 2개 */}
+              <div className="flex w-full gap-3">
+                <Button
+                  onClick={handleStopFromWait}
+                  variant="outline"
+                  className="h-14 flex-1 rounded-full border-2 border-gray-300 text-base font-semibold text-gray-700 transition hover:bg-gray-50"
+                >
+                  대화 그만하기
+                </Button>
+                <Button variant="primary" size="xl" onClick={handleContinueChat} className="flex-1">
+                  이어 말하기
+                </Button>
+              </div>
             </div>
-            <div className="flex w-full gap-3">
-              <Button onClick={handleStopFromWait} variant="outline" className="h-14 flex-1 rounded-full border-2 border-gray-300 text-base font-semibold text-gray-700 transition hover:bg-gray-50">
-                대화 그만하기
-              </Button>
-              <Button variant="primary" size="xl" onClick={handleContinueChat} className="flex-1">
-                이어 말하기
-              </Button>
-            </div>
-          </div>
-        </PopupLayout>
-      )}
+          </PopupLayout>
+        )}
 
-      {showEndChatPopup && (
-        <PopupLayout onClose={() => setShowEndChatPopup(false)} maxWidth="md" showCloseButton={false}>
-          <div className="flex flex-col items-center gap-6 py-6">
-            <div className="text-center">
-              <p className="text-xl font-semibold text-gray-800 leading-relaxed">
-                지금은 여기까지만 할까요?
-                <br />
-                나중에 같은 주제로 다시 대화할 수 있어요.
-              </p>
+        {/* End Chat Popup - 대화 종료 팝업 */}
+        {showEndChatPopup && (
+          <PopupLayout
+            onClose={() => setShowEndChatPopup(false)}
+            maxWidth="md"
+            showCloseButton={false}
+          >
+            <div className="flex flex-col items-center gap-6 py-6">
+              {/* Text */}
+              <div className="text-center">
+                <p className="text-xl font-semibold leading-relaxed text-gray-800">
+                  지금은 여기까지만 할까요?
+                  <br />
+                  나중에 같은 주제로 다시 대화할 수 있어요.
+                </p>
+              </div>
+
+              {/* Buttons - 한 행에 2개 */}
+              <div className="flex w-full gap-3">
+                <Button
+                  onClick={handleStopFromEnd}
+                  variant="outline"
+                  className="h-14 flex-1 rounded-full border-2 border-gray-300 text-base font-semibold text-gray-700 transition hover:bg-gray-50"
+                >
+                  대화 그만하기
+                </Button>
+                <Button
+                  variant="primary"
+                  size="xl"
+                  onClick={handleContinueFromEnd}
+                  className="flex-1"
+                >
+                  이어 말하기
+                </Button>
+              </div>
             </div>
-            <div className="flex w-full gap-3">
-              <Button onClick={handleStopFromEnd} variant="outline" className="h-14 flex-1 rounded-full border-2 border-gray-300 text-base font-semibold text-gray-700 transition hover:bg-gray-50">
-                대화 그만하기
-              </Button>
-              <Button variant="primary" size="xl" onClick={handleContinueFromEnd} className="flex-1">
-                이어 말하기
-              </Button>
-            </div>
-          </div>
-        </PopupLayout>
-      )}
-    </>
-  );
+          </PopupLayout>
+        )}
+      </>
+    );
 }

@@ -404,29 +404,6 @@ export default function ScenarioSelectPage() {
 
           {stepIndex === 3 && <Step3 textOpacity={textOpacity} onNext={() => setStepIndex(4)} />}
 
-          {stepIndex === 4 && (
-            <Step4
-              textOpacity={textOpacity}
-              isListening={isListening}
-              isLocalSpeaking={isLocalSpeaking}
-              isAiSpeaking={chatState.isAiSpeaking}
-              isUserSpeaking={chatState.isUserSpeaking}
-              hasError={hasError}
-              phase="conversation"
-              showInactivityMessage={showInactivityMessage}
-              showNotUnderstood={showNotUnderstood}
-              aiMessage={chatState.aiMessage}
-              aiMessageKR={chatState.aiMessageKR}
-              userTranscript={chatState.userTranscript}
-              resetTimers={resetTimers}
-              startRecording={startRecording}
-              stopRecording={stopRecording}
-              setIsListening={setIsListening}
-              setTextOpacity={setTextOpacity}
-              initAudio={initAudio}
-              onNext={() => {}}
-            />
-          )}
         </FullLayout>
 
         {/* 디버깅용 이벤트 상태 표시 */}

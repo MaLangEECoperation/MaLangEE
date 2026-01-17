@@ -7,6 +7,7 @@
     "dev:watch": "nodemon",
     "build": "next build",
     "start": "next start",
+    "clean": "npm cache clean --force",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{ts,tsx,json,css}\"",
