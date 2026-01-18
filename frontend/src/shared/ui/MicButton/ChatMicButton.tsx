@@ -1,9 +1,13 @@
 import React from "react";
 import { MicButton } from "./MicButton";
-import { ScenarioState, ConversationState } from "@/features/chat/hook";
+
+interface ChatMicButtonState {
+  isAiSpeaking: boolean;
+  isConnected: boolean;
+}
 
 interface ChatMicButtonProps {
-  state: ScenarioState | ConversationState;
+  state: ChatMicButtonState;
   isPaused?: boolean;
   isMuted?: boolean;
   hasStarted?: boolean;

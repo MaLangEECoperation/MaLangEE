@@ -59,10 +59,14 @@ export const SplitViewLayout = ({
         <div className={`mx-auto grid w-full grid-cols-1 ${gap} md:grid-cols-12`}>
           {/* Left Content Section */}
           <div
-            className={`flex flex-col items-center justify-center gap-6 text-center md:items-start md:text-left ${colSpans[leftColSpan] || "md:col-span-6"} ${leftClassName}`}
+            id="sv-left-content"
+            className={`w-full flex flex-col items-center justify-center gap-6 text-center pt-20 md:pt-0 md:items-start md:text-left ${colSpans[leftColSpan] || "md:col-span-6"} ${leftClassName}`}
           >
             <>
-              <div className="mb-4 text-lg font-semibold text-[#5F51D9]">
+              <div
+                id="sv-logo"
+                className="fixed left-0 top-0 z-50 flex h-[50px] w-full items-center justify-center bg-white/70 backdrop-blur-sm md:static md:mb-4 md:block md:h-auto md:w-auto md:bg-transparent md:p-0 md:text-lg md:font-semibold md:text-[#5F51D9]"
+              >
                 <Link href={"/dashboard"} className="inline-block">
                   <Image src="/images/logo.png" alt="MalangEE Logo" width={100} height={50} />
                 </Link>
