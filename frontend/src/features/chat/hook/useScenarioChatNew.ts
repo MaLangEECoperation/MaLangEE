@@ -99,16 +99,28 @@ export function useScenarioChatNew() {
           });
           break;
 
+        case "speech.started":
+          base.addLog("User speech started (VAD)");
+          base.stopAudio();
+          base.setIsUserSpeaking(true);
+          break;
+
         case "input_audio.transcript":
           if (data.transcript) {
             setUserTranscript(data.transcript);
+            base.setIsUserSpeaking(false);
             base.addLog(`User: ${data.transcript}`);
           }
           break;
 
         case "scenario.completed":
           base.addLog(`Scenario Completed: ${JSON.stringify(data.json)}`);
-          setScenarioResult(data.json);
+          setScenarioResult({
+            place: data.json?.place || null,
+            conversationPartner: data.json?.conversation_partner || null,
+            conversationGoal: data.json?.conversation_goal || null,
+            sessionId: data.json?.sessionId,
+          });
           break;
 
         case "error":
@@ -161,6 +173,31 @@ export function useScenarioChatNew() {
     }
   }, [base.wsRef, base.addLog]);
 
+  // 시나리오 세션 초기화 및 대화 시작
+  const startScenarioSession = useCallback(() => {
+    if (base.wsRef.current?.readyState === WebSocket.OPEN && base.isReady) {
+      // 초기 설정
+      base.wsRef.current.send(JSON.stringify({
+        type: "session.update",
+        session: {
+          //instructions: "You are a scenario selector. Ask the user what situation they want to practice. Keep it brief and friendly.",
+          //turn_detection: { type: "server_vad", threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 1000 }
+        }
+      }));
+      base.addLog("Sent session.update");
+
+      // AI 발화 요청
+      base.wsRef.current.send(JSON.stringify({
+        type: "response.create",
+        response: {
+          //modalities: ["text", "audio"],
+          //instructions: "Greet the user and ask what kind of situation they want to practice."
+        }
+      }));
+      base.addLog("Sent response.create");
+    }
+  }, [base.wsRef, base.isReady, base.addLog]);
+
   return {
     state: {
       isConnected: base.isConnected,
@@ -182,5 +219,6 @@ export function useScenarioChatNew() {
     toggleMute: base.toggleMute,
     clearAudioBuffer,
     commitAudio,
+    startScenarioSession,
   };
 }
