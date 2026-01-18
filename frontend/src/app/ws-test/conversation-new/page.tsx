@@ -19,12 +19,7 @@ export default function ConversationTestPage() {
   const [isMuted, setIsMuted] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState("alloy");
 
-  const { state, connect, disconnect, initAudio, sendAudio, sendText, commitAudio, updateVoice, requestResponse, toggleMute } = useConversationChatNew(sessionId);
-  
-  const [isRecording, setIsRecording] = useState(false);
-  const streamRef = useRef<MediaStream | null>(null);
-  const processorRef = useRef<ScriptProcessorNode | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const { state, connect, disconnect, initAudio, startMicrophone, stopMicrophone, sendText, commitAudio, updateVoice, requestResponse, toggleMute } = useConversationChatNew(sessionId);
 
   // 세션 목록 가져오기
   const fetchSessions = async () => {
@@ -57,58 +52,14 @@ export default function ConversationTestPage() {
     fetchSessions();
   }, []);
 
-  const startMic = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 24000 } });
-      streamRef.current = stream;
-      
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      const audioContext = audioContextRef.current || new AudioContextClass({ sampleRate: 24000 });
-      audioContextRef.current = audioContext;
-
-      if (audioContext.state === 'suspended') {
-        await audioContext.resume();
-      }
-
-      const source = audioContext.createMediaStreamSource(stream);
-      const processor = audioContext.createScriptProcessor(4096, 1, 1);
-      processorRef.current = processor;
-
-      processor.onaudioprocess = (e) => {
-        const inputData = e.inputBuffer.getChannelData(0);
-        sendAudio(inputData);
-      };
-
-      source.connect(processor);
-      processor.connect(audioContext.destination);
-      setIsRecording(true);
-    } catch (e) {
-      console.error("Mic Error:", e);
-      alert("마이크 시작 실패: " + e);
-    }
-  };
-
-  const stopMic = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop());
-      streamRef.current = null;
-    }
-    if (processorRef.current) {
-      processorRef.current.disconnect();
-      processorRef.current = null;
-    }
-    setIsRecording(false);
-  };
-
   const handleConnectAndStart = async () => {
     initAudio();
     connect();
-    await startMic();
+    await startMicrophone();
   };
 
   const handleDisconnect = () => {
     disconnect();
-    stopMic();
   };
 
   const handleSendText = () => {
@@ -126,11 +77,6 @@ export default function ConversationTestPage() {
   // 컴포넌트 언마운트 시 정리
   useEffect(() => {
     return () => {
-      if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
-      if (processorRef.current) processorRef.current.disconnect();
-      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-        audioContextRef.current.close().catch(e => console.warn(e));
-      }
       disconnect();
     };
   }, [disconnect]);
@@ -189,11 +135,11 @@ export default function ConversationTestPage() {
             {/* Mic Controls */}
             <div className="flex gap-2 mb-4">
               <button
-                onClick={isRecording ? stopMic : startMic}
-                className={`flex-1 px-3 py-2 rounded text-sm text-white ${isRecording ? "bg-red-500" : "bg-blue-500"}`}
+                onClick={state.isRecording ? stopMicrophone : startMicrophone}
+                className={`flex-1 px-3 py-2 rounded text-sm text-white ${state.isRecording ? "bg-red-500" : "bg-blue-500"}`}
                 disabled={!state.isConnected}
               >
-                {isRecording ? "마이크 끄기" : "마이크 켜기"}
+                {state.isRecording ? "마이크 끄기" : "마이크 켜기"}
               </button>
               <button
                 onClick={handleToggleMute}

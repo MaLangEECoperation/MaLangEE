@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { tokenStorage } from "@/features/auth";
 import { translateToKorean } from "@/shared/lib/translate";
+import { useWebSocketBase } from "./useWebSocketBase";
 
 export interface ScenarioChatStateNew {
   isConnected: boolean;
@@ -12,32 +13,19 @@ export interface ScenarioChatStateNew {
   aiMessageKR: string;
   userTranscript: string;
   isAiSpeaking: boolean;
+  isRecording: boolean;
   scenarioResult: any | null;
 }
 
 export function useScenarioChatNew() {
-  const [state, setState] = useState<ScenarioChatStateNew>({
-    isConnected: false,
-    isReady: false,
-    logs: [],
-    aiMessage: "",
-    aiMessageKR: "",
-    userTranscript: "",
-    isAiSpeaking: false,
-    scenarioResult: null,
-  });
+  // 시나리오 특화 상태
+  const [aiMessage, setAiMessage] = useState("");
+  const [aiMessageKR, setAiMessageKR] = useState("");
+  const [userTranscript, setUserTranscript] = useState("");
+  const [scenarioResult, setScenarioResult] = useState<any | null>(null);
 
-  const wsRef = useRef<WebSocket | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const nextStartTimeRef = useRef<number>(0);
-  const activeSourcesRef = useRef<AudioBufferSourceNode[]>([]);
-  const gainNodeRef = useRef<GainNode | null>(null);
-
-  const addLog = (msg: string) => {
-    setState((prev) => ({ ...prev, logs: [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev.logs] }));
-  };
-
-  const getWebSocketUrl = () => {
+  // WebSocket URL 생성
+  const getWebSocketUrl = useCallback(() => {
     const token = tokenStorage.get();
     const envWsUrl = process.env.NEXT_PUBLIC_WS_URL;
     let wsBaseUrl = envWsUrl;
@@ -62,230 +50,136 @@ export function useScenarioChatNew() {
     if (token) params.append("token", token);
 
     return `${wsBaseUrl}${endpoint}?${params.toString()}`;
+  }, []);
+
+  // onMessage 콜백을 ref로 관리
+  const onMessageRef = useRef<(event: MessageEvent) => void>();
+
+  // useWebSocketBase 사용
+  const base = useWebSocketBase({
+    getWebSocketUrl,
+    onMessage: useCallback((event: MessageEvent) => {
+      onMessageRef.current?.(event);
+    }, []),
+    autoConnect: false,
+  });
+
+  // onMessage 구현 (base를 사용할 수 있도록 여기서 정의)
+  onMessageRef.current = (event: MessageEvent) => {
+    try {
+      const data = JSON.parse(event.data);
+
+      switch (data.type) {
+        case "ready":
+          base.addLog("Received 'ready'.");
+          base.setIsReady(true);
+          break;
+
+        case "response.audio.delta":
+          base.playAudioChunk(data.delta, data.sample_rate || 24000);
+          break;
+
+        case "response.audio.done":
+          base.addLog("AI audio stream completed");
+          break;
+
+        case "response.audio_transcript.delta":
+          if (data.transcript_delta) {
+            setAiMessage(prev => prev + data.transcript_delta);
+            base.addLog(`AI (delta): ${data.transcript_delta}`);
+          }
+          break;
+
+        case "response.audio_transcript.done":
+          setAiMessage(data.transcript);
+          base.addLog(`AI: ${data.transcript}`);
+          translateToKorean(data.transcript).then(translated => {
+            setAiMessageKR(translated);
+            base.addLog(`AI (KR): ${translated}`);
+          });
+          break;
+
+        case "input_audio.transcript":
+          if (data.transcript) {
+            setUserTranscript(data.transcript);
+            base.addLog(`User: ${data.transcript}`);
+          }
+          break;
+
+        case "scenario.completed":
+          base.addLog(`Scenario Completed: ${JSON.stringify(data.json)}`);
+          setScenarioResult(data.json);
+          break;
+
+        case "error":
+          base.addLog(`Error: ${data.message}`);
+          break;
+      }
+    } catch (e) {
+      base.addLog(`Parse Error: ${e}`);
+    }
   };
 
-  // 샘플 레이트 24000Hz로 통일
-  const SAMPLE_RATE = 24000;
-
-  const initAudio = useCallback(() => {
-    if (!audioContextRef.current) {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      audioContextRef.current = new AudioContextClass({ sampleRate: SAMPLE_RATE });
-      
-      gainNodeRef.current = audioContextRef.current.createGain();
-      gainNodeRef.current.connect(audioContextRef.current.destination);
-      
-      addLog(`AudioContext created (${SAMPLE_RATE}Hz)`);
-    }
-    if (audioContextRef.current.state === "suspended") {
-      audioContextRef.current.resume();
-      addLog("AudioContext resumed");
-    }
-  }, []);
-
-  const playAudio = useCallback((base64: string, sampleRate: number = 24000) => {
-    if (!audioContextRef.current) return;
-
-    const ctx = audioContextRef.current;
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-
-    const samples = new Float32Array(Math.floor(bytes.length / 2));
-    for (let i = 0; i < samples.length; i++) {
-      let sample = (bytes[i * 2 + 1] << 8) | bytes[i * 2];
-      if (sample >= 0x8000) sample -= 0x10000;
-      samples[i] = sample / 32768;
-    }
-
-    const buffer = ctx.createBuffer(1, samples.length, sampleRate);
-    buffer.copyToChannel(samples, 0);
-
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    
-    if (gainNodeRef.current) {
-      source.connect(gainNodeRef.current);
-    } else {
-      source.connect(ctx.destination);
-    }
-
-    const startTime = Math.max(nextStartTimeRef.current, ctx.currentTime);
-    source.start(startTime);
-    nextStartTimeRef.current = startTime + buffer.duration;
-    
-    activeSourcesRef.current.push(source);
-    setState(prev => ({ ...prev, isAiSpeaking: true }));
-
-    source.onended = () => {
-      activeSourcesRef.current = activeSourcesRef.current.filter(s => s !== source);
-      if (activeSourcesRef.current.length === 0) {
-        setTimeout(() => {
-            setState(prev => ({ ...prev, isAiSpeaking: false }));
-        }, 500);
-      }
-    };
-  }, []);
-
-  const stopAudio = useCallback(() => {
-    activeSourcesRef.current.forEach(s => s.stop());
-    activeSourcesRef.current = [];
-    nextStartTimeRef.current = 0;
-    setState(prev => ({ ...prev, isAiSpeaking: false }));
-  }, []);
-
-  const toggleMute = useCallback((isMuted: boolean) => {
-    if (gainNodeRef.current && audioContextRef.current) {
-      const currentTime = audioContextRef.current.currentTime;
-      gainNodeRef.current.gain.cancelScheduledValues(currentTime);
-      gainNodeRef.current.gain.setValueAtTime(gainNodeRef.current.gain.value, currentTime);
-      gainNodeRef.current.gain.linearRampToValueAtTime(isMuted ? 0 : 1, currentTime + 0.1);
-      addLog(isMuted ? "Muted" : "Unmuted");
-    }
-  }, []);
-
-  const connect = useCallback(() => {
-    const url = getWebSocketUrl();
-    addLog(`Connecting to ${url}`);
-    
-    const ws = new WebSocket(url);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      addLog("WebSocket Connected");
-      setState(prev => ({ ...prev, isConnected: true }));
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-
-        switch (data.type) {
-          case "ready":
-            addLog("Received 'ready'.");
-            setState(prev => ({ ...prev, isReady: true }));
-
-            break;
-
-          case "response.audio.delta":
-            playAudio(data.delta, data.sample_rate || 24000);
-            break;
-
-          case "response.audio.done":
-            addLog("AI audio stream completed");
-            break;
-
-          case "response.audio_transcript.delta":
-            if (data.transcript_delta) {
-              setState(prev => ({
-                ...prev,
-                aiMessage: prev.aiMessage + data.transcript_delta
-              }));
-              addLog(`AI (delta): ${data.transcript_delta}`);
-            }
-            break;
-
-          case "response.audio_transcript.done":
-            setState(prev => ({ ...prev, aiMessage: data.transcript }));
-            addLog(`AI: ${data.transcript}`);
-            translateToKorean(data.transcript).then(translated => {
-              setState(prev => ({ ...prev, aiMessageKR: translated }));
-              addLog(`AI (KR): ${translated}`);
-            });
-            break;
-
-          case "input_audio.transcript":
-            if (data.transcript) {
-              setState(prev => ({ ...prev, userTranscript: data.transcript }));
-              addLog(`User: ${data.transcript}`);
-            }
-            break;
-
-          case "scenario.completed":
-            addLog(`Scenario Completed: ${JSON.stringify(data.json)}`);
-            setState(prev => ({ ...prev, scenarioResult: data.json }));
-            break;
-            
-          case "error":
-            addLog(`Error: ${data.message}`);
-            break;
-        }
-      } catch (e) {
-        addLog(`Parse Error: ${e}`);
-      }
-    };
-
-    ws.onclose = (e) => {
-      addLog(`WebSocket Closed: ${e.code} ${e.reason}`);
-      setState(prev => ({ ...prev, isConnected: false, isReady: false }));
-    };
-
-    ws.onerror = (e) => {
-      addLog("WebSocket Error");
-    };
-
-  }, [playAudio, stopAudio]);
-
-  const disconnect = useCallback(() => {
-    wsRef.current?.close();
-    stopAudio();
-    audioContextRef.current?.close();
-    audioContextRef.current = null;
-    addLog("Disconnected manually");
-  }, [stopAudio]);
-
-  const sendAudio = useCallback((float32Data: Float32Array) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      const buffer = new ArrayBuffer(float32Data.length * 2);
-      const view = new DataView(buffer);
-      for (let i = 0; i < float32Data.length; i++) {
-        let s = Math.max(-1, Math.min(1, float32Data[i]));
-        s = s < 0 ? s * 0x8000 : s * 0x7FFF;
-        view.setInt16(i * 2, s, true);
-      }
-      
-      let binary = "";
-      const bytes = new Uint8Array(buffer);
-      for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-      const base64 = btoa(binary);
-
-      wsRef.current.send(JSON.stringify({
+  // 오디오 전송 콜백 (Scenario 메시지 타입 사용)
+  const sendAudioCallback = useCallback((audioData: Float32Array) => {
+    if (base.wsRef.current?.readyState === WebSocket.OPEN) {
+      const base64 = base.encodeAudio(audioData);
+      base.wsRef.current.send(JSON.stringify({
         type: "input_audio_chunk",
         audio: base64,
-        sample_rate: 24000 // 24000으로 변경
+        sample_rate: 24000
       }));
     }
-  }, []);
+  }, [base.wsRef, base.encodeAudio]);
 
+  // 마이크 시작 (base의 startMicrophone + sendAudioCallback)
+  const startMicrophone = useCallback(() => {
+    return base.startMicrophone(sendAudioCallback);
+  }, [base.startMicrophone, sendAudioCallback]);
+
+  // 텍스트 전송
   const sendText = useCallback((text: string) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: "text", text }));
-      addLog(`Sent Text: ${text}`);
+    if (base.wsRef.current?.readyState === WebSocket.OPEN) {
+      base.wsRef.current.send(JSON.stringify({ type: "text", text }));
+      base.addLog(`Sent Text: ${text}`);
     }
-  }, []);
+  }, [base.wsRef, base.addLog]);
 
+  // 오디오 버퍼 초기화
   const clearAudioBuffer = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: "input_audio_clear" }));
-      addLog("Sent input_audio_clear");
+    if (base.wsRef.current?.readyState === WebSocket.OPEN) {
+      base.wsRef.current.send(JSON.stringify({ type: "input_audio_clear" }));
+      base.addLog("Sent input_audio_clear");
     }
-  }, []);
+  }, [base.wsRef, base.addLog]);
 
+  // 오디오 커밋
   const commitAudio = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: "input_audio_commit" }));
-      addLog("Sent input_audio_commit");
+    if (base.wsRef.current?.readyState === WebSocket.OPEN) {
+      base.wsRef.current.send(JSON.stringify({ type: "input_audio_commit" }));
+      base.addLog("Sent input_audio_commit");
     }
-  }, []);
+  }, [base.wsRef, base.addLog]);
 
   return {
-    state,
-    connect,
-    disconnect,
-    initAudio,
-    sendAudio,
+    state: {
+      isConnected: base.isConnected,
+      isReady: base.isReady,
+      logs: base.logs,
+      aiMessage,
+      aiMessageKR,
+      userTranscript,
+      isAiSpeaking: base.isAiSpeaking,
+      isRecording: base.isRecording,
+      scenarioResult,
+    },
+    connect: base.connect,
+    disconnect: base.disconnect,
+    initAudio: base.initAudio,
+    startMicrophone,
+    stopMicrophone: base.stopMicrophone,
     sendText,
-    toggleMute,
+    toggleMute: base.toggleMute,
     clearAudioBuffer,
     commitAudio,
   };

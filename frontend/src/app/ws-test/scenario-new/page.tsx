@@ -5,74 +5,20 @@ import { useScenarioChatNew } from "@/features/chat/hook/useScenarioChatNew";
 
 export default function ScenarioTestPage() {
   const {
-    state, connect, disconnect, initAudio, sendAudio, sendText,
-    toggleMute, clearAudioBuffer, commitAudio
+    state, connect, disconnect, initAudio, startMicrophone, stopMicrophone,
+    sendText, toggleMute, clearAudioBuffer, commitAudio
   } = useScenarioChatNew();
-  
-  const [isRecording, setIsRecording] = useState(false);
+
   const [textInput, setTextInput] = useState("");
   const [isMuted, setIsMuted] = useState(false);
-  
-  const streamRef = useRef<MediaStream | null>(null);
-  const processorRef = useRef<ScriptProcessorNode | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-
-  const startMic = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { sampleRate: 24000 } });
-      streamRef.current = stream;
-      
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      const audioContext = new AudioContextClass({ sampleRate: 24000 });
-      audioContextRef.current = audioContext;
-
-      if (audioContext.state === 'suspended') {
-        await audioContext.resume();
-      }
-
-      const source = audioContext.createMediaStreamSource(stream);
-      const processor = audioContext.createScriptProcessor(4096, 1, 1);
-      processorRef.current = processor;
-
-      processor.onaudioprocess = (e) => {
-        const inputData = e.inputBuffer.getChannelData(0);
-        sendAudio(inputData);
-      };
-
-      source.connect(processor);
-      processor.connect(audioContext.destination);
-      setIsRecording(true);
-    } catch (e) {
-      console.error("Mic Error:", e);
-      alert("마이크 시작 실패: " + e);
-    }
-  };
-
-  const stopMic = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop());
-      streamRef.current = null;
-    }
-    if (processorRef.current) {
-      processorRef.current.disconnect();
-      processorRef.current = null;
-    }
-    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
-    }
-    setIsRecording(false);
-  };
 
   const handleConnectAndStart = async () => {
     initAudio();
     connect();
-    //await startMic();
   };
 
   const handleDisconnect = () => {
     disconnect();
-    stopMic();
   };
 
   const handleSendText = () => {
@@ -90,11 +36,6 @@ export default function ScenarioTestPage() {
   // 컴포넌트 언마운트 시 정리
   useEffect(() => {
     return () => {
-      if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
-      if (processorRef.current) processorRef.current.disconnect();
-      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-        audioContextRef.current.close();
-      }
       disconnect();
     };
   }, [disconnect]);
@@ -128,11 +69,11 @@ export default function ScenarioTestPage() {
 
             <div className="mb-4 flex gap-2">
               <button
-                onClick={isRecording ? stopMic : startMic}
-                className={`flex-1 rounded px-3 py-2 text-sm text-white ${isRecording ? "bg-red-500" : "bg-green-600"}`}
+                onClick={state.isRecording ? stopMicrophone : startMicrophone}
+                className={`flex-1 rounded px-3 py-2 text-sm text-white ${state.isRecording ? "bg-red-500" : "bg-green-600"}`}
                 disabled={!state.isConnected}
               >
-                {isRecording ? "마이크 끄기" : "마이크 켜기"}
+                {state.isRecording ? "마이크 끄기" : "마이크 켜기"}
               </button>
               <button
                 onClick={handleToggleMute}
@@ -165,8 +106,8 @@ export default function ScenarioTestPage() {
               </div>
               <div className="flex justify-between">
                 <span>마이크:</span>{" "}
-                <span className={isRecording ? "font-bold text-green-600" : "text-gray-400"}>
-                  {isRecording ? "🎤 Recording" : "Off"}
+                <span className={state.isRecording ? "font-bold text-green-600" : "text-gray-400"}>
+                  {state.isRecording ? "🎤 Recording" : "Off"}
                 </span>
               </div>
             </div>
