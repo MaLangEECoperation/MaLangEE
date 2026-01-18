@@ -238,10 +238,12 @@ export function useWebSocketBase({
           ws.close();
           return;
         }
+        console.log("[WebSocket] ✅ Connection opened successfully");
         addLog("WebSocket Connected");
         setIsConnected(true);
         reconnectCountRef.current = 0;
         onOpen?.();
+        console.log("[WebSocket] Waiting for session.update or ready event...");
       };
 
       ws.onmessage = (event) => {

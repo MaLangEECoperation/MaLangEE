@@ -34,9 +34,13 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
   // 디버그 상태 관리
   const [debugInfo, setDebugInfo] = useState<{
     isConnected: boolean;
+    isReady?: boolean;
     lastEvent: string | null;
     isAiSpeaking: boolean;
     isUserSpeaking?: boolean;
+    isMuted?: boolean;
+    isRecording?: boolean;
+    userTranscript?: string;
   }>({
     isConnected: false,
     lastEvent: null,
@@ -136,9 +140,13 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
     <>
       <DebugStatus
         isConnected={debugInfo.isConnected}
+        isReady={debugInfo.isReady}
         lastEvent={debugInfo.lastEvent}
         isAiSpeaking={debugInfo.isAiSpeaking}
         isUserSpeaking={debugInfo.isUserSpeaking}
+        isMuted={debugInfo.isMuted}
+        isRecording={debugInfo.isRecording}
+        userTranscript={debugInfo.userTranscript}
       />
 
       <FullLayout showHeader={true} headerRight={headerRightContent}>

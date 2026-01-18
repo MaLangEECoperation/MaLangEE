@@ -212,23 +212,25 @@ export function Step1({
               className={phase === "conversation" ? "pointer-events-none opacity-50" : ""}
             />
 
-            {/* 자막 토글 버튼 */}
-            <button
-              onClick={toggleSubtitle}
-              className="text-text-secondary hover:text-brand flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium transition-colors"
-            >
-              {showSubtitle ? (
-                <>
-                  <Captions size={14} />
-                  자막 끄기
-                </>
-              ) : (
-                <>
-                  <CaptionsOff size={14} />
-                  자막 켜기
-                </>
-              )}
-            </button>
+            {/* 자막 토글 버튼 (개발 환경에서만 표시) */}
+            {process.env.NODE_ENV === 'development' && (
+              <button
+                onClick={toggleSubtitle}
+                className="text-text-secondary hover:text-brand flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium transition-colors"
+              >
+                {showSubtitle ? (
+                  <>
+                    <Captions size={14} />
+                    자막 끄기
+                  </>
+                ) : (
+                  <>
+                    <CaptionsOff size={14} />
+                    자막 켜기
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
 

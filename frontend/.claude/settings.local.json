@@ -31,7 +31,14 @@
       "mcp__playwright__browser_wait_for",
       "mcp__playwright__browser_take_screenshot",
       "mcp__playwright__browser_close",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(yarn dev)",
+      "Bash(npx next dev)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(tasklist:*)",
+      "Bash(ls:*)",
+      "Bash(del srcfeatureschathookuseConversationChat.ts)"
     ]
   },
   "enableAllProjectMcpServers": true,
