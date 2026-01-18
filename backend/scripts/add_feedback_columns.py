@@ -92,7 +92,8 @@ if __name__ == "__main__":
         from app.db import database
         database.engine = database.create_async_engine(
             settings.DATABASE_URL,
-            echo=True
+            echo=True,
+            isolation_level="AUTOCOMMIT"
         )
         global engine
         engine = database.engine
