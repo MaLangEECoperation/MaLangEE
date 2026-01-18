@@ -99,6 +99,7 @@ class ChatRepository:
                 # [New] Feedback & Summary
                 feedback=session_data.feedback,
                 scenario_summary=session_data.scenario_summary
+            )
             self.db.add(db_session)
             
             # Add All Messages
