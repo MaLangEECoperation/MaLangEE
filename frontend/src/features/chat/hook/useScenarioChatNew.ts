@@ -176,22 +176,22 @@ export function useScenarioChatNew() {
   // 시나리오 세션 초기화 및 대화 시작
   const startScenarioSession = useCallback(() => {
     if (base.wsRef.current?.readyState === WebSocket.OPEN && base.isReady) {
-      // 초기 설정
+      // 초기 설정 - turn_detection을 활성화해야 마이크가 작동함
       base.wsRef.current.send(JSON.stringify({
         type: "session.update",
         session: {
           //instructions: "You are a scenario selector. Ask the user what situation they want to practice. Keep it brief and friendly.",
-          //turn_detection: { type: "server_vad", threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 1000 }
+          turn_detection: { type: "server_vad", threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 1000 }
         }
       }));
       base.addLog("Sent session.update");
 
-      // AI 발화 요청
+      // AI 발화 요청 (AI가 먼저 인사)
       base.wsRef.current.send(JSON.stringify({
         type: "response.create",
         response: {
-          //modalities: ["text", "audio"],
-          //instructions: "Greet the user and ask what kind of situation they want to practice."
+          modalities: ["text", "audio"],
+         // instructions: "Greet the user and ask what kind of situation they want to practice."
         }
       }));
       base.addLog("Sent response.create");

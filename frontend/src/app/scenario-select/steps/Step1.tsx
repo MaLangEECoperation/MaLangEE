@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button, MicButton } from "@/shared/ui";
+import { Button, ChatMicButton } from "@/shared/ui";
 import { useAuth } from "@/features/auth";
 import { Captions, CaptionsOff } from "lucide-react";
+import { ScenarioState } from "@/features/chat/hook";
 
 interface Step1Props {
   textOpacity: number;
@@ -26,12 +27,16 @@ interface Step1Props {
   setTextOpacity: (value: number) => void;
   onNext: () => void;
   initAudio: () => void;
+  chatState: ScenarioState; // 주제 정하기 상태
+  connect: () => void;
+  startScenarioSession: () => void;
+  hasStarted: boolean;
+  setHasStarted: (value: boolean) => void;
 }
 
 export function Step1({
   textOpacity,
   isListening,
-  isLocalSpeaking,
   isAiSpeaking,
   isUserSpeaking,
   hasError,
@@ -47,6 +52,11 @@ export function Step1({
   setIsListening,
   setTextOpacity,
   initAudio,
+  chatState,
+  connect,
+  startScenarioSession,
+  hasStarted,
+  setHasStarted,
 }: Step1Props) {
   const router = useRouter();
   const { user } = useAuth();
@@ -61,21 +71,6 @@ export function Step1({
     if (storedSubtitle !== null) {
       setShowSubtitle(storedSubtitle === "true");
     }
-  }, []);
-
-  // 소켓 연결 상태 리스닝 (일시정지 버튼 제어용 - Step1에서는 사용 안함)
-  useEffect(() => {
-    // Step1에서는 일시정지 버튼을 숨기기 위해 소켓 상태를 false로 강제 설정하는 이벤트를 보낼 수도 있지만,
-    // ChatLayout에서 pathname을 체크하거나 별도의 prop을 받는 것이 더 깔끔함.
-    // 여기서는 ChatLayout이 socket-status 이벤트를 받아서 처리하므로,
-    // Step1이 마운트될 때 false를 보내면 다른 페이지(Conversation)에서 문제될 수 있음.
-    // 따라서 ChatLayout에서 pathname 기반으로 제어하는 것이 좋음.
-    // 하지만 요청사항은 "소켓 연결상태 체크해, 일시중지 버튼은 숨김처리" 이므로
-    // ChatLayout에서 isSocketConnected 상태를 관리하고 있음.
-    // Step1에서는 별도 처리가 필요 없음 (ChatLayout이 알아서 처리).
-    // 다만, Step1이 있는 ScenarioSelectPage에서도 소켓 연결이 이루어지므로
-    // ChatLayout의 일시정지 버튼이 보일 수 있음.
-    // 이를 숨기려면 ChatLayout에서 pathname이 /scenario-select 일 때 숨기도록 처리해야 함.
   }, []);
 
   const toggleSubtitle = () => {
@@ -117,10 +112,6 @@ export function Step1({
       return "다시 한번 말씀해 주시겠어요?";
     }
 
-    if (phase === "conversation") {
-      return "곧 연습을 시작할게요!";
-    }
-
     if (hasError) {
       return "잠시 후 다시 시도해주세요";
     }
@@ -129,21 +120,26 @@ export function Step1({
       return "말랭이가 듣고 있어요";
     }
 
-    return "마이크를 누르면 바로 시작돼요";
+    return "마이크를 누르면 바로 시작돼요"; //곧 연습을 시작할게요!
   };
 
   const handleMicClick = () => {
+    // phase가 conversation이면 실행하지 않음 (대화 진행 중)
+    if (phase === "conversation") return;
+
     initAudio();
     resetTimers();
     setTextOpacity(0);
 
     setTimeout(() => {
-      if (isListening) {
-        setIsListening(false);
-        stopRecording();
-      } else {
-        setIsListening(true);
-        startRecording();
+      if (!chatState.isConnected) {
+        // 첫 클릭 시: 연결 시작
+        connect();
+        setHasStarted(true); // 대화 시작 상태를 true로 변경
+        // 연결 후 자동으로:
+        // 1. ready 이벤트 발생
+        // 2. startScenarioSession() 호출 (AI 인사말)
+        // 3. AI 발화 후 자동으로 마이크 시작 (page.tsx useEffect)
       }
       setTextOpacity(1);
     }, 300);
@@ -153,7 +149,6 @@ export function Step1({
     router.push("/chat/conversation");
   };
 
-  const showSpeakingStatus = isAiSpeaking || isUserSpeaking || isLocalSpeaking;
   const hasSubtitleContent = showSubtitle && (aiMessage || userTranscript);
 
   return (
@@ -166,19 +161,17 @@ export function Step1({
             <div className="text-group text-center" style={{ opacity: textOpacity }}>
               <h1 className="scenario-title whitespace-pre-line">{getMainTitle()}</h1>
               <p className="scenario-desc">{getSubDesc()}</p>
-              {showSpeakingStatus && phase === "conversation" && (
-                <p className="scenario-desc mt-1">
-                  {isAiSpeaking ? "말랭이가 말하고 있어요." : "말하는 중이에요."}
-                </p>
+              {isAiSpeaking && phase === "conversation" && (
+                <p className="scenario-desc mt-1">말랭이가 말하고 있어요.</p>
               )}
             </div>
           </div>
 
           <div className="mt-6 flex flex-col items-center gap-4">
-            <MicButton
-              isListening={isListening}
+            <ChatMicButton
+              state={chatState}
+              hasStarted={hasStarted}
               onClick={handleMicClick}
-              size="md"
               className={phase === "conversation" ? "pointer-events-none opacity-50" : ""}
             />
 
@@ -242,13 +235,6 @@ export function Step1({
         )}
       </div>
 
-      {phase === "conversation" && (
-        <div className="mt-10 w-full max-w-md">
-          <Button onClick={handleStartChat} variant="primary" size="lg" fullWidth>
-            대화 시작하기
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

@@ -6,8 +6,8 @@ import {Button, MalangEE} from "@/shared/ui";
 import {PopupLayout} from "@/shared/ui/PopupLayout";
 import "@/shared/styles/scenario.css";
 import {FullLayout} from "@/shared/ui/FullLayout";
-import {useGeneralChat} from "@/features/chat"; // useScenarioChat -> useGeneralChat
-import {useInactivityTimer, useAudioRecorder} from "@/shared/hooks";
+import {useScenarioChatNew} from "@/features/chat/hook/useScenarioChatNew"; // useScenarioChatNew 사용
+import {useInactivityTimer} from "@/shared/hooks";
 import {Step1} from "@/app/scenario-select/steps/Step1";
 import {Step2} from "@/app/scenario-select/steps/Step2";
 import {Step3} from "@/app/scenario-select/steps/Step3";
@@ -17,10 +17,10 @@ export default function ScenarioSelectPage() {
     const router = useRouter();
     const [phase, setPhase] = useState<"topic" | "conversation">("topic");
     const [isListening, setIsListening] = useState(false);
+    const [hasStarted, setHasStarted] = useState(false); // 대화 시작 여부
     const [textOpacity, setTextOpacity] = useState(1);
     const [showLoginPopup, setShowLoginPopup] = useState(false);
     const [showNotUnderstood, setShowNotUnderstood] = useState(false);
-    const [isLocalSpeaking, setIsLocalSpeaking] = useState(false);
     const [showEndChatPopup, setShowEndChatPopup] = useState(false);
     const [showScenarioResultPopup, setShowScenarioResultPopup] = useState(false);
     const [stepIndex, setStepIndex] = useState<1 | 2 | 3 | 4>(1);
@@ -36,26 +36,26 @@ export default function ScenarioSelectPage() {
 
     const loginTimerRef = useRef<NodeJS.Timeout | null>(null);
     const notUnderstoodTimerRef = useRef<NodeJS.Timeout | null>(null);
-    const localSpeakingTimerRef = useRef<NodeJS.Timeout | null>(null);
     const initialPromptSentRef = useRef(false);
     const aiSpeakingRef = useRef(false);
     const lastAiMessageRef = useRef("");
-    const localSpeakingRef = useRef(false);
-    
-    // useGeneralChat 훅 사용 (mode: "scenario")
+    const prevAiSpeakingRef = useRef(false);
+
+    // useScenarioChatNew 훅 사용
     const {
         state: chatState,
         connect,
         disconnect,
         sendText,
-        sendAudioChunk,
+        startMicrophone,
+        stopMicrophone,
         initAudio,
-    } = useGeneralChat({
-        mode: "scenario",
-    });
+        startScenarioSession,
+    } = useScenarioChatNew();
 
     const hintMessage = "예: 공항 체크인 상황을 연습하고 싶어요.";
-    const hasError = Boolean(chatState.error);
+    // 에러: 대화 시작 후 예기치 않게 연결이 끊긴 경우
+    const hasError = hasStarted && !chatState.isConnected;
 
     const clearLoginTimer = () => {
         if (loginTimerRef.current) {
@@ -71,62 +71,47 @@ export default function ScenarioSelectPage() {
         }
     };
 
-    const clearLocalSpeakingTimer = () => {
-        if (localSpeakingTimerRef.current) {
-            clearTimeout(localSpeakingTimerRef.current);
-            localSpeakingTimerRef.current = null;
-        }
-    };
-
-    // 컴포넌트 언마운트 시 타이머 정리
+    // 컴포넌트 언마운트 시 타이머 정리 및 연결 해제
     useEffect(() => {
         return () => {
             clearLoginTimer();
             clearNotUnderstoodTimer();
-            clearLocalSpeakingTimer();
-        };
-    }, []);
-
-    const updateLocalSpeaking = useCallback((level: number) => {
-        const threshold = 0.02;
-        const hangMs = 400;
-
-        if (level >= threshold) {
-            clearLocalSpeakingTimer();
-            if (!localSpeakingRef.current) {
-                localSpeakingRef.current = true;
-                setIsLocalSpeaking(true);
-            }
-            return;
-        }
-
-        if (localSpeakingRef.current && !localSpeakingTimerRef.current) {
-            localSpeakingTimerRef.current = setTimeout(() => {
-                localSpeakingRef.current = false;
-                setIsLocalSpeaking(false);
-                localSpeakingTimerRef.current = null;
-            }, hangMs);
-        }
-    }, []);
-
-    // 오디오 레코더 훅 사용
-    const { startRecording, stopRecording } = useAudioRecorder({
-        onAudioData: sendAudioChunk,
-        onVolumeChange: updateLocalSpeaking,
-        sampleRate: 16000
-    });
-
-    useEffect(() => {
-        connect();
-        return () => {
-            stopRecording();
             disconnect();
         };
-    }, [connect, disconnect, stopRecording]);
+    }, [disconnect]);
 
     useEffect(() => {
         aiSpeakingRef.current = chatState.isAiSpeaking;
     }, [chatState.isAiSpeaking]);
+
+    // WebSocket 연결 후 ready 상태가 되면 시나리오 세션 시작
+    useEffect(() => {
+        if (chatState.isReady && stepIndex === 1 && phase === "topic" && !initialPromptSentRef.current) {
+            startScenarioSession();
+            initialPromptSentRef.current = true;
+        }
+    }, [chatState.isReady, stepIndex, phase, startScenarioSession]);
+
+    // AI 발화 관리 (Step 1에서)
+    useEffect(() => {
+        if (stepIndex !== 1) return;
+
+        // AI가 말을 시작하면 마이크 중지
+        if (chatState.isAiSpeaking && chatState.isRecording) {
+            stopMicrophone();
+            setIsListening(false);
+        }
+
+        // AI가 말을 끝낸 직후에만 자동으로 마이크 시작
+        // prevAiSpeakingRef.current가 true였고, 현재 false가 된 경우
+        if (prevAiSpeakingRef.current && !chatState.isAiSpeaking && chatState.isReady && initialPromptSentRef.current && !chatState.isRecording) {
+            startMicrophone();
+            setIsListening(true);
+        }
+
+        // 현재 상태를 저장
+        prevAiSpeakingRef.current = chatState.isAiSpeaking;
+    }, [chatState.isAiSpeaking, chatState.isReady, chatState.isRecording, stepIndex, startMicrophone, stopMicrophone]);
 
     // 사용자 활동 시작 (타이머 초기화)
     const resetTimers = useCallback(() => {
@@ -138,22 +123,22 @@ export default function ScenarioSelectPage() {
     useEffect(() => {
         if (stepIndex !== 1 && stepIndex !== 4) return;
 
-        if (chatState.isAiSpeaking || chatState.isUserSpeaking || isLocalSpeaking) {
+        if (chatState.isAiSpeaking || chatState.isRecording) {
             resetTimers();
             return;
         }
 
         startInactivityTimer();
-    }, [chatState.isAiSpeaking, chatState.isUserSpeaking, isLocalSpeaking, stepIndex, startInactivityTimer, resetTimers]);
+    }, [chatState.isAiSpeaking, chatState.isRecording, stepIndex, startInactivityTimer, resetTimers]);
 
     useEffect(() => {
         // Phase가 topic일 때 시나리오가 선택되면 결과 팝업 표시
         if (stepIndex === 1 && phase === "topic") {
-            if (chatState.isCompleted && chatState.scenarioResult) {
+            if (chatState.scenarioResult) {
                 resetTimers();
                 setIsListening(false);
-                stopRecording();
-                
+                stopMicrophone();
+
                 // 시나리오 결과 로컬 스토리지에 저장
                 if (typeof window !== "undefined") {
                     const { conversationGoal, conversationPartner, place } = chatState.scenarioResult;
@@ -166,11 +151,10 @@ export default function ScenarioSelectPage() {
             }
         }
     }, [
-        chatState.isCompleted,
         chatState.scenarioResult,
         phase,
         stepIndex,
-        stopRecording,
+        stopMicrophone,
         resetTimers
     ]);
 
@@ -191,11 +175,11 @@ export default function ScenarioSelectPage() {
                     resetTimers(); // 비활동 타이머 초기화
                     setShowLoginPopup(true);
                     setIsListening(false);
-                    stopRecording();
+                    stopMicrophone();
                 }, 10 * 60 * 1000);
             }
         }
-    }, [stepIndex, phase, startInactivityTimer, stopRecording, resetTimers]);
+    }, [stepIndex, phase, startInactivityTimer, stopMicrophone, resetTimers]);
 
     useEffect(() => {
         if (phase !== "conversation") return;
@@ -230,9 +214,7 @@ export default function ScenarioSelectPage() {
     useEffect(() => {
         if (phase !== "conversation") return;
 
-        const userSpeaking = chatState.isUserSpeaking || isLocalSpeaking;
-
-        if (userSpeaking) {
+        if (chatState.isRecording) {
             setIsListening(true);
             setShowNotUnderstood(false);
             return;
@@ -242,7 +224,7 @@ export default function ScenarioSelectPage() {
             setIsListening(false);
             setShowNotUnderstood(false);
         }
-    }, [chatState.isAiSpeaking, chatState.isUserSpeaking, isLocalSpeaking, phase]);
+    }, [chatState.isAiSpeaking, chatState.isRecording, phase]);
 
     const endChatAndGoLogin = useCallback(() => {
         resetTimers();
@@ -250,10 +232,10 @@ export default function ScenarioSelectPage() {
         setShowWaitPopup(false);
         setShowEndChatPopup(false);
         setIsListening(false);
-        stopRecording();
+        stopMicrophone();
         disconnect();
         router.push("/auth/login");
-    }, [disconnect, router, stopRecording, resetTimers]);
+    }, [disconnect, router, stopMicrophone, resetTimers]);
 
     const handleStopChat = () => {
         endChatAndGoLogin();
@@ -268,7 +250,7 @@ export default function ScenarioSelectPage() {
         resetTimers();
         startInactivityTimer();
         setIsListening(true);
-        startRecording();
+        startMicrophone();
     };
 
     const handleStopFromWait = () => {
@@ -280,7 +262,7 @@ export default function ScenarioSelectPage() {
         resetTimers();
         startInactivityTimer();
         setIsListening(true);
-        startRecording();
+        startMicrophone();
     };
 
     const handleStopFromEnd = () => {
@@ -291,9 +273,9 @@ export default function ScenarioSelectPage() {
       <>
         <DebugStatus
           isConnected={chatState.isConnected}
-          lastEvent={chatState.lastEvent}
+          lastEvent=""
           isAiSpeaking={chatState.isAiSpeaking}
-          isUserSpeaking={chatState.isUserSpeaking || isLocalSpeaking}
+          isUserSpeaking={chatState.isRecording}
         />
 
         <FullLayout showHeader={true}>
@@ -325,9 +307,9 @@ export default function ScenarioSelectPage() {
             <Step1
               textOpacity={textOpacity}
               isListening={isListening}
-              isLocalSpeaking={isLocalSpeaking}
+              isLocalSpeaking={chatState.isRecording}
               isAiSpeaking={chatState.isAiSpeaking}
-              isUserSpeaking={chatState.isUserSpeaking}
+              isUserSpeaking={chatState.isRecording}
               hasError={hasError}
               phase="topic"
               showInactivityMessage={showInactivityMessage}
@@ -336,12 +318,17 @@ export default function ScenarioSelectPage() {
               aiMessageKR={chatState.aiMessageKR}
               userTranscript={chatState.userTranscript}
               resetTimers={resetTimers}
-              startRecording={startRecording}
-              stopRecording={stopRecording}
+              startRecording={startMicrophone}
+              stopRecording={stopMicrophone}
               setIsListening={setIsListening}
               setTextOpacity={setTextOpacity}
               initAudio={initAudio}
               onNext={() => {}} // 자막 설정으로 자동 이동됨 (useEffect)
+              chatState={chatState as any} // 타입 호환성 임시 처리 (필요시 수정)
+              connect={connect}
+              startScenarioSession={startScenarioSession}
+              hasStarted={hasStarted}
+              setHasStarted={setHasStarted}
             />
           )}
 
@@ -379,8 +366,12 @@ export default function ScenarioSelectPage() {
                 <Button
                   onClick={() => {
                     setShowScenarioResultPopup(false);
+                    disconnect(); // 기존 연결 해제
+                    setIsListening(false);
+                    setHasStarted(false); // 대화 시작 상태 초기화
                     setStepIndex(1); // 주제 다시 정하기
-                    connect(); // 재연결
+                    initialPromptSentRef.current = false; // 재시작을 위해 리셋
+                    // 재연결은 마이크 클릭 시 자동으로 이루어짐
                   }}
                   variant="outline-purple"
                   className="h-14 flex-1 rounded-full border-2 border-gray-300 text-base font-semibold text-gray-700 transition hover:bg-gray-50"

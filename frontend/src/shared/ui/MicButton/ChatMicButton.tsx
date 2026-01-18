@@ -32,9 +32,10 @@ export const ChatMicButton: React.FC<ChatMicButtonProps> = ({
   const isUserTurn = !state.isAiSpeaking && state.isConnected;
   const showWaves = (hasStarted || isUserTurn) && !muted;
 
-  // 3. 비활성화 여부 (연결 끊김, AI 발화 중, 일시중지 중)
-  // 단, 대화 시작 전(!hasStarted)에는 클릭이 가능해야 함
-  const isDisabled = !state.isConnected || (hasStarted && state.isAiSpeaking) || isPaused;
+  // 3. 비활성화 여부
+  // - 대화 시작 전(!hasStarted): 항상 클릭 가능 (연결 시작 버튼 역할)
+  // - 대화 시작 후(hasStarted): 연결 끊김, AI 발화 중, 일시중지 중일 때 비활성화
+  const isDisabled = hasStarted && (!state.isConnected || state.isAiSpeaking || isPaused);
 
   return (
     <MicButton
