@@ -11,7 +11,7 @@ interface MicButtonProps {
 }
 
 export const MicButton: FC<MicButtonProps> = ({
-  isListening,
+  isListening = false,
   onClick,
   size = "md",
   className = "",

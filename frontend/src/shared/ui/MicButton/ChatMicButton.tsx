@@ -20,7 +20,7 @@ export const ChatMicButton: React.FC<ChatMicButtonProps> = ({
   state,
   isPaused = false,
   isMuted = false, // 음소거 여부
-  hasStarted = true, // 대화 시작 여부
+  hasStarted = false, // 대화 시작 여부
   onClick,
   size = "md",
   className = "",
