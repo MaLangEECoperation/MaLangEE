@@ -115,6 +115,7 @@ export interface BaseWebSocketState {
 export interface AudioState {
   isAiSpeaking: boolean;
   isUserSpeaking: boolean;
+  isRecording: boolean;
   aiMessage: string;
   userTranscript: string;
 }
