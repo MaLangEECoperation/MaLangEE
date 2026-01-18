@@ -15,8 +15,10 @@ export default function ConversationTestPage() {
   const [sessionId, setSessionId] = useState("");
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
+  const [textInput, setTextInput] = useState("");
+  const [isMuted, setIsMuted] = useState(false);
   
-  const { state, connect, disconnect, initAudio, sendAudio, sendText } = useConversationChatNew(sessionId);
+  const { state, connect, disconnect, initAudio, sendAudio, sendText, toggleMute } = useConversationChatNew(sessionId);
   
   const [isRecording, setIsRecording] = useState(false);
   const streamRef = useRef<MediaStream | null>(null);
@@ -25,9 +27,6 @@ export default function ConversationTestPage() {
 
   // 세션 목록 가져오기
   const fetchSessions = async () => {
-    // 클라이언트 사이드에서만 실행
-    if (typeof window === 'undefined') return;
-
     const token = tokenStorage.get();
     if (!token) {
       alert("로그인이 필요합니다.");
@@ -43,7 +42,6 @@ export default function ConversationTestPage() {
       if (!response.ok) throw new Error("Failed to fetch sessions");
       
       const data = await response.json();
-      // API 응답 구조에 따라 처리 (배열 또는 { items: [] })
       const items = Array.isArray(data) ? data : data.items || [];
       setSessions(items);
     } catch (e) {
@@ -54,7 +52,6 @@ export default function ConversationTestPage() {
     }
   };
 
-  // 초기 로드 시 세션 목록 조회
   useEffect(() => {
     fetchSessions();
   }, []);
@@ -65,7 +62,6 @@ export default function ConversationTestPage() {
       streamRef.current = stream;
       
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      // 기존 컨텍스트가 있으면 재사용 (initAudio에서 생성된 것)
       const audioContext = audioContextRef.current || new AudioContextClass({ sampleRate: 24000 });
       audioContextRef.current = audioContext;
 
@@ -92,16 +88,22 @@ export default function ConversationTestPage() {
   };
 
   const stopMic = () => {
-    streamRef.current?.getTracks().forEach(t => t.stop());
-    processorRef.current?.disconnect();
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+    if (processorRef.current) {
+      processorRef.current.disconnect();
+      processorRef.current = null;
+    }
     // audioContext는 닫지 않음 (재생을 위해 유지)
     setIsRecording(false);
   };
 
   const handleConnectAndStart = async () => {
-    initAudio(); // 오디오 재생 준비
-    connect();   // 소켓 연결
-    await startMic(); // 마이크 시작
+    initAudio();
+    connect();
+    await startMic();
   };
 
   const handleDisconnect = () => {
@@ -110,27 +112,27 @@ export default function ConversationTestPage() {
   };
 
   const handleSendText = () => {
-    const text = prompt("전송할 텍스트를 입력하세요:");
-    if (text) sendText(text);
+    if (!textInput.trim()) return;
+    sendText(textInput);
+    setTextInput("");
   };
 
-  // 컴포넌트 언마운트 시 정리 (새로고침, 페이지 이동 등)
+  const handleToggleMute = () => {
+    const newMuteState = !isMuted;
+    setIsMuted(newMuteState);
+    toggleMute(newMuteState);
+  };
+
   useEffect(() => {
     return () => {
-      console.log("Cleaning up resources...");
-      // 1. 마이크 스트림 정지
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(t => t.stop());
+      if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+      if (processorRef.current) processorRef.current.disconnect();
+      
+      // AudioContext 종료 시 상태 체크 추가
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        audioContextRef.current.close().catch(e => console.warn("Error closing AudioContext:", e));
       }
-      // 2. 오디오 프로세서 연결 해제
-      if (processorRef.current) {
-        processorRef.current.disconnect();
-      }
-      // 3. 오디오 컨텍스트 종료
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
-      // 4. 소켓 연결 해제 (훅 내부에서도 처리하지만 명시적으로 호출)
+
       disconnect();
     };
   }, [disconnect]);
@@ -203,21 +205,22 @@ export default function ConversationTestPage() {
                   연결 종료
                 </button>
 
-                <button
-                  onClick={isRecording ? stopMic : startMic}
-                  className={`w-full px-4 py-2 rounded text-white ${isRecording ? "bg-red-600" : "bg-green-600"}`}
-                  disabled={!state.isConnected}
-                >
-                  {isRecording ? "마이크 끄기" : "마이크 켜기"}
-                </button>
-                
-                <button 
-                  onClick={handleSendText}
-                  className="w-full px-4 py-2 bg-indigo-500 text-white rounded disabled:opacity-50"
-                  disabled={!state.isConnected}
-                >
-                  텍스트 전송
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={isRecording ? stopMic : startMic}
+                    className={`flex-1 px-4 py-2 rounded text-white ${isRecording ? "bg-red-600" : "bg-green-600"}`}
+                    disabled={!state.isConnected}
+                  >
+                    {isRecording ? "마이크 끄기" : "마이크 켜기"}
+                  </button>
+                  <button
+                    onClick={handleToggleMute}
+                    className={`flex-1 px-4 py-2 rounded text-white ${isMuted ? "bg-orange-500" : "bg-gray-500"}`}
+                    disabled={!state.isConnected}
+                  >
+                    {isMuted ? "음소거 해제" : "음소거"}
+                  </button>
+                </div>
              </div>
           </div>
         </div>
@@ -256,6 +259,12 @@ export default function ConversationTestPage() {
                     {isRecording ? "🔴 녹음 중" : "꺼짐"}
                   </span>
                 </div>
+                <div className="flex justify-between">
+                  <span>음소거:</span>
+                  <span className={isMuted ? "text-orange-600 font-bold" : "text-gray-400"}>
+                    {isMuted ? "🔇 켜짐" : "🔊 꺼짐"}
+                  </span>
+                </div>
               </div>
             </div>
             
@@ -278,7 +287,27 @@ export default function ConversationTestPage() {
             </div>
           </div>
 
-          <div className="border rounded-lg bg-black text-green-400 p-4 h-[500px] overflow-y-auto font-mono text-xs shadow-inner">
+          {/* Text Input Area */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={textInput}
+              onChange={(e) => setTextInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSendText()}
+              placeholder="전송할 텍스트 입력..."
+              className="flex-1 p-2 border rounded bg-white text-md"
+              disabled={!state.isConnected}
+            />
+            <button
+              onClick={handleSendText}
+              className="px-4 py-2 bg-indigo-600 text-white rounded disabled:opacity-50"
+              disabled={!state.isConnected}
+            >
+              전송
+            </button>
+          </div>
+
+          <div className="border rounded-lg bg-black text-green-400 p-4 h-[400px] overflow-y-auto font-mono text-xs shadow-inner">
             <div className="mb-2 border-b border-gray-700 pb-1 font-bold text-gray-400">실시간 로그</div>
             {state.logs.length === 0 ? (
               <div className="text-gray-500 italic">이벤트를 기다리는 중...</div>
