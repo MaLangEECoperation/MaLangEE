@@ -1,12 +1,12 @@
 "use client";
 
-import { ReactNode, useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { tokenStorage } from "@/features/auth/model";
+import { ReactNode, useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { FullLayout } from "@/shared/ui/FullLayout";
-import { Button, MalangEE, PopupLayout, DebugStatus } from "@/shared/ui";
-import { Square, Volume2, VolumeX, Pause } from "lucide-react";
+import { Button, DebugStatus, MalangEE, PopupLayout } from "@/shared/ui";
+import { History, LogOut, Volume2, VolumeX } from "lucide-react";
 import "@/shared/styles/scenario.css";
+import { useAuth } from "@/features/auth";
 
 interface ChatLayoutProps {
   children: ReactNode;
@@ -16,10 +16,20 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [showEndChatPopup, setShowEndChatPopup] = useState(false);
-  const [hasToken, setHasToken] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isSocketConnected, setIsSocketConnected] = useState(false); // 소켓 연결 상태
+  const { logout, isAuthenticated } = useAuth();
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+
+  const handleLogoutConfirm = () => {
+    setShowLogoutPopup(false);
+    logout();
+  };
+
+  const handleLogoutCancel = () => {
+    setShowLogoutPopup(false);
+  };
 
   // 디버그 상태 관리
   const [debugInfo, setDebugInfo] = useState<{
@@ -32,11 +42,6 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
     lastEvent: null,
     isAiSpeaking: false,
   });
-
-  // 클라이언트에서만 토큰 확인 (hydration 에러 방지)
-  useEffect(() => {
-    setHasToken(tokenStorage.exists());
-  }, []);
 
   // 소켓 및 디버그 상태 리스닝
   useEffect(() => {
@@ -89,29 +94,49 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
     setShowEndChatPopup(false);
   };
 
+  const handleLogoutClick = () => {
+    setShowLogoutPopup(true);
+  };
+
   // 헤더 우측 버튼 그룹 (로그인한 사용자만 표시)
   // /chat/complete 페이지에서는 버튼 숨김
-  const headerRightContent = hasToken && pathname !== "/chat/complete" ? (
-    <div className="flex items-center gap-2">
-      {/* 음소거 버튼 */}
-      <button
-        className="flex h-10 w-10 items-center justify-center rounded-full text-[#6A667A] transition-colors hover:bg-gray-100 hover:text-[#5F51D9]"
-        onClick={handleMuteToggle}
-        aria-label={isMuted ? "음소거 해제" : "음소거"}
-      >
-        {isMuted ? <VolumeX size={24} strokeWidth={2.5} /> : <Volume2 size={24} strokeWidth={2.5} />}
-      </button>
+  const headerRightContent =
+    isAuthenticated && pathname !== "/chat/complete" ? (
+      <div className="flex items-center gap-2 ">
+        <button
+          className="hidden transition-colors hover:text-[#5F51D9]"
+          onClick={() => (location.href = "/dashboard")}
+          title="마이페이지"
+        >
+          <History size={20} />
+        </button>
+        <button
+          className="hidden text-[#6A667A] transition-colors"
+          onClick={handleLogoutClick}
+          title="로그아웃"
+        >
+          <LogOut size={20} />
+        </button>
 
-      {/* 대화 종료 버튼 */}
-      <button
-        className="flex h-10 w-10 items-center justify-center rounded-full text-[#6A667A] transition-colors hover:bg-gray-100 hover:text-[#5F51D9]"
-        onClick={handleEndChat}
-        aria-label="대화 종료하기"
-      >
-        <Square size={24} strokeWidth={2.5} fill="currentColor" />
-      </button>
-    </div>
-  ) : null;
+        {/* 음소거 버튼 */}
+        <button
+          className="hidden text-[#6A667A] transition-colors"
+          onClick={handleMuteToggle}
+          title={isMuted ? "음소거 해제" : "음소거"}
+        >
+          {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+        </button>
+
+        {/* 대화 종료 버튼 */}
+        <button
+          className="text-[#6A667A] transition-colors"
+          onClick={handleEndChat}
+          title="대화 종료하기"
+        >
+          대화종료하기
+        </button>
+      </div>
+    ) : null;
 
   return (
     <>
@@ -138,6 +163,24 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
               </Button>
               <Button variant="primary" size="md" fullWidth onClick={handleEndChatConfirm}>
                 종료하기
+              </Button>
+            </div>
+          </div>
+        </PopupLayout>
+      )}
+
+      {/* 로그아웃 확인 팝업 */}
+      {showLogoutPopup && (
+        <PopupLayout onClose={handleLogoutCancel} showCloseButton={false} maxWidth="sm">
+          <div className="flex flex-col items-center gap-6 py-2">
+            <MalangEE status="humm" size={120} />
+            <div className="text-xl font-bold text-[#1F1C2B]">정말 로그아웃 하실건가요?</div>
+            <div className="flex w-full gap-3">
+              <Button variant="outline-purple" size="md" fullWidth onClick={handleLogoutCancel}>
+                닫기
+              </Button>
+              <Button variant="primary" size="md" fullWidth onClick={handleLogoutConfirm}>
+                로그아웃
               </Button>
             </div>
           </div>

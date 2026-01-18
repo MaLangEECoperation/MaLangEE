@@ -26,21 +26,7 @@ export const GlassCard: FC<GlassCardProps> = ({
   className = "",
   showHeader = false,
 }) => {
-  const { logout } = useAuth();
-  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
-  const handleLogoutClick = () => {
-    setShowLogoutPopup(true);
-  };
-
-  const handleLogoutConfirm = () => {
-    setShowLogoutPopup(false);
-    logout();
-  };
-
-  const handleLogoutCancel = () => {
-    setShowLogoutPopup(false);
-  };
 
   const defaultHeaderLeft = (
     <div className="scenario-logo">
@@ -52,20 +38,7 @@ export const GlassCard: FC<GlassCardProps> = ({
 
   const defaultHeaderRight = (
     <div className="flex hidden items-center gap-4">
-      <button
-        className="text-[#6A667A] transition-colors hover:text-[#5F51D9]"
-        onClick={() => (location.href = "/dashboard")}
-        title="대화이력"
-      >
-        <History size={20} />
-      </button>
-      <button
-        className="text-[#6A667A] transition-colors hover:text-[#5F51D9]"
-        onClick={handleLogoutClick}
-        title="로그아웃"
-      >
-        <LogOut size={20} />
-      </button>
+
     </div>
   );
 
@@ -88,23 +61,6 @@ export const GlassCard: FC<GlassCardProps> = ({
         {footer && <footer className="glass-card-footer">{footer}</footer>}
       </main>
 
-      {/* 로그아웃 확인 팝업 */}
-      {showLogoutPopup && (
-        <PopupLayout onClose={handleLogoutCancel} showCloseButton={false} maxWidth="sm">
-          <div className="flex flex-col items-center gap-6 py-2">
-            <MalangEE status="humm" size={120} />
-            <div className="text-xl font-bold text-[#1F1C2B]">정말 로그아웃 하실건가요?</div>
-            <div className="flex w-full gap-3">
-              <Button variant="outline-purple" size="md" fullWidth onClick={handleLogoutCancel}>
-                닫기
-              </Button>
-              <Button variant="primary" size="md" fullWidth onClick={handleLogoutConfirm}>
-                로그아웃
-              </Button>
-            </div>
-          </div>
-        </PopupLayout>
-      )}
     </>
   );
 };
