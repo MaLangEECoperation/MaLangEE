@@ -95,6 +95,20 @@ export default function ConversationPage() {
     setIsMounted(true);
   }, []);
 
+  // 대화 종료 이벤트 리스닝 (layout.tsx의 "대화종료하기" 버튼)
+  useEffect(() => {
+    const handleEndConversation = () => {
+      debugLog("[Event] end-conversation event received");
+      setShowEndChatPopup(true);
+    };
+
+    window.addEventListener("end-conversation", handleEndConversation);
+
+    return () => {
+      window.removeEventListener("end-conversation", handleEndConversation);
+    };
+  }, []);
+
   // 페이지 로드 시 자동 연결
   useEffect(() => {
     debugLog("[Auto-Connect] useEffect triggered - isMounted:", isMounted, "sessionId:", sessionId);
@@ -368,7 +382,7 @@ export default function ConversationPage() {
       </div>
 
       {/* Area 1: 안내 메시지 및 마이크 (상단) */}
-      <div className="flex w-full flex-col items-center transition-all duration-300 mb-6">
+      <div className="flex w-full flex-col items-center transition-all duration-300">
         <div className="relative flex min-h-[120px] w-full flex-col items-center justify-center">
           {/* 텍스트 영역 (상황별 안내 메시지) */}
           <div className="text-group text-center" style={{ opacity: textOpacity }}>
@@ -385,50 +399,50 @@ export default function ConversationPage() {
             hasStarted={true}
           />
 
-          <div className="mt-4 flex items-center gap-3">
-            {/* 자막 토글 버튼 */}
-            <button
-              onClick={toggleSubtitle}
-              className="text-text-secondary hover:text-brand flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium transition-colors"
-            >
-              {showSubtitle ? (
-                <>
-                  <Captions size={14} />
-                  자막 끄기
-                </>
-              ) : (
-                <>
-                  <CaptionsOff size={14} />
-                  자막 켜기
-                </>
-              )}
-            </button>
+      </div>
 
-            {/* 음소거 토글 버튼 */}
-            <button
-              onClick={handleMuteToggle}
-              className="text-text-secondary hover:text-brand flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={!state.isConnected || !state.isRecording}
-            >
-              {isMuted ? (
-                <>
-                  <VolumeX size={14} />
-                  음소거 해제
-                </>
-              ) : (
-                <>
-                  <Volume2 size={14} />
-                  음소거
-                </>
-              )}
-            </button>
-          </div>
+      <div className="mt-4 flex items-center gap-3">
+        {/* 자막 토글 버튼 */}
+        <button
+          onClick={toggleSubtitle}
+          className="text-text-secondary hover:text-brand flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium transition-colors"
+        >
+          {showSubtitle ? (
+            <>
+              <Captions size={14} />
+              자막 끄기
+            </>
+          ) : (
+            <>
+              <CaptionsOff size={14} />
+              자막 켜기
+            </>
+          )}
+        </button>
 
+        {/* 음소거 토글 버튼 */}
+        <button
+          onClick={handleMuteToggle}
+          className="text-text-secondary hover:text-brand flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={!state.isConnected || !state.isRecording}
+        >
+          {isMuted ? (
+            <>
+              <VolumeX size={14} />
+              음소거 해제
+            </>
+          ) : (
+            <>
+              <Volume2 size={14} />
+              음소거
+            </>
+          )}
+        </button>
       </div>
 
       {/* Area 2: 자막 영역 (하단, 내용이 있을 때만 표시) */}
       {hasSubtitleContent && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 flex w-full justify-center duration-300 mt-6">
+        <div className="animate-in fade-in slide-in-from-bottom-4 flex w-full justify-center duration-300 mt-3">
           <div className="inline-block w-full max-w-md px-6 py-6 text-center">
             <div className="flex flex-col gap-3">
               {/* 1. 말랭이 영어 대화 */}

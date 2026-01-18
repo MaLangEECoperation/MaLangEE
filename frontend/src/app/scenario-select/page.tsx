@@ -11,7 +11,6 @@ import {useInactivityTimer} from "@/shared/hooks";
 import {Step1} from "@/app/scenario-select/steps/Step1";
 import {Step2} from "@/app/scenario-select/steps/Step2";
 import {Step3} from "@/app/scenario-select/steps/Step3";
-import {DebugStatus} from "@/shared/ui";
 
 export default function ScenarioSelectPage() {
     const router = useRouter();
@@ -24,6 +23,7 @@ export default function ScenarioSelectPage() {
     const [showEndChatPopup, setShowEndChatPopup] = useState(false);
     const [showScenarioResultPopup, setShowScenarioResultPopup] = useState(false);
     const [stepIndex, setStepIndex] = useState<1 | 2 | 3 | 4>(1);
+    const [isMuted, setIsMuted] = useState(false); // 음소거 상태
 
     // 커스텀 훅 사용
     const {
@@ -276,16 +276,51 @@ export default function ScenarioSelectPage() {
         endChatAndGoLogin();
     };
 
+    // Layout의 DebugStatus에 상태 전달 (CustomEvent)
+    useEffect(() => {
+        const debugStatus = {
+            isConnected: chatState.isConnected,
+            isReady: chatState.isReady,
+            lastEvent: null,
+            isAiSpeaking: chatState.isAiSpeaking,
+            isUserSpeaking: chatState.isRecording,
+            isMuted: isMuted,
+            isRecording: chatState.isRecording,
+            userTranscript: chatState.userTranscript,
+        };
+
+        window.dispatchEvent(
+            new CustomEvent("scenario-debug-status", {
+                detail: debugStatus,
+            })
+        );
+    }, [
+        chatState.isConnected,
+        chatState.isReady,
+        chatState.isAiSpeaking,
+        chatState.isRecording,
+        chatState.userTranscript,
+        isMuted,
+    ]);
+
+    // 헤더 종료 버튼 클릭 핸들러
+    const handleExitClick = () => {
+        setShowEndChatPopup(true);
+    };
+
     return (
       <>
-        <DebugStatus
-          isConnected={chatState.isConnected}
-          lastEvent=""
-          isAiSpeaking={chatState.isAiSpeaking}
-          isUserSpeaking={chatState.isRecording}
-        />
-
-        <FullLayout showHeader={true}>
+        <FullLayout
+          showHeader={true}
+          headerRight={
+            <button
+              onClick={handleExitClick}
+              className="btn-exit text-text-secondary hover:text-text-primary transition-colors"
+            >
+              대화 종료하기
+            </button>
+          }
+        >
           {/* Character */}
           <div className="character-box relative">
             <MalangEE status={showInactivityMessage ? "humm" : "default"} size={120} />
@@ -336,6 +371,8 @@ export default function ScenarioSelectPage() {
               startScenarioSession={startScenarioSession}
               hasStarted={hasStarted}
               setHasStarted={setHasStarted}
+              isMuted={isMuted}
+              setIsMuted={setIsMuted}
               toggleMute={toggleMute}
             />
           )}
