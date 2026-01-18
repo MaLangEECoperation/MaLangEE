@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useConversationChatNew } from "@/features/chat/hook/useConversationChatNew";
 import { Captions, CaptionsOff, Volume2, VolumeX } from "lucide-react";
 import { useAuth } from "@/features/auth";
+import { debugLog, debugError } from "@/shared/lib";
 
 export default function ConversationPage() {
   const [isMounted, setIsMounted] = useState(false);
@@ -28,17 +29,17 @@ export default function ConversationPage() {
 
     if (urlSessionId) {
       // 1순위: URL에 sessionId가 있으면 사용
-      console.log("[SessionId] Using URL sessionId:", urlSessionId);
+      debugLog("[SessionId] Using URL sessionId:", urlSessionId);
       setSessionId(urlSessionId);
       localStorage.setItem("chatSessionId", urlSessionId);
     } else if (storedSessionId) {
       // 2순위: localStorage에 있으면 URL에 추가
-      console.log("[SessionId] Using stored sessionId:", storedSessionId);
+      debugLog("[SessionId] Using stored sessionId:", storedSessionId);
       setSessionId(storedSessionId);
       router.replace(`/chat/conversation?sessionId=${storedSessionId}`, { scroll: false });
     } else {
       // sessionId가 없으면 에러 팝업 표시
-      console.error("[SessionId] No sessionId found");
+      debugError("[SessionId] No sessionId found");
       setShowSessionErrorPopup(true);
     }
   }, [sessionId, searchParams, router]);
@@ -96,65 +97,65 @@ export default function ConversationPage() {
 
   // 페이지 로드 시 자동 연결
   useEffect(() => {
-    console.log("[Auto-Connect] useEffect triggered - isMounted:", isMounted, "sessionId:", sessionId);
+    debugLog("[Auto-Connect] useEffect triggered - isMounted:", isMounted, "sessionId:", sessionId);
 
     if (!isMounted || !sessionId || sessionId.trim() === "") {
-      console.log("[Auto-Connect] Skipping - not ready:", { isMounted, sessionId });
+      debugLog("[Auto-Connect] Skipping - not ready:", { isMounted, sessionId });
       return;
     }
 
-    console.log("[Auto-Connect] Starting connection sequence for session:", sessionId);
+    debugLog("[Auto-Connect] Starting connection sequence for session:", sessionId);
 
     // 오디오 초기화 및 연결
     initAudio();
-    console.log("[Auto-Connect] initAudio() called");
+    debugLog("[Auto-Connect] initAudio() called");
 
     connect();
-    console.log("[Auto-Connect] connect() called");
+    debugLog("[Auto-Connect] connect() called");
 
     // 언마운트 시 정리
     return () => {
-      console.log("[Auto-Connect] Cleaning up connection");
+      debugLog("[Auto-Connect] Cleaning up connection");
       disconnect();
     };
   }, [isMounted, sessionId, initAudio, connect, disconnect]);
 
   // 연결 완료 후 마이크 시작 + AI에게 첫 인사 요청
   useEffect(() => {
-    console.log("[Connection Ready] useEffect triggered");
-    console.log("[Connection Ready] state.isConnected:", state.isConnected);
-    console.log("[Connection Ready] state.isReady:", state.isReady);
-    console.log("[Connection Ready] isMicEnabled:", isMicEnabled);
+    debugLog("[Connection Ready] useEffect triggered");
+    debugLog("[Connection Ready] state.isConnected:", state.isConnected);
+    debugLog("[Connection Ready] state.isReady:", state.isReady);
+    debugLog("[Connection Ready] isMicEnabled:", isMicEnabled);
 
     if (!state.isConnected || !state.isReady) {
-      console.log("[Connection Ready] Waiting for connection...");
+      debugLog("[Connection Ready] Waiting for connection...");
       return;
     }
 
     if (isMicEnabled) {
-      console.log("[Connection Ready] Microphone already enabled, skipping");
+      debugLog("[Connection Ready] Microphone already enabled, skipping");
       return;
     }
 
-    console.log("[Connection Ready] ✅ All conditions met! Starting microphone...");
-    console.log("[Connection Ready] state.isRecording:", state.isRecording);
+    debugLog("[Connection Ready] ✅ All conditions met! Starting microphone...");
+    debugLog("[Connection Ready] state.isRecording:", state.isRecording);
 
     // 마이크 시작 (비동기 처리 + 에러 핸들링)
     const startMic = async () => {
       try {
         setIsMicEnabled(true); // 즉시 웨이브 표시
-        console.log("[StartMic] setIsMicEnabled(true) called");
+        debugLog("[StartMic] setIsMicEnabled(true) called");
 
         await startMicrophone(); // 실제 마이크 시작 (비동기 대기)
-        console.log("[StartMic] Microphone started successfully");
-        console.log("[StartMic] state.isRecording after start:", state.isRecording);
+        debugLog("[StartMic] Microphone started successfully");
+        debugLog("[StartMic] state.isRecording after start:", state.isRecording);
 
         // 마이크 시작 후 AI 응답 요청
         setTimeout(() => {
           requestResponse();
         }, 500);
       } catch (error) {
-        console.error("[StartMic] Failed to start microphone:", error);
+        debugError("[StartMic] Failed to start microphone:", error);
         setIsMicEnabled(false); // 에러 발생 시 상태 되돌림
         alert("마이크를 시작할 수 없습니다. 브라우저 설정에서 마이크 권한을 확인해주세요.");
       }
@@ -165,10 +166,10 @@ export default function ConversationPage() {
 
   // state.isRecording 변화 추적 (디버깅용)
   useEffect(() => {
-    console.log("[Debug] state.isRecording changed:", state.isRecording);
-    console.log("[Debug] isMicEnabled:", isMicEnabled);
-    console.log("[Debug] state.isConnected:", state.isConnected);
-    console.log("[Debug] state.isReady:", state.isReady);
+    debugLog("[Debug] state.isRecording changed:", state.isRecording);
+    debugLog("[Debug] isMicEnabled:", isMicEnabled);
+    debugLog("[Debug] state.isConnected:", state.isConnected);
+    debugLog("[Debug] state.isReady:", state.isReady);
   }, [state.isRecording, isMicEnabled, state.isConnected, state.isReady]);
 
   // 마이크 상태 자동 관리 (연결 끊김 시에만 중지)
@@ -176,7 +177,7 @@ export default function ConversationPage() {
     // 연결 안 됨 또는 준비 안 됨 → 마이크 중지
     if (!state.isConnected || !state.isReady) {
       if (isMicEnabled) {
-        console.log("[Mic Control] Stopping microphone - connection lost");
+        debugLog("[Mic Control] Stopping microphone - connection lost");
         setIsMicEnabled(false);
         stopMicrophone();
       }
@@ -291,7 +292,7 @@ export default function ConversationPage() {
     const newMuteState = !isMuted;
     setIsMuted(newMuteState);
     toggleMute(newMuteState);
-    console.log(`[Mute Toggle] ${newMuteState ? 'Muted' : 'Unmuted'}`);
+    debugLog(`[Mute Toggle] ${newMuteState ? 'Muted' : 'Unmuted'}`);
   };
 
   const handleStopFromWait = () => {

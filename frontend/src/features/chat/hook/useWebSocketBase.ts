@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useCallback, useState, useEffect, useMemo } from "react";
+import { debugLog } from "@/shared/lib/debug";
 
 export interface UseWebSocketBaseConfig {
   getWebSocketUrl: () => string;
@@ -238,12 +239,12 @@ export function useWebSocketBase({
           ws.close();
           return;
         }
-        console.log("[WebSocket] ✅ Connection opened successfully");
+        debugLog("[WebSocket] ✅ Connection opened successfully");
         addLog("WebSocket Connected");
         setIsConnected(true);
         reconnectCountRef.current = 0;
         onOpen?.();
-        console.log("[WebSocket] Waiting for session.update or ready event...");
+        debugLog("[WebSocket] Waiting for session.update or ready event...");
       };
 
       ws.onmessage = (event) => {

@@ -6,4 +6,14 @@ export type {
   WebSocketMessageType,
   WebSocketClientConfig,
 } from "./websocket-client";
+export {
+  isDev,
+  debugLog,
+  debugError,
+  debugWarn,
+  debugInfo,
+  prodLog,
+  prodError,
+  prodWarn
+} from "./debug";
 

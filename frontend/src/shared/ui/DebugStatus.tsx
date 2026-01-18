@@ -1,4 +1,5 @@
 import React from "react";
+import { isDev } from "@/shared/lib/debug";
 
 interface DebugStatusProps {
   isConnected: boolean;
@@ -22,7 +23,7 @@ export const DebugStatus: React.FC<DebugStatusProps> = ({
   userTranscript,
 }) => {
   // 개발 환경에서만 표시
-  if (process.env.NODE_ENV !== "development") return null;
+  if (!isDev()) return null;
 
   return (
     <div className="pointer-events-none fixed bottom-4 left-4 right-4 z-50 flex flex-col items-center gap-2">

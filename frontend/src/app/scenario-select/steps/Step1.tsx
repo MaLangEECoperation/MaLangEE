@@ -6,6 +6,7 @@ import { Button, ChatMicButton } from "@/shared/ui";
 import { useAuth } from "@/features/auth";
 import { Captions, CaptionsOff } from "lucide-react";
 import { ScenarioState } from "@/features/chat/hook";
+import { isDev } from "@/shared/lib/debug";
 
 interface Step1Props {
   textOpacity: number;
@@ -213,7 +214,7 @@ export function Step1({
             />
 
             {/* 자막 토글 버튼 (개발 환경에서만 표시) */}
-            {process.env.NODE_ENV === 'development' && (
+            {isDev() && (
               <button
                 onClick={toggleSubtitle}
                 className="text-text-secondary hover:text-brand flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium transition-colors"

@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { ChevronLeft, ChevronRight, Volume2 } from "lucide-react";
 import { Button } from "@/shared/ui";
 import { useRouter } from "next/navigation";
+import { debugError } from "@/shared/lib/debug";
 
 interface VoiceOption {
   id: string;
@@ -72,9 +73,9 @@ export function Step3({ textOpacity, onNext }: Step3Props) {
     audio.onplay = () => setIsPlaying(true);
     audio.onended = () => setIsPlaying(false);
     audio.onpause = () => setIsPlaying(false);
-    
+
     audio.play().catch(err => {
-      console.error("Audio play failed:", err);
+      debugError("Audio play failed:", err);
       setIsPlaying(false);
     });
   };

@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { tokenStorage } from "@/features/auth";
 import { translateToKorean } from "@/shared/lib/translate";
 import { useWebSocketBase } from "./useWebSocketBase";
+import { debugLog, debugError } from "@/shared/lib/debug";
 
 export interface ConversationChatStateNew {
   isConnected: boolean;
@@ -76,11 +77,11 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
   onMessageRef.current = (event: MessageEvent) => {
     try {
       const data = JSON.parse(event.data);
-      console.log("[WebSocket] Received message type:", data.type, "data:", data);
+      debugLog("[WebSocket] Received message type:", data.type, "data:", data);
 
       switch (data.type) {
         case "session.update":
-          console.log("[WebSocket] ✅ session.update received! Setting isReady = true");
+          debugLog("[WebSocket] ✅ session.update received! Setting isReady = true");
           base.addLog("Received 'session.update'. Sending init messages...");
           base.setIsReady(true);
 
@@ -94,20 +95,20 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
             })
           );
           base.addLog("Sent session.update (config)");
-          console.log("[WebSocket] Sent session.update with voice:", voice);
+          debugLog("[WebSocket] Sent session.update with voice:", voice);
           break;
 
         case "session.created":
         case "ready":
         case "connected":
-          console.log("[WebSocket] ✅ Session ready event received! Setting isReady = true");
+          debugLog("[WebSocket] ✅ Session ready event received! Setting isReady = true");
           base.setIsReady(true);
           break;
 
         case "audio.delta":
           // audio.delta를 받았다는 것은 세션이 준비되었다는 의미
           if (!base.isReady) {
-            console.log("[WebSocket] ✅ audio.delta received! Session is ready. Setting isReady = true");
+            debugLog("[WebSocket] ✅ audio.delta received! Session is ready. Setting isReady = true");
             base.setIsReady(true);
           }
           base.playAudioChunk(data.delta, 24000);
@@ -151,17 +152,17 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
           break;
 
         case "error":
-          console.error("[WebSocket] ❌ Error received:", data.message);
+          debugError("[WebSocket] ❌ Error received:", data.message);
           base.addLog(`Error: ${data.message}`);
           break;
 
         default:
-          console.log("[WebSocket] ⚠️ Unknown message type:", data.type);
+          debugLog("[WebSocket] ⚠️ Unknown message type:", data.type);
           base.addLog(`Unknown type: ${data.type}`);
           break;
       }
     } catch (e) {
-      console.error("[WebSocket] Parse Error:", e);
+      debugError("[WebSocket] Parse Error:", e);
       base.addLog(`Parse Error: ${e}`);
     }
   };
