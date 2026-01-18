@@ -93,8 +93,6 @@ class ChatRepository:
                 scenario_completed_at=scenario_completed_at,
                 voice=session_data.voice,
                 show_text=session_data.show_text,
-                voice=session_data.voice,
-                show_text=session_data.show_text,
                 user_id=user_id,
                 # [New] Feedback & Summary
                 feedback=session_data.feedback,
