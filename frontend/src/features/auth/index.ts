@@ -33,4 +33,4 @@ export {
 export { useAuth, useLoginIdCheck, useNicknameCheck, usePasswordValidation } from "./hook";
 
 // UI
-export { AuthGuard, GuestGuard } from "./ui";
+export { AuthGuard, GuestGuard, TokenKeepAlive } from "./ui";

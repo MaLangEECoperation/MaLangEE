@@ -16,4 +16,11 @@ export {
   prodError,
   prodWarn
 } from "./debug";
+export {
+  decodeJWT,
+  isTokenExpired,
+  getTokenExpiresIn,
+  getTokenExpirationDate,
+  isTokenExpiringSoon
+} from "./jwt";
 
