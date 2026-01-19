@@ -31,7 +31,7 @@ export const MicButton: FC<MicButtonProps> = ({
 
   return (
     <div
-      className={`mic-container ${sizeClasses[size]} ${isListening ? "is-listening" : ""} ${isMuted ? "is-muted" : ""} ${className}`}
+      className={`mic-container mb-6 mt-6 ${sizeClasses[size]} ${isListening ? "is-listening" : ""} ${isMuted ? "is-muted" : ""} ${className}`}
       onClick={onClick}
     >
       {/* Waves */}
