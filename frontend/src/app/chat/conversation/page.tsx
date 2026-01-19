@@ -381,14 +381,13 @@ export default function ConversationPage() {
           </div>
         </div>
 
-          {/* Mic Button */}
-          <ChatMicButton
-            state={state}
-            isMuted={isMuted}
-            isListening={isMicEnabled || state.isRecording}
-            hasStarted={true}
-          />
-
+        {/* Mic Button */}
+        <ChatMicButton
+          state={state}
+          isMuted={isMuted}
+          isListening={isMicEnabled || state.isRecording}
+          hasStarted={true}
+        />
       </div>
 
       <div className="mt-4 flex items-center gap-3">
@@ -432,26 +431,9 @@ export default function ConversationPage() {
 
       {/* Area 2: 자막 영역 (하단, 내용이 있을 때만 표시) */}
       {hasSubtitleContent && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 flex w-full justify-center duration-300 mt-3">
+        <div className="animate-in fade-in slide-in-from-bottom-4 mt-3 flex w-full justify-center duration-300">
           <div className="inline-block w-full max-w-md px-6 py-6 text-center">
             <div className="flex flex-col gap-3">
-              {/* 1. 말랭이 영어 대화 */}
-              {state.aiMessage && (
-                <div className="flex flex-col gap-1">
-                  <p className="text-brand text-left text-xs font-bold">MalangEE</p>
-                  <p className="text-text-primary text-left text-sm font-semibold leading-relaxed">
-                    {state.aiMessage}
-                  </p>
-                </div>
-              )}
-
-              {/* 2. 한글 번역 */}
-              {state.aiMessageKR && (
-                <p className="text-text-secondary border-brand/30 pl-1 text-left text-[12px] leading-tight">
-                  {state.aiMessageKR}
-                </p>
-              )}
-
               {/* 3. 사용자 (닉네임 또는 나) */}
               {state.userTranscript && (
                 <div className="border-white-70 mt-2 border-t pt-3">
@@ -465,22 +447,6 @@ export default function ConversationPage() {
               )}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* AI Speaking Wave Animation */}
-      {state.isAiSpeaking && state.isConnected && (
-        <div className="absolute left-1/2 top-full mt-2 flex -translate-x-1/2 justify-center gap-1">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="bg-primary-600 animate-wave w-1 rounded-full"
-              style={{
-                height: "20px",
-                animationDelay: `${i * 0.1}s`,
-              }}
-            />
-          ))}
         </div>
       )}
 
@@ -543,12 +509,8 @@ export default function ConversationPage() {
         <PopupLayout onClose={() => {}} showCloseButton={false} maxWidth="sm">
           <div className="flex flex-col items-center gap-6 py-2">
             <MalangEE status="humm" size={120} />
-            <div className="text-xl font-bold text-[#1F1C2B]">
-              세션을 찾을 수 없어요
-            </div>
-            <p className="text-center text-sm text-gray-600">
-              주제를 먼저 선택해주세요
-            </p>
+            <div className="text-xl font-bold text-[#1F1C2B]">세션을 찾을 수 없어요</div>
+            <p className="text-center text-sm text-gray-600">주제를 먼저 선택해주세요</p>
             <div className="flex w-full gap-3">
               <Button
                 variant="primary"
