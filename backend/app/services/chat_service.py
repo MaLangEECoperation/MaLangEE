@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 from app.core.config import settings
 from app.db.models import ConversationSession, User
 from app.repositories.chat_repository import ChatRepository
-from app.schemas.chat import SessionCreate, SessionResponse, SessionSummary
+from app.schemas.chat import SessionCreate, SessionResponse, SessionSummary, SessionStartRequest
 from app.schemas.common import PaginatedResponse
 from fastapi import WebSocket
 from realtime_conversation.connection_handler import ConnectionHandler
