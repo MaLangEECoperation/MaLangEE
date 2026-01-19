@@ -34,19 +34,24 @@ MaLangEE는 **두 가지 독립적인 WebSocket 기능**을 제공하며, 각각
 
 **엔드포인트:**
 ```
-회원: ws://49.50.137.35:8080/api/v1/scenario/ws/scenario?token={access_token}
-게스트: ws://49.50.137.35:8080/api/v1/scenario/ws/guest-scenario
+회원: /api/v1/scenario/ws/scenario?token={access_token}
+게스트: /api/v1/scenario/ws/guest-scenario
 ```
+
+**백엔드 구현**: `backend/app/api/v1/scenario.py:45, 61`
 
 **용도:**
 - 대화 주제(시나리오) 자동 생성
 - 사용자 음성/텍스트에서 Place, Partner, Goal 추출
 - AI가 후속 질문을 통해 정보 수집
-- 시나리오 완성 후 `sessionId` 반환
+- 시나리오 완성 후 `sessionId` 반환 및 DB 자동 저장
+- 연결 시 AI가 자동으로 첫 인사 시작
 
 **주요 이벤트:**
 - 클라이언트 → 서버: `input_audio_chunk`, `text`
 - 서버 → 클라이언트: `response.audio.delta`, `scenario.completed`
+
+**AI Engine 구현**: `ai-engine/scenario/realtime_bridge.py:52`
 
 ---
 
@@ -54,19 +59,25 @@ MaLangEE는 **두 가지 독립적인 WebSocket 기능**을 제공하며, 각각
 
 **엔드포인트:**
 ```
-회원: ws://49.50.137.35:8080/api/v1/chat/ws/chat/{session_id}?token={access_token}&voice=alloy&show_text=true
-게스트: ws://49.50.137.35:8080/api/v1/chat/ws/guest-chat/{session_id}?voice=alloy&show_text=true
+회원: /api/v1/chat/ws/chat/{session_id}?token={access_token}&voice=alloy&show_text=true
+게스트: /api/v1/chat/ws/guest-chat/{session_id}?voice=alloy&show_text=true
 ```
+
+**백엔드 구현**: `backend/app/api/v1/chat.py:90, 112`
 
 **용도:**
 - 실시간 영어 회화 연습
 - OpenAI GPT-4o와 실시간 음성 대화
 - 사용자 발화 자동 분석 (WPM, 발화 시간)
-- 대화 종료 시 세션 리포트 생성
+- 대화 종료 시 세션 리포트 및 피드백 생성 (10개 이상 메시지)
+- 이전 대화 히스토리 자동 복원 (같은 session_id 사용 시)
+- 연결 시 AI가 자동으로 첫 인사 시작
 
 **주요 이벤트:**
 - 클라이언트 → 서버: `input_audio_buffer.append`
 - 서버 → 클라이언트: `audio.delta`, `user.transcript`
+
+**AI Engine 구현**: `ai-engine/realtime_conversation/connection_handler.py:16`
 
 **Query Parameters:**
 - `voice` (선택): AI 음성 (`alloy`, `echo`, `fable`, `onyx`, `nova`, `shimmer`)
@@ -90,6 +101,10 @@ sequenceDiagram
     Scenario->>OpenAI: Connect to Realtime API
     OpenAI-->>Scenario: session.updated
     Scenario-->>F: ready
+    Scenario->>OpenAI: conversation.item.create (Let's start)
+    Scenario->>OpenAI: response.create
+    OpenAI-->>Scenario: AI 첫 인사 오디오
+    Scenario-->>F: response.audio.delta (AI 첫 인사)
 
     F->>Scenario: input_audio_chunk (User speech)
     Scenario->>OpenAI: Relay Audio
@@ -207,6 +222,10 @@ WebSocket 연결이 준비되었습니다.
 **처리 방법:**
 - UI 업데이트 (예: "연결 중..." → "주제를 말씀해주세요")
 - 오디오 녹음 시작 허용
+
+**중요 사항:**
+- `ready` 이벤트 직후, 서버가 자동으로 "Let's start" 메시지를 OpenAI에 전송하여 AI의 첫 인사를 트리거합니다 (`ai-engine/scenario/realtime_bridge.py:235-255`)
+- 따라서 클라이언트는 `ready` 수신 직후 `response.audio.delta` 이벤트를 통해 AI의 첫 인사 오디오를 수신하게 됩니다
 
 ---
 
@@ -333,8 +352,13 @@ AI가 말한 내용의 텍스트입니다.
 - Place, Partner, Goal이 모두 추출되었을 때
 - 또는 최대 시도 횟수 초과 시 (폴백)
 
+**서버 동작:**
+- 시나리오 완료 시 서버가 자동으로 DB에 저장 (`ai-engine/scenario/realtime_bridge.py:124-173`)
+- LLM을 통해 대화 내용 기반 세션 제목 자동 생성
+- `backend/app/repositories/chat_repository.py`를 통해 PostgreSQL에 저장
+
 **처리 방법:**
-1. 시나리오 정보 저장
+1. 시나리오 정보 저장 (클라이언트 로컬 또는 상태 관리)
 2. **중요:** `sessionId`를 저장 (다음 단계에서 사용)
 3. "대화하기" 화면으로 이동
 4. Chat WebSocket 연결 시 이 `sessionId` 사용
@@ -364,34 +388,38 @@ AI가 말한 내용의 텍스트입니다.
 ```
 [주제 정하기 시작]
 1. Frontend → Backend: WebSocket 연결
-2. Backend → Frontend: ready
+2. Backend: OpenAI 연결, "Let's start" 메시지 자동 전송
+3. Backend → Frontend: ready
+4. Backend → Frontend: response.audio.delta (AI 첫 인사 TTS)
+5. Backend → Frontend: response.audio.done
+6. Backend → Frontend: response.audio_transcript.done ("안녕하세요! 어떤 상황에서...")
 
 [첫 번째 발화]
-3. Frontend → Backend: input_audio_chunk (계속 전송)
-4. Backend → Frontend: input_audio.transcript ("I'm at a hotel")
+7. Frontend → Backend: input_audio_chunk (계속 전송)
+8. Backend → Frontend: input_audio.transcript ("I'm at a hotel")
    → 서버: Place 추출 ("hotel"), Partner/Goal 누락 감지
-5. Backend → Frontend: response.audio.delta (TTS 질문 오디오)
-6. Backend → Frontend: response.audio.done
-7. Backend → Frontend: response.audio_transcript.done ("Great! Who are you talking to?")
+9. Backend → Frontend: response.audio.delta (TTS 질문 오디오)
+10. Backend → Frontend: response.audio.done
+11. Backend → Frontend: response.audio_transcript.done ("Great! Who are you talking to?")
 
 [두 번째 발화]
-8. Frontend → Backend: input_audio_chunk
-9. Backend → Frontend: input_audio.transcript ("the receptionist")
+12. Frontend → Backend: input_audio_chunk
+13. Backend → Frontend: input_audio.transcript ("the receptionist")
    → 서버: Partner 추출 ("receptionist"), Goal 누락 감지
-10. Backend → Frontend: response.audio.delta
-11. Backend → Frontend: response.audio.done
-12. Backend → Frontend: response.audio_transcript.done ("What do you want to achieve?")
+14. Backend → Frontend: response.audio.delta
+15. Backend → Frontend: response.audio.done
+16. Backend → Frontend: response.audio_transcript.done ("What do you want to achieve?")
 
 [세 번째 발화]
-13. Frontend → Backend: input_audio_chunk
-14. Backend → Frontend: input_audio.transcript ("check in")
+17. Frontend → Backend: input_audio_chunk
+18. Backend → Frontend: input_audio.transcript ("check in")
    → 서버: Goal 추출 ("check in"), 모든 필드 완성!
-15. Backend → Frontend: response.audio.delta (완료 메시지)
-16. Backend → Frontend: response.audio.done
-17. Backend → Frontend: response.audio_transcript.done ("Perfect! Let's start...")
-18. Backend → Frontend: scenario.completed (시나리오 정보 + sessionId)
-19. 서버: DB에 시나리오 저장
-20. WebSocket 연결 종료
+19. Backend → Frontend: response.audio.delta (완료 메시지)
+20. Backend → Frontend: response.audio.done
+21. Backend → Frontend: response.audio_transcript.done ("Perfect! Let's start...")
+22. Backend → Frontend: scenario.completed (시나리오 정보 + sessionId)
+23. 서버: DB에 시나리오 저장 (자동)
+24. WebSocket 연결 종료
 ```
 
 ---
@@ -409,10 +437,12 @@ sequenceDiagram
 
     F->>B: WebSocket Connect (with session_id)
     B->>AI: Validate Token & Create Handler
+    AI->>B: Load Previous History (if exists)
     AI->>OpenAI: Connect to Realtime API
     OpenAI-->>AI: session.updated
     AI->>AI: Initialize Session & Inject History
-    AI->>OpenAI: Trigger First Turn ("Let's start")
+    AI->>OpenAI: conversation.item.create (Let's start)
+    AI->>OpenAI: response.create
     OpenAI-->>AI: Audio Response
     AI-->>F: audio.delta (AI 첫 인사)
     AI-->>F: transcript.done
@@ -713,7 +743,9 @@ WebSocket 연결이 종료되고 세션 분석 리포트를 수신합니다.
         "timestamp": "2024-01-15T10:00:15",
         "duration_sec": 3.2
       }
-    ]
+    ],
+    "feedback": "당신의 발음은 명확하고 자연스러웠습니다...",
+    "scenario_summary": "호텔 체크인 상황에서 성공적으로 대화를 완료했습니다..."
   }
 }
 ```
@@ -725,14 +757,22 @@ WebSocket 연결이 종료되고 세션 분석 리포트를 수신합니다.
   - `total_duration_sec`: 전체 대화 시간 (초)
   - `user_speech_duration_sec`: 사용자 발화 시간 (초)
   - `messages`: 전체 대화 내역
+  - `feedback`: AI 피드백 (메시지 10개 초과 시 생성, 한국어)
+  - `scenario_summary`: 대화 시나리오 요약 (메시지 10개 초과 시 생성, 한국어)
 
 **발생 시점:**
 - WebSocket 연결 종료 시 (정상 종료 또는 에러)
+- 서버가 자동으로 세션 리포트를 생성하고 DB에 저장 (`ai-engine/realtime_conversation/connection_handler.py:299-347`)
+
+**피드백 생성 조건:**
+- 전체 메시지 수(히스토리 포함) > 10개: 피드백 및 요약 생성 (`conversation_feedback/feedback_service.py`)
+- 메시지 수 ≤ 10개: "대화가 충분하지 않아 분석을 진행할수 없어요."
 
 **처리 방법:**
 1. 세션 결과 화면으로 이동
 2. 리포트 데이터를 로컬 저장 또는 분석 화면 표시
-3. 필요시 `/api/v1/chat/sessions/{session_id}/sync` 호출하여 계정 연동 (게스트인 경우)
+3. `feedback` 및 `scenario_summary` 표시 (존재하는 경우)
+4. 필요시 `/api/v1/chat/sessions/{session_id}/sync` 호출하여 계정 연동 (게스트인 경우)
 
 ---
 
@@ -764,30 +804,31 @@ WebSocket 연결이 종료되고 세션 분석 리포트를 수신합니다.
 ```
 [대화 시작]
 1. Frontend → Backend: WebSocket 연결 (session_id 포함)
-2. Backend: 토큰 검증, 세션 조회, OpenAI 연결
-3. Backend → Frontend: audio.delta (AI 첫 인사 "Hello! How can I help you today?")
-4. Backend → Frontend: audio.done
-5. Backend → Frontend: transcript.done ("Hello! How can I help you today?")
+2. Backend: 토큰 검증, 이전 세션 히스토리 조회 (있는 경우)
+3. Backend: OpenAI 연결, 히스토리 주입, "Let's start" 메시지 자동 전송
+4. Backend → Frontend: audio.delta (AI 첫 인사 "Hello! How can I help you today?")
+5. Backend → Frontend: audio.done
+6. Backend → Frontend: transcript.done ("Hello! How can I help you today?")
 
 [첫 번째 대화 턴]
-6. Frontend → Backend: input_audio_buffer.append (계속 전송)
-7. Backend → Frontend: speech.started (VAD 감지)
-8. Frontend → Backend: input_audio_buffer.append (계속)
-9. Backend → Frontend: speech.stopped (VAD 감지)
-10. Backend → Frontend: user.transcript ("I would like to check in.")
+7. Frontend → Backend: input_audio_buffer.append (계속 전송)
+8. Backend → Frontend: speech.started (VAD 감지)
+9. Frontend → Backend: input_audio_buffer.append (계속)
+10. Backend → Frontend: speech.stopped (VAD 감지)
+11. Backend → Frontend: user.transcript ("I would like to check in.")
 
-11. Backend → Frontend: audio.delta (AI 응답)
-12. Backend → Frontend: audio.done
-13. Backend → Frontend: transcript.done ("Sure, may I have your name?")
+12. Backend → Frontend: audio.delta (AI 응답)
+13. Backend → Frontend: audio.done
+14. Backend → Frontend: transcript.done ("Sure, may I have your name?")
 
 [대화 계속...]
-... (6-13 반복)
+... (7-14 반복)
 
 [대화 종료]
-14. Frontend → Backend: disconnect
-15. Backend: 세션 리포트 생성 및 DB 저장
-16. Backend → Frontend: disconnected (세션 리포트 포함)
-17. WebSocket 연결 종료
+15. Frontend → Backend: disconnect
+16. Backend: 세션 리포트 생성 (메시지 10개 초과 시 피드백 생성) 및 DB 저장
+17. Backend → Frontend: disconnected (세션 리포트 + 피드백 포함)
+18. WebSocket 연결 종료
 ```
 
 ---
@@ -1329,11 +1370,46 @@ export function useChatWebSocket(sessionId: string, token: string) {
 7. **Session ID 관리**:
    - Scenario WebSocket 완료 후 받은 `sessionId`를 저장
    - Chat WebSocket 연결 시 이 `sessionId` 사용
+   - 같은 `sessionId`로 재연결 시 이전 대화 히스토리가 자동 복원됩니다
+
+8. **자동 첫 인사**:
+   - 두 WebSocket 모두 연결 시 서버가 "Let's start" 메시지를 자동으로 전송하여 AI의 첫 인사를 트리거합니다
+   - 클라이언트는 별도의 초기화 메시지를 보낼 필요가 없습니다
+
+9. **피드백 생성**:
+   - Chat WebSocket 종료 시 메시지가 10개를 초과하면 AI 피드백이 자동 생성됩니다
+   - 피드백은 한국어로 제공되며 발음, 유창성, 문법 등을 분석합니다
+
+10. **세션 자동 저장**:
+    - Scenario 완료 시 자동으로 DB에 저장됩니다 (클라이언트 요청 불필요)
+    - Chat 종료 시 세션 리포트와 함께 DB에 저장됩니다
 
 ---
 
-## 문의
+## 참고 문서 및 파일 경로
 
-- WebSocket 연결 문제: `backend/app/api/v1/chat.py`, `backend/app/api/v1/scenario.py` 참조
-- 주제 정하기 로직: `ai-engine/scenario/realtime_bridge.py` 참조
-- 대화하기 로직: `ai-engine/realtime_conversation/connection_handler.py` 참조
+### 백엔드 API 엔드포인트
+- **Chat WebSocket**: `backend/app/api/v1/chat.py:90` (회원용), `:112` (게스트용)
+- **Scenario WebSocket**: `backend/app/api/v1/scenario.py:45` (회원용), `:61` (게스트용)
+- **Chat Service**: `backend/app/services/chat_service.py:95` (AI 세션 시작)
+- **Chat Repository**: `backend/app/repositories/chat_repository.py` (DB 저장)
+
+### AI Engine 구현
+- **주제 정하기 (Scenario)**:
+  - 메인 핸들러: `ai-engine/scenario/realtime_bridge.py:52` (`handle_client`)
+  - 파이프라인: `ai-engine/scenario/realtime_pipeline.py` (이벤트 기반 오케스트레이션)
+  - 시나리오 빌더: `ai-engine/scenario/scenario_builder.py` (상태 관리 및 질문 생성)
+  - LLM 클라이언트: `ai-engine/scenario/llm_client.py` (추출/후속 질문/완성)
+
+- **대화하기 (Chat)**:
+  - 연결 핸들러: `ai-engine/realtime_conversation/connection_handler.py:16` (`ConnectionHandler`)
+  - 대화 관리자: `ai-engine/realtime_conversation/conversation_manager.py` (세션 설정/프롬프트 관리)
+  - 대화 추적기: `ai-engine/realtime_conversation/conversation_tracker.py` (WPM/분석)
+  - 세션 관리자: `ai-engine/realtime_conversation/session_manager.py` (메모리 내 세션 추적)
+
+- **피드백 생성**:
+  - 피드백 서비스: `ai-engine/conversation_feedback/feedback_service.py` (LangGraph 기반 에이전트)
+
+### 데이터베이스 모델
+- **세션 모델**: `backend/app/db/models.py` (`ConversationSession`, `Message`)
+- **스키마**: `backend/app/schemas/chat.py` (Pydantic 모델)
