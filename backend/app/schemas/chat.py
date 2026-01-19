@@ -3,10 +3,16 @@ from datetime import datetime
 from pydantic import BaseModel, field_validator
 
 class MessageSchema(BaseModel):
+    id: Optional[int] = None # [New] DB ID
     role: str
     content: str
     timestamp: str
     duration_sec: float = 0.0
+    
+    # [New] Feedback Fields
+    is_feedback: Optional[bool] = False
+    feedback: Optional[str] = None
+    reason: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -19,7 +25,6 @@ class SessionBase(BaseModel):
     ended_at: str
     total_duration_sec: float
     user_speech_duration_sec: float
-    feedback: Optional[str] = None
     scenario_summary: Optional[str] = None
 
 class SessionCreate(SessionBase):
@@ -38,9 +43,21 @@ class SessionCreate(SessionBase):
     voice: Optional[str] = None
     show_text: Optional[bool] = None
 
+class SessionAnalyticsSchema(BaseModel):
+    word_count: int
+    unique_words_count: int
+    richness_score: float
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
 class SessionResponse(SessionCreate):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    
+    # [New] Analytics Data (Joined Load)
+    analytics: Optional[SessionAnalyticsSchema] = None
 
     # [Why Validator?] DB stores as TEXT (JSON string) but API exposes as Dict (JSON Object).
     # This parses the string from DB into a Dict for the Frontend/Swagger.

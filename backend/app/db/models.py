@@ -65,12 +65,11 @@ class ConversationSession(Base):
     scenario_goal = Column(String, nullable=True)
     scenario_state_json = Column(Text, nullable=True)
     scenario_completed_at = Column(DateTime(timezone=True), nullable=True)
-    scenario_completed_at = Column(DateTime(timezone=True), nullable=True)
     deleted = Column(Boolean, default=False)
-
-    # [New] Feedback & Summary
-    feedback = Column(Text, nullable=True) # Top 3 피드백 (JSON string or Plain Text)
     scenario_summary = Column(Text, nullable=True) # 시나리오 요약 (English 1 line)
+    
+    # Analytics (1:1 Relation)
+    analytics = relationship("SessionAnalytics", uselist=False, back_populates="session", cascade="all, delete-orphan")
     
     # Analytics State
     is_analyzed = Column(Boolean, default=False) # 통계 집계 완료 여부
@@ -101,5 +100,10 @@ class ChatMessage(Base):
     content = Column(String, nullable=False)
     timestamp = Column(String, nullable=False)
     duration_sec = Column(Float, default=0.0)
+    
+    # [New] Feedback Columns
+    is_feedback = Column(Boolean, default=False)
+    feedback = Column(Text, nullable=True)
+    reason = Column(Text, nullable=True)
 
     session = relationship("ConversationSession", back_populates="messages")
