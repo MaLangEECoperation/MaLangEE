@@ -71,7 +71,8 @@ export function useScenarioChatNew() {
 
       switch (data.type) {
         case "ready":
-          base.addLog("Received 'ready'.");
+          base.addLog("✅ Received 'ready'. Scenario session initialized.");
+          base.addLog("ℹ️ AI will automatically start greeting. Waiting for AI's first message...");
           base.setIsReady(true);
           break;
 
@@ -114,11 +115,12 @@ export function useScenarioChatNew() {
           break;
 
         case "scenario.completed":
-          base.addLog(`Scenario Completed: ${JSON.stringify(data.json)}`);
+          base.addLog(`✅ Scenario Completed: ${JSON.stringify(data.json)}`);
+          base.addLog("ℹ️ Scenario has been automatically saved to the database.");
           setScenarioResult({
             place: data.json?.place || null,
-            conversationPartner: data.json?.conversation_partner || null,
-            conversationGoal: data.json?.conversation_goal || null,
+            conversation_partner: data.json?.conversation_partner || null,
+            conversation_goal: data.json?.conversation_goal || null,
             sessionId: data.json?.sessionId,
           });
           break;

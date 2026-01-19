@@ -46,7 +46,21 @@ export function useWebSocketBase({
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isManuallyClosedRef = useRef(false);
 
-  // 로그 추가 함수
+  // Callback refs for stable references
+  const getWebSocketUrlRef = useRef(getWebSocketUrl);
+  const onMessageRef = useRef(onMessage);
+  const onOpenRef = useRef(onOpen);
+  const onCloseRef = useRef(onClose);
+  const onErrorRef = useRef(onError);
+
+  // Update refs when props change
+  getWebSocketUrlRef.current = getWebSocketUrl;
+  onMessageRef.current = onMessage;
+  onOpenRef.current = onOpen;
+  onCloseRef.current = onClose;
+  onErrorRef.current = onError;
+
+  // 로그 추가 함수 - 안정적인 참조를 위해 ref 사용
   const addLog = useCallback((msg: string) => {
     setLogs((prev) => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev]);
   }, []);
@@ -222,7 +236,7 @@ export function useWebSocketBase({
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
     isManuallyClosedRef.current = false;
-    const url = getWebSocketUrl();
+    const url = getWebSocketUrlRef.current();
 
     if (!url) {
       addLog("WebSocket URL is empty");
@@ -243,13 +257,13 @@ export function useWebSocketBase({
         addLog("WebSocket Connected");
         setIsConnected(true);
         reconnectCountRef.current = 0;
-        onOpen?.();
+        onOpenRef.current?.();
         debugLog("[WebSocket] Waiting for session.update or ready event...");
       };
 
       ws.onmessage = (event) => {
         if (connectionIdRef.current !== currentConnectionId) return;
-        onMessage(event);
+        onMessageRef.current(event);
       };
 
       ws.onclose = (event) => {
@@ -258,7 +272,7 @@ export function useWebSocketBase({
         setIsConnected(false);
         setIsReady(false);
         wsRef.current = null;
-        onClose?.(event);
+        onCloseRef.current?.(event);
 
         if (!isManuallyClosedRef.current && reconnectCountRef.current < maxReconnectAttempts) {
           const delay = Math.min(1000 * Math.pow(2, reconnectCountRef.current), 10000);
@@ -273,14 +287,14 @@ export function useWebSocketBase({
       ws.onerror = (event) => {
         if (connectionIdRef.current !== currentConnectionId) return;
         addLog("WebSocket Error");
-        onError?.(event);
+        onErrorRef.current?.(event);
       };
 
       wsRef.current = ws;
     } catch (error) {
       addLog(`Connection Failed: ${error}`);
     }
-  }, [getWebSocketUrl, onMessage, onOpen, onClose, onError, maxReconnectAttempts, addLog]);
+  }, [maxReconnectAttempts, addLog]);
 
   // 연결 해제
   const disconnect = useCallback(() => {
@@ -322,6 +336,8 @@ export function useWebSocketBase({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoConnect]);
 
+  // 함수들을 dependency에 포함하면 무한 루프가 발생하므로 상태값만 포함
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(() => ({
     wsRef,
     audioContextRef,
@@ -345,26 +361,11 @@ export function useWebSocketBase({
     startMicrophone,
     stopMicrophone,
   }), [
-    wsRef,
-    audioContextRef,
     isConnected,
     isReady,
-    setIsReady,
     logs,
-    addLog,
     isAiSpeaking,
-    setIsAiSpeaking,
     isUserSpeaking,
-    setIsUserSpeaking,
     isRecording,
-    connect,
-    disconnect,
-    initAudio,
-    playAudioChunk,
-    stopAudio,
-    encodeAudio,
-    toggleMute,
-    startMicrophone,
-    stopMicrophone,
   ]);
 }
