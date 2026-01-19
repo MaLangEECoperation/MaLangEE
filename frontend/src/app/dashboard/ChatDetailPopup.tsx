@@ -71,10 +71,10 @@ export const ChatDetailPopup: React.FC<ChatDetailPopupProps> = ({ session, onClo
           <>
             {/* 첫 번째 행: 시나리오 정보 (있을 경우에만) */}
             {hasScenarioInfo && (
-              <div className="mb-6 space-y-3 rounded-2xl bg-gray-50 p-5">
-                <div className="flex items-center justify-between">
+              <>
+                <div className="relative flex items-center">
                   <h3 className="text-base font-semibold text-[#1F1C2B]">시나리오 정보</h3>
-                  <div id="scenario-info-actions" className="flex items-center gap-2">
+                  <div id="scenario-info-actions" className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-2">
                     <Button
                       variant="solid"
                       size="sm"
@@ -92,27 +92,30 @@ export const ChatDetailPopup: React.FC<ChatDetailPopupProps> = ({ session, onClo
                     </Button>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
-                  {sessionDetail.scenario_partner && (
-                    <div className="flex gap-2">
-                      <span className="font-medium text-[#6A667A]">대화 상대:</span>
-                      <span className="text-[#1F1C2B]">{sessionDetail.scenario_partner}</span>
-                    </div>
-                  )}
-                  {sessionDetail.scenario_place && (
-                    <div className="flex gap-2">
-                      <span className="font-medium text-[#6A667A]">장소:</span>
-                      <span className="text-[#1F1C2B]">{sessionDetail.scenario_place}</span>
-                    </div>
-                  )}
-                  {sessionDetail.scenario_goal && (
-                    <div className="col-span-full flex gap-2">
-                      <span className="shrink-0 font-medium text-[#6A667A]">미션:</span>
-                      <span className="text-[#1F1C2B]">{sessionDetail.scenario_goal}</span>
-                    </div>
-                  )}
+
+                <div className="mb-6 space-y-3 rounded-2xl bg-gray-50 p-5">
+                  <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+                    {sessionDetail.scenario_partner && (
+                      <div className="flex items-end gap-2">
+                        <span className="font-medium text-[#6A667A]">대화 상대:</span>
+                        <span className="text-[#1F1C2B]">{sessionDetail.scenario_partner}</span>
+                      </div>
+                    )}
+                    {sessionDetail.scenario_place && (
+                      <div className="flex items-end gap-2">
+                        <span className="font-medium text-[#6A667A]">장소:</span>
+                        <span className="text-[#1F1C2B]">{sessionDetail.scenario_place}</span>
+                      </div>
+                    )}
+                    {sessionDetail.scenario_goal && (
+                      <div className="col-span-full flex items-end gap-2">
+                        <span className="shrink-0 font-medium text-[#6A667A]">미션:</span>
+                        <span className="text-[#1F1C2B]">{sessionDetail.scenario_goal}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </>
             )}
 
             {/* 두 번째 행: 대화 요약 + 전문보기 버튼 */}
