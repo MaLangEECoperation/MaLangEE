@@ -11,6 +11,7 @@ from realtime_conversation.connection_handler import ConnectionHandler
 from realtime_conversation.session_manager import SessionManager
 from realtime_hint.hint_service import generate_hints
 from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class ChatService:
@@ -20,6 +21,50 @@ class ChatService:
 
     async def save_chat_log(self, session_data: SessionCreate, user_id: int = None) -> ConversationSession:
         return await self.chat_repo.create_session_log(session_data, user_id)
+
+    async def create_new_session(self, session_in: SessionStartRequest, user_id: Optional[int]) -> ConversationSession:
+        import uuid
+        from datetime import datetime
+        
+        # 1. Smart Fill: Scenario ID가 있으면 DB에서 정보 조회
+        place = session_in.scenario_place
+        partner = session_in.scenario_partner
+        goal = session_in.scenario_goal
+        
+        # Default Title
+        now_str = datetime.utcnow().isoformat()
+        session_title = f"Scenario Session ({now_str[:10]})"
+
+        if session_in.scenario_id:
+            scenario = await self.chat_repo.get_scenario_definition(session_in.scenario_id)
+            if scenario:
+                place = scenario.place
+                partner = scenario.partner
+                goal = scenario.goal
+                session_title = scenario.title # 시나리오 제목 사용
+        
+        # 2. Generate Session Data
+        new_session_id = str(uuid.uuid4())
+        
+        session_data = SessionCreate(
+            session_id=new_session_id,
+            title=session_title,
+            started_at=now_str,
+            ended_at=now_str, # 초기엔 start=end
+            total_duration_sec=0.0,
+            user_speech_duration_sec=0.0,
+            messages=[], # 빈 메시지
+            
+            # Scenario Data (Smart Filled)
+            scenario_id=session_in.scenario_id,
+            scenario_place=place,
+            scenario_partner=partner,
+            scenario_goal=goal,
+            voice=session_in.voice,
+            show_text=session_in.show_text
+        )
+        
+        return await self.save_chat_log(session_data, user_id)
 
     async def map_session_to_user(self, session_id: str, user_id: int) -> bool:
         return await self.chat_repo.update_session_owner(session_id, user_id)
@@ -187,13 +232,28 @@ class ChatService:
                 if report:
                     try:
                         session_data = SessionCreate(**report)
-                        # 중요: 종료 시점의 설정값도 저장하고 싶다면 report에 포함되어야 함.
-                        # 하지만 이미 시작할 때 update_preferences로 저장했으므로,
-                        # 여기서는 변동사항이 없다면 건너뛰어도 됨.
-                        # 다만 SessionCreate에 voice, show_text 필드가 추가되었으므로
-                        # Tracker가 이를 채워서 보내준다면 업데이트될 것임.
                         await self.save_chat_log(session_data, user_id)
                         print(f"Session {session_data.session_id} saved (User: {user_id})")
+                        
+                        # [Real-time Analytics Trigger]
+                        # 세션 종료 즉시 분석을 수행합니다.
+                        try:
+                            from app.analytics.processor import AnalyticsProcessor
+                            from app.db.database import AsyncSessionLocal
+                            async with AsyncSessionLocal() as db:
+                                processor = AnalyticsProcessor(db)
+                                await processor.process_session_analytics(session_data.session_id)
+                                print(f"Real-time analytics completed for {session_data.session_id}")
+                                
+                                # [New] Feedback Generation (After DB Save)
+                                # DB에 저장된 메시지 ID를 기반으로 피드백을 생성하고 업데이트합니다.
+                                # 이번 세션에서 추가된 메시지 수만큼만 피드백 대상에 포함시킵니다.
+                                new_message_count = len(session_data.messages)
+                                await self.generate_and_save_feedback(db, session_data.session_id, new_message_count)
+                                
+                        except Exception as e:
+                            print(f"Real-time analytics/feedback failed: {e}")
+
                     except Exception as e:
                         print(f"Failed to auto-save session log: {e}")
             finally:
@@ -203,6 +263,78 @@ class ChatService:
 
         else:
             await websocket.close(code=1011, reason="Module error")
+
+    async def generate_and_save_feedback(self, db: AsyncSession, session_id: str, new_message_count: int):
+        """
+        [Feedback Generation]
+        DB에 저장된 세션의 메시지를 조회하여 피드백을 생성하고,
+        각 메시지(chat_messages)에 피드백(feedback, reason)을 업데이트합니다.
+        """
+        # [Update] 통합된 generate_feedback 함수 사용
+        from conversation_feedback.feedback_service import generate_feedback
+        
+        print(f"Starting feedback generation for session {session_id} (New messages: {new_message_count})")
+        
+        # Temporary Repository instance with the current transaction session
+        repo = ChatRepository(db)
+        
+        # 1. Repository를 통해 "모든" 메시지 조회 (Count 체크용)
+        db_messages = await repo.get_messages_by_session(session_id)
+        
+        if not db_messages:
+            print("No messages found for feedback.")
+            return
+
+        # [Rule] 이번 세션의 대화가 10개 이하면 피드백을 진행하지 않음
+        if new_message_count <= 10:
+             print(f"Skipping feedback: New messages ({new_message_count}) <= 10")
+             return
+
+        # 2. 메시지 필터링: 이번 세션에서 진행된 메시지(New)만 추출
+        # db_messages는 timestamp 순으로 정렬되어 있으므로, 마지막 new_message_count 개수만큼 가져옴
+        if new_message_count > 0:
+            target_db_messages = db_messages[-new_message_count:]
+        else:
+            print("No new messages to process.")
+            return
+
+        # 3. 메시지 변환 (DB Object -> Dict List with ID)
+        messages_for_feedback = []
+        for msg in target_db_messages:
+            messages_for_feedback.append({
+                "id": msg.id,
+                "role": msg.role, 
+                "content": msg.content,
+                "timestamp": msg.timestamp
+            })
+
+        # 4. Feedback Service 호출 (Sync function)
+        # 이번 세션의 메시지만 전달하여 피드백과 요약 생성
+        feedback_result = generate_feedback(messages_for_feedback, session_id=session_id)
+        
+        if not feedback_result:
+            print("No feedback generated.")
+            return
+            
+        # 5. Global Feedback & Summary 저장 (Session Level)
+        session = await repo.get_session_by_id(session_id)
+        if session:
+            # 서머리 업데이트 (이번 세션 내용을 반영)
+            if feedback_result.get("scenario_summary"):
+                session.scenario_summary = feedback_result.get("scenario_summary")
+            
+        # 6. Detailed Feedback 저장 (Message Level)
+        feedback_details = feedback_result.get("feedback_details", {})
+        
+        if feedback_details:
+            update_count = 0
+            for msg_id, feedback_data in feedback_details.items():
+                await repo.update_message_feedback(msg_id, feedback_data)
+                update_count += 1
+            print(f"Feedback updated for {update_count} messages")
+            
+        await db.commit()
+        print(f"Feedback generation completed for session {session_id}")
 
     async def generate_hint(self, session_id: str) -> List[str]:
         """

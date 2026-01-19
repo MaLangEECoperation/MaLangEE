@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func
 from sqlalchemy.orm import selectinload
-from app.db.models import ConversationSession, ChatMessage
+from app.db.models import ConversationSession, ChatMessage, ScenarioDefinition
 from app.schemas.chat import SessionCreate
 
 class ChatRepository:
@@ -60,9 +60,6 @@ class ChatRepository:
             if session_data.show_text is not None:
                 db_session.show_text = session_data.show_text
             
-            # [New] Feedback & Summary
-            if session_data.feedback is not None:
-                db_session.feedback = session_data.feedback
             if session_data.scenario_summary is not None:
                 db_session.scenario_summary = session_data.scenario_summary
             
@@ -94,8 +91,6 @@ class ChatRepository:
                 voice=session_data.voice,
                 show_text=session_data.show_text,
                 user_id=user_id,
-                # [New] Feedback & Summary
-                feedback=session_data.feedback,
                 scenario_summary=session_data.scenario_summary
             )
             self.db.add(db_session)
@@ -142,7 +137,7 @@ class ChatRepository:
         if user_id is not None:
             stmt = stmt.where(ConversationSession.user_id == user_id)
             
-        stmt = stmt.options(selectinload(ConversationSession.messages))
+        stmt = stmt.options(selectinload(ConversationSession.messages), selectinload(ConversationSession.analytics))
         
         result = await self.db.execute(stmt)
         return result.scalars().first()
@@ -178,6 +173,14 @@ class ChatRepository:
             return True
         return False
 
+    async def get_scenario_definition(self, scenario_id: str):
+        """
+        시나리오 정의를 조회합니다.
+        """
+        stmt = select(ScenarioDefinition).where(ScenarioDefinition.id == scenario_id)
+        result = await self.db.execute(stmt)
+        return result.scalars().first()
+
     async def update_preferences(self, session_id: str, voice: Optional[str], show_text: Optional[bool]) -> bool:
         """
         사용자 선호 설정(보이스, 자막)을 업데이트합니다.
@@ -195,3 +198,30 @@ class ChatRepository:
             await self.db.commit()
             return True
         return False
+        
+    async def get_messages_by_session(self, session_id: str):
+        """세션의 모든 메시지를 조회합니다 (ID 포함)."""
+        stmt = select(ChatMessage).where(ChatMessage.session_id == session_id).order_by(ChatMessage.timestamp.asc())
+        result = await self.db.execute(stmt)
+        return result.scalars().all()
+        
+    async def update_message_feedback(self, message_id: int, feedback_data: dict) -> bool:
+        """메시지에 피드백 정보를 업데이트합니다."""
+        from sqlalchemy import update
+        stmt = (
+            update(ChatMessage)
+            .where(ChatMessage.id == message_id)
+            .values(
+                is_feedback=True,
+                feedback=feedback_data.get("feedback"),
+                reason=feedback_data.get("reason")
+            )
+        )
+        await self.db.execute(stmt)
+        # Commit은 호출하는 쪽에서 일괄 처리 (Batch Update) 하거나, 
+        # 여기서는 단건 처리이므로 immediate commit 할 수도 있지만, 
+        # 트랜잭션 관리를 위해 호출자가 commit 하는 것이 나음.
+        # 하지만 ChatService 구조상 여기서 바로 commit 하는게 깔끔할 수 있음.
+        # 일단은 Auto-Commit 안하고 호출자가 관리하도록 설계.
+        return True
+
