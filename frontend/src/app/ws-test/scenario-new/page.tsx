@@ -38,7 +38,8 @@ export default function ScenarioTestPage() {
     return () => {
       disconnect();
     };
-  }, [disconnect]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="mx-auto max-w-[1600px] p-8">

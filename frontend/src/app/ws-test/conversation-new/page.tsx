@@ -79,7 +79,8 @@ export default function ConversationTestPage() {
     return () => {
       disconnect();
     };
-  }, [disconnect]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="p-8 max-w-[1600px] mx-auto">
@@ -112,6 +113,11 @@ export default function ConversationTestPage() {
                 ))}
               </select>
               <input type="text" value={sessionId} readOnly className="w-full p-2 border rounded bg-gray-100 text-xs text-gray-500" placeholder="Session ID" />
+              {sessionId && (
+                <div className="mt-2 rounded bg-blue-50 p-2 text-xs text-blue-700">
+                  ℹ️ 같은 세션으로 재연결 시 이전 대화가 자동 복원됩니다
+                </div>
+              )}
             </div>
 
             {/* Connection Controls */}
@@ -243,6 +249,39 @@ export default function ConversationTestPage() {
                   ⚠️ Server VAD 모드에서는 불필요 (자동 감지)
                 </p>
               </div>
+
+              <div className="border-t border-purple-200 pt-4">
+                <h3 className="mb-2 text-sm font-bold text-purple-900">📋 사용 가이드</h3>
+                <div className="space-y-1 text-xs text-gray-700">
+                  <div>
+                    <strong className="text-purple-700">1. 세션 선택:</strong> 기존 세션을 선택하거나 새로운 세션 ID 입력
+                  </div>
+                  <div className="ml-4 text-gray-600">
+                    ➜ 같은 세션으로 재연결 시 이전 대화가 자동 복원됩니다
+                  </div>
+                  <div>
+                    <strong className="text-purple-700">2. 연결:</strong> "연결 및 마이크 시작" 클릭
+                  </div>
+                  <div className="ml-4 text-gray-600">
+                    ➜ 서버가 자동으로 AI 첫 인사를 시작합니다
+                  </div>
+                  <div>
+                    <strong className="text-purple-700">3. 대화:</strong> AI와 자유롭게 영어 회화 연습
+                  </div>
+                  <div className="ml-4 text-gray-600">
+                    ➜ Server VAD가 자동으로 발화 시작/종료를 감지합니다
+                  </div>
+                  <div>
+                    <strong className="text-purple-700">4. 종료:</strong> "연결 종료" 클릭
+                  </div>
+                  <div className="ml-4 text-gray-600">
+                    ➜ 세션 리포트와 피드백이 자동 생성됩니다 (메시지 10개 이상 시)
+                  </div>
+                  <div className="mt-2 rounded bg-purple-100 p-2 text-xs italic text-purple-800">
+                    💡 <strong>Tip:</strong> AI 목소리를 실시간으로 변경할 수 있습니다
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -266,6 +305,61 @@ export default function ConversationTestPage() {
           </div>
         </div>
       </div>
+
+      {/* Session Report & Feedback */}
+      {(state.sessionReport || state.feedback || state.scenarioSummary) && (
+        <div className="mb-6 p-4 border rounded bg-gradient-to-br from-blue-50 to-purple-50 shadow-sm">
+          <h2 className="font-bold mb-4 text-gray-800 flex items-center gap-2">
+            📊 세션 리포트 및 피드백
+          </h2>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Session Report */}
+            {state.sessionReport && (
+              <div className="bg-white p-4 rounded border">
+                <h3 className="text-sm font-bold text-blue-700 mb-2">세션 정보</h3>
+                <div className="space-y-1 text-xs">
+                  <div><span className="font-semibold">세션 ID:</span> {state.sessionReport.session_id?.substring(0, 8)}...</div>
+                  <div><span className="font-semibold">시작:</span> {new Date(state.sessionReport.started_at).toLocaleString()}</div>
+                  <div><span className="font-semibold">종료:</span> {new Date(state.sessionReport.ended_at).toLocaleString()}</div>
+                  <div><span className="font-semibold">총 대화 시간:</span> {Math.floor(state.sessionReport.total_duration_sec || 0)}초</div>
+                  <div><span className="font-semibold">발화 시간:</span> {Math.floor(state.sessionReport.user_speech_duration_sec || 0)}초</div>
+                  <div><span className="font-semibold">메시지 수:</span> {state.sessionReport.messages?.length || 0}개</div>
+                </div>
+              </div>
+            )}
+
+            {/* Feedback */}
+            {state.feedback && (
+              <div className="bg-white p-4 rounded border">
+                <h3 className="text-sm font-bold text-purple-700 mb-2">💬 AI 피드백</h3>
+                <div className="text-xs text-gray-700 whitespace-pre-wrap max-h-[200px] overflow-y-auto">
+                  {state.feedback}
+                </div>
+              </div>
+            )}
+
+            {/* Scenario Summary */}
+            {state.scenarioSummary && (
+              <div className="bg-white p-4 rounded border lg:col-span-2">
+                <h3 className="text-sm font-bold text-green-700 mb-2">📝 대화 요약</h3>
+                <div className="text-xs text-gray-700 whitespace-pre-wrap">
+                  {state.scenarioSummary}
+                </div>
+              </div>
+            )}
+
+            {/* No Feedback Notice */}
+            {state.sessionReport && !state.feedback && (
+              <div className="bg-yellow-50 p-4 rounded border border-yellow-200 lg:col-span-2">
+                <p className="text-xs text-yellow-800">
+                  ℹ️ <strong>피드백 미생성:</strong> 대화가 충분하지 않아 분석을 진행할 수 없습니다 (10개 이상의 메시지 필요)
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Bottom Area: Logs */}
       <div className="border rounded-lg bg-black text-green-400 p-4 h-[400px] overflow-y-auto font-mono text-xs shadow-inner">
