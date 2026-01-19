@@ -34,6 +34,13 @@ async def add_scenario_tables():
     print(f"Starting Phase 2 Migration... (SQLite: {settings.USE_SQLITE})")
     
     async with engine.begin() as conn:
+        # [Safety] Prevent hanging by setting lock timeout (PostgreSQL only)
+        if not settings.USE_SQLITE:
+            try:
+                await conn.execute(text("SET lock_timeout = '5s'"))
+            except Exception:
+                pass
+
         # Import models inside function to ensure environment is set
         from app.db.models import Base
         import app.analytics.models 

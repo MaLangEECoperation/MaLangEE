@@ -34,6 +34,13 @@ async def remove_feedback_column():
     print(f"Removing 'feedback' column... (SQLite: {settings.USE_SQLITE})")
     
     async with engine.begin() as conn:
+        # [Safety] Prevent hanging by setting lock timeout (PostgreSQL only)
+        if not settings.USE_SQLITE:
+            try:
+                await conn.execute(text("SET lock_timeout = '5s'"))
+            except Exception:
+                pass
+
         try:
             await conn.execute(text("ALTER TABLE conversation_sessions DROP COLUMN IF EXISTS feedback"))
             print("Column 'feedback' removed successfully (if it existed).")

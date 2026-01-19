@@ -41,6 +41,13 @@ async def add_is_analyzed_column():
     print(f"Connecting to DB... (SQLite: {settings.USE_SQLITE})")
     
     async with engine.begin() as conn:
+        # [Safety] Prevent hanging by setting lock timeout (PostgreSQL only)
+        if not settings.USE_SQLITE:
+            try:
+                await conn.execute(text("SET lock_timeout = '5s'"))
+            except Exception:
+                pass
+
         print("Adding 'is_analyzed' column...")
         try:
             await conn.execute(text("ALTER TABLE conversation_sessions ADD COLUMN is_analyzed BOOLEAN DEFAULT FALSE"))
