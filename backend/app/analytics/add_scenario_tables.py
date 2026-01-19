@@ -123,5 +123,4 @@ if __name__ == "__main__":
             isolation_level="AUTOCOMMIT"
         )
     
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(add_scenario_tables())
+    asyncio.run(add_scenario_tables())

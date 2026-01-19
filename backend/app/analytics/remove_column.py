@@ -66,5 +66,4 @@ if __name__ == "__main__":
             isolation_level="AUTOCOMMIT"
         )
     
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(remove_feedback_column())
+    asyncio.run(remove_feedback_column())

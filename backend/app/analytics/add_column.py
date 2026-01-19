@@ -101,6 +101,4 @@ if __name__ == "__main__":
             isolation_level="AUTOCOMMIT"
         )
     
-    # loop 처리를 위해 안전하게 실행
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(add_is_analyzed_column())
+    asyncio.run(add_is_analyzed_column())
