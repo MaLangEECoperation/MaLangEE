@@ -30,16 +30,26 @@ export interface ChatSession {
 /**
  * 대화 세션 상세 (메시지 포함)
  */
-export interface ChatSessionDetail extends ChatSession {
+export interface ChatSessionDetail {
+  session_id: string;
+  title: string;
+  started_at: string;
+  ended_at: string;
+  total_duration_sec: number;
+  user_speech_duration_sec: number;
+  feedback?: string | null;
+  scenario_summary?: string | null;
   messages: ChatMessage[];
   scenario_place?: string | null;
   scenario_partner?: string | null;
   scenario_goal?: string | null;
   scenario_state_json?: Record<string, unknown> | null;
   scenario_completed_at?: string | null;
+  deleted?: boolean | null;
   voice?: string | null;
   show_text?: boolean | null;
-  deleted?: boolean | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ChatSessionsResponse {
@@ -58,4 +68,3 @@ export interface ChatHistoryItem {
   totalDurationSec: number;
   userSpeechDurationSec: number;
 }
-
