@@ -6,57 +6,62 @@ import asyncio
 from sqlalchemy import text
 from dotenv import load_dotenv
 
-# Path setup
-backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, backend_dir)
+# [CRITICAL] Path Setup & Conflict Prevention
+current_dir = os.path.dirname(os.path.abspath(__file__))
+backend_app_dir = os.path.dirname(current_dir)
+backend_dir = os.path.dirname(backend_app_dir)
+
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
+# Remove potentially conflicting paths
+safe_paths = [p for p in sys.path if "ai-engine" not in p]
+sys.path = safe_paths
 
 # Load environment variables
 load_dotenv(os.path.join(backend_dir, ".env"))
 load_dotenv(os.path.join(backend_dir, ".env.local"))
 
-from app.core.config import settings
-from app.db import database 
+try:
+    from app.core.config import settings
+    from app.db import database 
+except ImportError as e:
+    print(f"[Error] Failed to import app modules: {e}")
+    sys.exit(1)
 
 async def add_scenario_tables():
-    """
-    Scenario 관련 테이블 및 컬럼을 수동으로 추가합니다.
-    """
     engine = database.engine
     print(f"Starting Phase 2 Migration... (SQLite: {settings.USE_SQLITE})")
     
     async with engine.begin() as conn:
-        # 1. ScenarioDefinition 테이블 생성
+        # Import models inside function to ensure environment is set
         from app.db.models import Base
-        from app.analytics.models import Base as AnalyticsBase # Assuming models use same Base or need separate import
-        # Note: In Step 32, analytics models import Base from app.db.models. So just importing app.db.models and app.analytics.models is enough.
-        # But we need to make sure the modules are imported so the metadata is populated.
         import app.analytics.models 
         
-        # [Cleanup]
         try:
             await conn.execute(text("DROP TABLE IF EXISTS user_learning_map"))
-            print("Dropped 'user_learning_map' table (Cleanup).")
-        except Exception as e:
-            print(f"Error dropping user_learning_map: {e}")
+            print("- Dropped 'user_learning_map'")
+        except Exception:
+            pass
 
+        print("- Creating tables...")
         await conn.run_sync(Base.metadata.create_all)
-        print("Created 'scenario_definitions' and 'session_analytics' tables (if not exists).")
         
-        # 2. Foreign Key 컬럼 추가
+        print("- Adding 'scenario_id' column...")
         try:
             await conn.execute(text("ALTER TABLE conversation_sessions ADD COLUMN scenario_id VARCHAR"))
-            print("Added 'scenario_id' column to 'conversation_sessions'.")
+            print("  -> Success")
         except Exception as e:
             if "duplicate" in str(e).lower() or "exists" in str(e).lower():
-                print("Column 'scenario_id' already exists. Skipping.")
+                print("  -> Already exists")
             else:
-                print(f"Error adding column 'scenario_id': {e}")
+                print(f"  -> Error: {e}")
                 
-        # 3. Seed Data
+        print("- Seeding data...")
         try:
             await conn.run_sync(insert_seed_data)
         except Exception as e:
-             print(f"Seed data error: {e}")
+             print(f"  -> Seed error: {e}")
 
 def insert_seed_data(connection):
     from sqlalchemy import insert
@@ -88,7 +93,7 @@ def insert_seed_data(connection):
     for seed in seeds:
         try:
             connection.execute(insert(ScenarioDefinition).values(**seed))
-            print(f"Seeded: {seed['id']}")
+            print(f"  -> Seeded: {seed['id']}")
         except Exception:
             pass
 
@@ -106,17 +111,11 @@ if __name__ == "__main__":
     if args.production:
         print("Switching to PRODUCTION mode (PostgreSQL)")
         settings.USE_SQLITE = False
-        
-        if args.db_name:
-            settings.POSTGRES_DB = args.db_name
-        if args.db_user:
-            settings.POSTGRES_USER = args.db_user
-        if args.db_password:
-            settings.POSTGRES_PASSWORD = args.db_password
-        if args.db_host:
-            settings.POSTGRES_SERVER = args.db_host
-        if args.db_port:
-            settings.POSTGRES_PORT = args.db_port
+        if args.db_name: settings.POSTGRES_DB = args.db_name
+        if args.db_user: settings.POSTGRES_USER = args.db_user
+        if args.db_password: settings.POSTGRES_PASSWORD = args.db_password
+        if args.db_host: settings.POSTGRES_SERVER = args.db_host
+        if args.db_port: settings.POSTGRES_PORT = args.db_port
             
         database.engine = database.create_async_engine(
             settings.DATABASE_URL,
@@ -124,4 +123,5 @@ if __name__ == "__main__":
             isolation_level="AUTOCOMMIT"
         )
     
-    asyncio.run(add_scenario_tables())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(add_scenario_tables())

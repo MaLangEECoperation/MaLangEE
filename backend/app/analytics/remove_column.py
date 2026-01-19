@@ -6,16 +6,28 @@ import asyncio
 from sqlalchemy import text
 from dotenv import load_dotenv
 
-# Path setup
-backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, backend_dir)
+# [CRITICAL] Path Setup & Conflict Prevention
+current_dir = os.path.dirname(os.path.abspath(__file__))
+backend_app_dir = os.path.dirname(current_dir)
+backend_dir = os.path.dirname(backend_app_dir)
+
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
+# Remove potentially conflicting paths
+safe_paths = [p for p in sys.path if "ai-engine" not in p]
+sys.path = safe_paths
 
 # Load environment variables
 load_dotenv(os.path.join(backend_dir, ".env"))
 load_dotenv(os.path.join(backend_dir, ".env.local"))
 
-from app.core.config import settings
-from app.db import database 
+try:
+    from app.core.config import settings
+    from app.db import database 
+except ImportError as e:
+    print(f"[Error] Failed to import app modules: {e}")
+    sys.exit(1)
 
 async def remove_feedback_column():
     engine = database.engine
@@ -23,9 +35,6 @@ async def remove_feedback_column():
     
     async with engine.begin() as conn:
         try:
-            # Using IF EXISTS to avoid error if already removed
-            # Note: SQLite restriction on DROP COLUMN in older versions might apply, 
-            # but we assume user env (Postgres or Modern SQLite) supports it or handles it via tool.
             await conn.execute(text("ALTER TABLE conversation_sessions DROP COLUMN IF EXISTS feedback"))
             print("Column 'feedback' removed successfully (if it existed).")
         except Exception as e:
@@ -45,17 +54,11 @@ if __name__ == "__main__":
     if args.production:
         print("Switching to PRODUCTION mode (PostgreSQL)")
         settings.USE_SQLITE = False
-        
-        if args.db_name:
-            settings.POSTGRES_DB = args.db_name
-        if args.db_user:
-            settings.POSTGRES_USER = args.db_user
-        if args.db_password:
-            settings.POSTGRES_PASSWORD = args.db_password
-        if args.db_host:
-            settings.POSTGRES_SERVER = args.db_host
-        if args.db_port:
-            settings.POSTGRES_PORT = args.db_port
+        if args.db_name: settings.POSTGRES_DB = args.db_name
+        if args.db_user: settings.POSTGRES_USER = args.db_user
+        if args.db_password: settings.POSTGRES_PASSWORD = args.db_password
+        if args.db_host: settings.POSTGRES_SERVER = args.db_host
+        if args.db_port: settings.POSTGRES_PORT = args.db_port
             
         database.engine = database.create_async_engine(
             settings.DATABASE_URL,
@@ -63,4 +66,5 @@ if __name__ == "__main__":
             isolation_level="AUTOCOMMIT"
         )
     
-    asyncio.run(remove_feedback_column())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(remove_feedback_column())
