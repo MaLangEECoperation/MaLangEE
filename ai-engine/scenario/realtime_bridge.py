@@ -64,7 +64,7 @@ async def handle_client(client_ws, user_id: Optional[int] = None) -> None:
     session_config = {
         "input_audio_format": "pcm16",
         "output_audio_format": "pcm16",
-        "turn_detection": {"type": "server_vad", "create_response": False},
+        "turn_detection": {"type": "server_vad", "create_response": False, "threshold": 0.7},
         "input_audio_transcription": {"model": "whisper-1"},
     }
 
