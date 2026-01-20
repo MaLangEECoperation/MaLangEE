@@ -185,7 +185,7 @@ export default function DashboardPage() {
       </div>
       <Button
         variant="solid"
-        size="md"
+        size="lg"
         fullWidth
         className="mt-10"
         onClick={handleNewChatClick}
@@ -194,7 +194,7 @@ export default function DashboardPage() {
       </Button>
 
       {/* 회원탈퇴 버튼 추가 */}
-      <div className="mt-4 flex justify-center">
+      <div className="mt-4 flex justify-center hidden">
         <button
           onClick={handleDeleteUserClick}
           className="text-xs text-gray-400 underline hover:text-gray-600"

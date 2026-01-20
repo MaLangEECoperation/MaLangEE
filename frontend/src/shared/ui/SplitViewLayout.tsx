@@ -62,12 +62,12 @@ export const SplitViewLayout = ({
           {/* Left Content Section */}
           <div
             id="sv-left-content"
-            className={`w-full flex flex-col items-center justify-center gap-6 text-center pt-20 md:pt-0 md:items-start md:text-left ${colSpans[leftColSpan] || "md:col-span-6"} ${leftClassName}`}
+            className={`flex w-full flex-col items-center justify-center gap-6 pt-20 text-center md:items-start md:pt-0 md:text-left ${colSpans[leftColSpan] || "md:col-span-6"} ${leftClassName}`}
           >
             <>
               <div
                 id="sv-logo"
-                className="fixed left-0 top-0 z-50 flex h-[50px] w-full items-center justify-center bg-white/70 backdrop-blur-sm md:static md:mb-4 md:block md:h-auto md:w-auto md:bg-transparent md:p-0 md:text-lg md:font-semibold md:text-[#5F51D9]"
+                className="fixed left-0 top-0 z-50 flex h-[50px] w-full items-center  justify-center bg-white/70 backdrop-blur-sm md:static md:mb-4 md:block md:h-auto md:w-auto md:bg-transparent md:p-0 md:text-lg md:font-semibold md:text-[#5F51D9]"
               >
                 <Link href={"/dashboard"} className="inline-block">
                   <Image src="/images/logo.png" alt="MalangEE Logo" width={100} height={50} />
@@ -78,8 +78,13 @@ export const SplitViewLayout = ({
               </div>
             </>
             {leftChildren && (
-              <div id="sv-left-children" className="w-[80%] md:w-[60%] min-w-[270px] flex justify-center md:justify-start">
-                <div className="w-full space-y-2">{leftChildren}</div>
+              <div
+                id="sv-left-children"
+                className="flex w-full min-w-[270px]  items-center justify-center md:w-[80%] md:items-start "
+              >
+                <div className="flex w-full flex-col items-center space-y-2 text-center sm:w-[80%] md:w-full">
+                  {leftChildren}
+                </div>
               </div>
             )}
           </div>
