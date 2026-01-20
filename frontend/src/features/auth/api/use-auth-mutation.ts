@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { authApi } from "./auth-api";
-import { tokenStorage } from "../model";
+import { tokenStorage, userStorage } from "../model";
 import type { LoginFormData, RegisterFormData, NicknameUpdateFormData } from "../model";
 import { useSyncGuestSession } from "@/features/chat/api/use-chat-sessions";
 
@@ -17,15 +17,24 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: (data: LoginFormData) => authApi.login(data.username, data.password),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("[useLogin] 로그인 성공, 토큰 저장");
       tokenStorage.set(data.access_token);
-      
+
+      // 사용자 정보를 가져와서 localStorage에 저장
+      try {
+        const user = await authApi.getCurrentUser();
+        userStorage.set(user);
+        console.log("[useLogin] 사용자 정보 저장 완료");
+      } catch (err) {
+        console.error("[useLogin] 사용자 정보 저장 실패:", err);
+      }
+
       // 게스트 세션 동기화 로직 추가
       if (typeof window !== "undefined") {
         const sessionId = localStorage.getItem("chatSessionId");
         const entryType = localStorage.getItem("entryType");
-        
+
         if (sessionId && entryType === "guest") {
           console.log("[useLogin] 게스트 세션 발견, 동기화 시도:", sessionId);
           syncGuestSession.mutate(sessionId, {
@@ -71,6 +80,7 @@ export function useLogout() {
   return useMutation({
     mutationFn: async () => {
       tokenStorage.remove();
+      userStorage.remove();
     },
     onSuccess: () => {
       queryClient.clear();
@@ -90,6 +100,7 @@ export function useDeleteAccount() {
     mutationFn: () => authApi.deleteCurrentUser(),
     onSuccess: () => {
       tokenStorage.remove();
+      userStorage.remove();
       queryClient.clear();
       router.push("/auth/login");
     },

@@ -1,44 +1,75 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { tokenStorage } from "../model";
-import { useCurrentUser } from "../api";
+import { tokenStorage, userStorage } from "../model";
+import { authApi } from "../api/auth-api";
+
+/**
+ * localStorage 변경을 구독하기 위한 헬퍼
+ */
+function subscribeToStorage(callback: () => void) {
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+}
+
+function getStorageSnapshot() {
+  return JSON.stringify({
+    hasToken: tokenStorage.exists(),
+    user: userStorage.get(),
+  });
+}
+
+function getServerSnapshot() {
+  return JSON.stringify({ hasToken: false, user: null });
+}
 
 /**
  * 인증 상태 및 액션을 제공하는 통합 훅
+ * localStorage 기반으로 동기적으로 인증 상태를 확인합니다.
  */
 export function useAuth() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { data: user, isLoading, isError, error, refetch } = useCurrentUser();
 
-  // 토큰이 없으면 즉시 인증 안됨
-  const hasToken = tokenStorage.exists();
+  // useSyncExternalStore를 사용하여 localStorage 변경 감지
+  const storageState = useSyncExternalStore(
+    subscribeToStorage,
+    getStorageSnapshot,
+    getServerSnapshot
+  );
 
-  // 401/403 에러인 경우 인증 실패
-  const status = (error as { status?: number })?.status;
-  const isAuthError = isError && (status === 401 || status === 403);
+  const { hasToken, user } = JSON.parse(storageState);
 
-  // 인증 상태: 토큰이 있고, 사용자 정보가 있으며, 인증 에러가 없는 경우
-  const isAuthenticated = hasToken && !!user && !isAuthError;
+  // 인증 상태: 토큰과 사용자 정보가 모두 있는 경우
+  const isAuthenticated = hasToken && !!user;
 
   const logout = useCallback(() => {
     tokenStorage.remove();
+    userStorage.remove();
     queryClient.clear();
     router.push("/auth/login");
   }, [queryClient, router]);
 
-  const refreshUser = useCallback(() => {
-    return refetch();
-  }, [refetch]);
+  const refreshUser = useCallback(async () => {
+    try {
+      const freshUser = await authApi.getCurrentUser();
+      userStorage.set(freshUser);
+      return { data: freshUser };
+    } catch (error) {
+      // 인증 실패 시 로그아웃 처리
+      tokenStorage.remove();
+      userStorage.remove();
+      throw error;
+    }
+  }, []);
 
   return {
     user,
     isAuthenticated,
-    isLoading: hasToken && isLoading, // 토큰이 없으면 로딩 아님
-    isError: isAuthError,
+    isLoading: false, // localStorage 기반이므로 로딩 없음
+    isError: false,
     logout,
     refreshUser,
   };

@@ -21,4 +21,4 @@ export {
   type CheckAvailabilityResponse,
 } from "./schema";
 
-export { tokenStorage } from "./token";
+export { tokenStorage, userStorage } from "./token";

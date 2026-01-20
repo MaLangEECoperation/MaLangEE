@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState, type FC, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { tokenStorage } from "../model";
-import { useAuth } from "../hook";
+import { tokenStorage, userStorage } from "../model";
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -15,6 +14,7 @@ interface AuthGuardProps {
 
 /**
  * 인증된 사용자만 접근 가능한 라우트를 보호하는 컴포넌트
+ * localStorage 기반으로 동기적으로 인증 상태를 확인합니다.
  *
  * @example
  * ```tsx
@@ -29,48 +29,37 @@ export const AuthGuard: FC<AuthGuardProps> = ({
   fallback,
 }) => {
   const router = useRouter();
-  const [isMounted, setIsMounted] = useState(false);
-  const hasToken = tokenStorage.exists();
-  const { isAuthenticated, isLoading } = useAuth();
+  const [authState, setAuthState] = useState<"loading" | "authenticated" | "unauthenticated">("loading");
   const hasRedirected = useRef(false);
 
+  // 클라이언트에서만 인증 상태 확인
   useEffect(() => {
-    setIsMounted(true);
+    const hasToken = tokenStorage.exists();
+    const hasUser = userStorage.exists();
+    const isAuthenticated = hasToken && hasUser;
+
+    if (isAuthenticated) {
+      setAuthState("authenticated");
+    } else {
+      setAuthState("unauthenticated");
+    }
   }, []);
 
-  // 토큰이 없으면 즉시 리다이렉트
+  // 인증되지 않으면 리다이렉트
   useEffect(() => {
-    if (!hasToken && !hasRedirected.current) {
+    if (authState === "unauthenticated" && !hasRedirected.current) {
       hasRedirected.current = true;
       router.replace(redirectTo);
     }
-  }, [hasToken, redirectTo, router]);
-
-  // 토큰은 있지만 인증 실패한 경우 리다이렉트
-  useEffect(() => {
-    if (hasToken && !isLoading && !isAuthenticated && !hasRedirected.current) {
-      hasRedirected.current = true;
-      router.replace(redirectTo);
-    }
-  }, [hasToken, isAuthenticated, isLoading, redirectTo, router]);
-
-  // 하이드레이션 오류 방지를 위해 마운트 전에는 서버와 동일하게 null 반환
-  if (!isMounted) {
-    return null;
-  }
-
-  // 토큰이 없으면 빈 화면 (리다이렉트 대기)
-  if (!hasToken) {
-    return null;
-  }
+  }, [authState, redirectTo, router]);
 
   // 로딩 중
-  if (isLoading) {
+  if (authState === "loading") {
     return fallback ?? <AuthGuardLoadingFallback />;
   }
 
-  // 인증되지 않음 (리다이렉트 실행 또는 예정)
-  if (!isAuthenticated) {
+  // 인증되지 않음 (리다이렉트 대기)
+  if (authState === "unauthenticated") {
     return null;
   }
 
