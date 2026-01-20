@@ -8,6 +8,9 @@ interface Message {
   speaker: string;
   content: string;
   timestamp?: string;
+  isFeedback?: boolean;
+  feedback?: string | null;
+  reason?: string | null;
 }
 
 interface ChatTranscriptPopupProps {
@@ -34,6 +37,7 @@ export const ChatTranscriptPopup: React.FC<ChatTranscriptPopupProps> = ({
         <div className="flex flex-col gap-4">
           {messages.map((message, index) => {
             const isMalang = message.speaker === "말랭이";
+            const hasFeedback = !isMalang && message.isFeedback;
 
             return (
               <div
@@ -60,16 +64,31 @@ export const ChatTranscriptPopup: React.FC<ChatTranscriptPopupProps> = ({
                       </span>
                     )}
 
-                    <div className="flex items-end gap-1.5">
+                    <div className={`flex items-end gap-1.5 ${isMalang ? "flex-row" : "flex-row-reverse"}`}>
                       {/* 말풍선 */}
-                      <div
-                        className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm ${
-                          isMalang
-                            ? "rounded-tl-none bg-[#E4F1FF] text-[#1F1C2B]"
-                            : "rounded-tr-none bg-[#F5F4F9] text-[#1F1C2B]"
-                        }`}
-                      >
-                        {message.content}
+                      <div className="flex flex-col gap-2">
+                        <div
+                          className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm ${
+                            isMalang
+                              ? "rounded-tl-none bg-[#E4F1FF] text-[#1F1C2B]"
+                              : `rounded-tr-none bg-[#F5F4F9] ${hasFeedback ? "text-red-500 font-medium" : "text-[#1F1C2B]"}`
+                          }`}
+                        >
+                          {message.content}
+                        </div>
+                        
+                        {/* 피드백 표시 */}
+                        {hasFeedback && message.feedback && (
+                          <div className="rounded-2xl bg-red-50 p-3 text-sm border border-red-100">
+                            <div className="font-bold text-red-600 mb-1">추천 표현:</div>
+                            <div className="text-[#1F1C2B]">{message.feedback}</div>
+                            {message.reason && (
+                              <div className="mt-2 text-xs text-gray-500 italic">
+                                * {message.reason}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       {/* 시간 */}

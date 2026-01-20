@@ -30,9 +30,17 @@ export const ChatDetailPopup: React.FC<ChatDetailPopupProps> = ({ session, onClo
         speaker: msg.role === "assistant" ? "말랭이" : "나",
         content: msg.content,
         timestamp: timeStr,
+        isFeedback: msg.is_feedback,
+        feedback: msg.feedback,
+        reason: msg.reason,
       };
     });
   }, [sessionDetail]);
+
+  // 피드백이 있는 메시지만 필터링
+  const feedbackMessages = useMemo(() => {
+    return messages.filter((m) => m.isFeedback);
+  }, [messages]);
 
   const headerContent = (
     <div className="flex-1 space-y-2">
@@ -155,10 +163,30 @@ export const ChatDetailPopup: React.FC<ChatDetailPopupProps> = ({ session, onClo
             {/* 세 번째 행: 피드백 목록 */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-[#1F1C2B]">피드백</h3>
-              <div className="max-h-[300px] overflow-y-auto rounded-2xl bg-gray-50 p-8">
-                <p className="whitespace-pre-wrap text-sm text-[#6A667A]">
-                  {sessionDetail?.feedback || "피드백이 없습니다."}
-                </p>
+              <div className="max-h-[400px] overflow-y-auto space-y-4 pr-2">
+                {feedbackMessages.length > 0 ? (
+                  feedbackMessages.map((m, idx) => (
+                    <div key={idx} className="rounded-2xl bg-gray-50 p-6 space-y-3 border border-gray-100">
+                      <div>
+                        <div className="text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">나의 표현</div>
+                        <div className="text-sm text-red-500 font-medium">{m.content}</div>
+                      </div>
+                      <div className="pt-3 border-t border-gray-200">
+                        <div className="text-[10px] font-bold text-[#5F51D9] mb-1 uppercase tracking-wider">더 나은 답변</div>
+                        <div className="text-sm text-[#1F1C2B] font-semibold">{m.feedback}</div>
+                      </div>
+                      {m.reason && (
+                        <div className="text-xs text-[#6A667A] bg-white/50 p-3 rounded-xl leading-relaxed">
+                          <span className="font-bold text-[#5F51D9]">이유:</span> {m.reason}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-2xl bg-gray-50 p-8 text-center text-sm text-[#6A667A]">
+                    피드백이 없습니다.
+                  </div>
+                )}
               </div>
             </div>
           </>
