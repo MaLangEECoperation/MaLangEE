@@ -7,9 +7,12 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
+  timeout: 60000, // 테스트 타임아웃 60초
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
     trace: "on-first-retry",
+    navigationTimeout: 30000,
+    actionTimeout: 15000,
   },
   projects: [
     {

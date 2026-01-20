@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Pencil } from "lucide-react";
 import { SplitViewLayout } from "@/shared/ui/SplitViewLayout";
-import { Button, MalangEE } from "@/shared/ui";
+import { Button } from "@/shared/ui";
 import { useRouter } from "next/navigation";
 import { useInfiniteChatSessions } from "@/features/chat/api/use-chat-sessions";
-import { AuthGuard, useAuth, useCurrentUser } from "@/features/auth";
+import { AuthGuard, useCurrentUser } from "@/features/auth";
 import type { ChatHistoryItem } from "@/shared/types/chat";
 import { ChatDetailPopup } from "./ChatDetailPopup";
 import { NicknameChangePopup } from "./NicknameChangePopup";
@@ -215,88 +215,88 @@ export default function DashboardPage() {
       {/* 대화 목록 */}
 
       <div className="flex w-full flex-1 flex-col min-h-0">
-      {allSessions.length === 0 && isInitialLoading ? (
-        <div className="flex w-full flex-1 items-center justify-center">
-          <div className="border-3 h-8 w-8 animate-spin rounded-full border-[#5F51D9] border-t-transparent"></div>
-        </div>
-      ) : allSessions.length === 0 ? (
-        <div className="flex w-full flex-1 items-center justify-center text-xl text-gray-500">
-          말랭이와 대화한 이력이 없어요.
-        </div>
-      ) : (
-        <>
-          {/* 목록 헤더: 날짜 / 주제 / 말한시간 / 대화시간 */}
-          <div className="mb-2 flex w-full items-center border-b border-[#D5D2DE] px-0 py-4 ">
-            <div className="flex min-w-20 flex-col items-left  text-sm text-[#6A667A]">
-              날짜
-            </div>
-            <div className="flex min-w-0 flex-1 flex-col md:flex-row md:items-center justify-between gap-3">
-              <div className="flex-1 text-sm text-[#6A667A]">주제</div>
-              <div className="hidden md:flex shrink-0 items-left gap-2 text-sm text-[#6A667A]">
-                말한시간 / 대화시간
-              </div>
-            </div>
+        {allSessions.length === 0 && isInitialLoading ? (
+          <div className="flex w-full flex-1 items-center justify-center">
+            <div className="border-3 h-8 w-8 animate-spin rounded-full border-[#5F51D9] border-t-transparent"></div>
           </div>
-          <div
-            className="left-0 flex w-full flex-col items-start justify-start pr-2 md:h-[400px] md:overflow-y-auto"
-          >
-            {allSessions.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => {
-                  setSelectedSession(item);
-                  setShowDetailPopup(true);
-                }}
-                className="flex w-full cursor-pointer items-center gap-2 border-b border-[#D5D2DE] px-0 py-3 transition-all"
-              >
-                {/* 날짜 */}
-                <div className="flex min-w-20 flex-col items-left justify-center text-sm text-primary">
-                  {item.date}
-                </div>
-
-                {/* 제목과 시간 */}
-                <div className="flex min-w-0 flex-1 flex-col md:flex-row md:items-left gap-1 md:gap-2">
-                  {/* 제목 */}
-                  <div className="flex min-w-0 flex-1 flex-col items-start justify-center">
-                    <p className="w-full truncate font-semibold text-[#1F1C2B]">{item.title}</p>
-                  </div>
-
-                  {/* 시간 */}
-                  <div className="flex shrink-0 items-center gap-1">
-                    <span className="whitespace-nowrap text-sm font-normal text-[#6A667A] md:hidden">
-                      {/* 모바일: 한 줄로 표시 */}
-                      {item.duration}
-                    </span>
-                    <span className="hidden whitespace-nowrap text-sm font-normal text-[#6A667A] md:block">
-                      {/* 데스크탑: 두 줄로 표시 */}
-                      <div className="flex flex-col items-end">
-                        <span>{item.userDurationStr}</span>
-                        <span className="text-xs text-gray-400">/ {item.totalDurationStr}</span>
-                      </div>
-                    </span>
-                  </div>
+        ) : allSessions.length === 0 ? (
+          <div className="flex w-full flex-1 items-center justify-center text-xl text-gray-500">
+            말랭이와 대화한 이력이 없어요.
+          </div>
+        ) : (
+          <>
+            {/* 목록 헤더: 날짜 / 주제 / 말한시간 / 대화시간 */}
+            <div className="mb-2 flex w-full items-center border-b border-[#D5D2DE] px-0 py-4 ">
+              <div className="flex min-w-20 flex-col items-left  text-sm text-[#6A667A]">
+                날짜
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="flex-1 text-sm text-[#6A667A]">주제</div>
+                <div className="hidden md:flex shrink-0 items-left gap-2 text-sm text-[#6A667A]">
+                  말한시간 / 대화시간
                 </div>
               </div>
-            ))}
+            </div>
+            <div
+              className="left-0 flex w-full flex-col items-start justify-start pr-2 md:h-[400px] md:overflow-y-auto"
+            >
+              {allSessions.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => {
+                    setSelectedSession(item);
+                    setShowDetailPopup(true);
+                  }}
+                  className="flex w-full cursor-pointer items-center gap-2 border-b border-[#D5D2DE] px-0 py-3 transition-all"
+                >
+                  {/* 날짜 */}
+                  <div className="flex min-w-20 flex-col items-left justify-center text-sm text-primary">
+                    {item.date}
+                  </div>
 
-            {/* 로딩 트리거 및 스피너 */}
-            {hasNextPage && (
-              <div ref={loadMoreRef} className="flex w-full items-center justify-center py-4 min-h-5">
-                {isFetchingNextPage && (
-                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#5F51D9] border-t-transparent"></div>
-                )}
-              </div>
-            )}
+                  {/* 제목과 시간 */}
+                  <div className="flex min-w-0 flex-1 flex-col md:flex-row md:items-left gap-1 md:gap-2">
+                    {/* 제목 */}
+                    <div className="flex min-w-0 flex-1 flex-col items-start justify-center">
+                      <p className="w-full truncate font-semibold text-[#1F1C2B]">{item.title}</p>
+                    </div>
 
-            {/* 데이터가 없거나 모두 로드됨 */}
-            {!hasNextPage && allSessions.length > 0 && (
-              <div className="flex w-full items-center justify-center py-4 text-xs text-gray-500">
-                모든 데이터를 불러왔습니다 (전체: {totalCount}건 / 조회: {allSessions.length}건)
-              </div>
-            )}
-          </div>
-        </>
-      )}
+                    {/* 시간 */}
+                    <div className="flex shrink-0 items-center gap-1">
+                      <span className="whitespace-nowrap text-sm font-normal text-[#6A667A] md:hidden">
+                        {/* 모바일: 한 줄로 표시 */}
+                        {item.duration}
+                      </span>
+                      <span className="hidden whitespace-nowrap text-sm font-normal text-[#6A667A] md:block">
+                        {/* 데스크탑: 두 줄로 표시 */}
+                        <div className="flex flex-col items-end">
+                          <span>{item.userDurationStr}</span>
+                          <span className="text-xs text-gray-400">/ {item.totalDurationStr}</span>
+                        </div>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* 로딩 트리거 및 스피너 */}
+              {hasNextPage && (
+                <div ref={loadMoreRef} className="flex w-full items-center justify-center py-4 min-h-5">
+                  {isFetchingNextPage && (
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#5F51D9] border-t-transparent"></div>
+                  )}
+                </div>
+              )}
+
+              {/* 데이터가 없거나 모두 로드됨 */}
+              {!hasNextPage && allSessions.length > 0 && (
+                <div className="flex w-full items-center justify-center py-4 text-xs text-gray-500">
+                  모든 데이터를 불러왔습니다 (전체: {totalCount}건 / 조회: {allSessions.length}건)
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

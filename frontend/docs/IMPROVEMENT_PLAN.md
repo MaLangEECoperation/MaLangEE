@@ -411,12 +411,13 @@ yarn build       # 빌드 성공
 - [ ] `features/auth/ui/SignupForm.test.tsx` - 회원가입 폼 테스트
 
 #### E2E 테스트 (Playwright)
-- [ ] `e2e/auth.spec.ts` - 인증 플로우 테스트
-  - [ ] 로그인 성공/실패 시나리오
-  - [ ] 회원가입 성공/실패 시나리오
-  - [ ] 게스트 접근 시나리오
-- [ ] `e2e/navigation.spec.ts` - 네비게이션 테스트
-- [ ] `e2e/scenario.spec.ts` - 시나리오 대화 테스트 (mock WebSocket)
+- [x] `e2e/auth.spec.ts` - 인증 플로우 테스트
+  - [x] 로그인 성공/실패 시나리오
+  - [x] 회원가입 성공/실패 시나리오
+  - [x] 게스트 접근 시나리오
+- [x] `e2e/navigation.spec.ts` - 네비게이션 테스트
+- [x] `e2e/scenario.spec.ts` - 시나리오 대화 테스트 (mock WebSocket)
+- [x] `e2e/dashboard.spec.ts` - 대시보드 테스트
 
 #### 스토리북
 - [ ] `shared/ui/button.stories.tsx` - 버튼 스토리
