@@ -9,3 +9,4 @@ export {
   useUpdateNickname,
 } from "./use-auth-mutation";
 export { useCurrentUser } from "./use-current-user";
+export { useDeleteUser } from "./user";
