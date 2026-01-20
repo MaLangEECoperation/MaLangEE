@@ -19,6 +19,8 @@ export interface ConversationChatStateNew {
   isUserSpeaking: boolean;
   isRecording: boolean;
   sessionReport: any | null;
+  feedback?: string;
+  scenarioSummary?: string;
 }
 
 export function useConversationChatNew(sessionId: string, voice: string = "alloy") {
@@ -27,6 +29,8 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
   const [aiMessageKR, setAiMessageKR] = useState("");
   const [userTranscript, setUserTranscript] = useState("");
   const [sessionReport, setSessionReport] = useState<any | null>(null);
+  const [feedback, setFeedback] = useState<string | undefined>(undefined);
+  const [scenarioSummary, setScenarioSummary] = useState<string | undefined>(undefined);
 
   // WebSocket URL 생성
   const getWebSocketUrl = useCallback(() => {
@@ -313,6 +317,8 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
       isUserSpeaking: base.isUserSpeaking,
       isRecording: base.isRecording,
       sessionReport,
+      feedback,
+      scenarioSummary,
     },
     connect: base.connect,
     disconnect,
