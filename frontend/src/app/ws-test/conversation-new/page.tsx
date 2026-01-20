@@ -85,22 +85,22 @@ export default function ConversationTestPage() {
   return (
     <div className="p-8 max-w-[1600px] mx-auto">
       <h1 className="text-2xl font-bold mb-6">대화하기 테스트 (Conversation Chat)</h1>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
         {/* 1. Connection & Status */}
         <div className="space-y-4">
           <div className="p-4 border rounded bg-gray-50 h-full">
             <h2 className="font-bold mb-3 text-gray-800 border-b pb-2">1. 연결 및 상태</h2>
-            
+
             {/* Session Select */}
             <div className="mb-4">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium">세션 선택</span>
                 <button onClick={fetchSessions} className="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-gray-300" disabled={loadingSessions}>새로고침</button>
               </div>
-              <select 
-                value={sessionId} 
+              <select
+                value={sessionId}
                 onChange={(e) => !state.isConnected && setSessionId(e.target.value)}
                 className="w-full p-2 border rounded text-sm mb-2"
                 disabled={state.isConnected}
@@ -122,15 +122,15 @@ export default function ConversationTestPage() {
 
             {/* Connection Controls */}
             <div className="flex flex-col gap-2 mb-4">
-              <button 
-                onClick={handleConnectAndStart} 
+              <button
+                onClick={handleConnectAndStart}
                 className="w-full px-4 py-2 bg-green-600 text-white rounded font-medium hover:bg-green-700 disabled:opacity-50"
                 disabled={state.isConnected || !sessionId}
               >
                 연결 및 마이크 시작
               </button>
-              <button 
-                onClick={handleDisconnect} 
+              <button
+                onClick={handleDisconnect}
                 className="w-full px-4 py-2 bg-red-500 text-white rounded font-medium hover:bg-red-600 disabled:opacity-50"
                 disabled={!state.isConnected}
               >
@@ -170,7 +170,7 @@ export default function ConversationTestPage() {
         <div className="space-y-4">
           <div className="p-4 border rounded bg-purple-50 border-purple-200 h-full">
             <h2 className="font-bold mb-3 text-purple-800 border-b border-purple-200 pb-2">2. 액션 및 컨트롤</h2>
-            
+
             <div className="space-y-4">
               <div className="border-t border-purple-200 pt-4">
                 <label className="block text-xs font-medium mb-1 text-gray-600">텍스트 입력 (User Input)</label>
@@ -184,7 +184,7 @@ export default function ConversationTestPage() {
                     className="flex-1 p-2 border rounded text-sm"
                     disabled={!state.isConnected}
                   />
-                  <button 
+                  <button
                     onClick={handleSendText}
                     className="px-3 py-2 bg-indigo-600 text-white rounded text-sm disabled:opacity-50"
                     disabled={!state.isConnected}

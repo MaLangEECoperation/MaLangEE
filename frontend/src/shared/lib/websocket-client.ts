@@ -53,9 +53,10 @@ export class WebSocketClient {
     let wsUrl: string;
 
     if (isDevelopment && config.apiBaseUrl) {
-      // 개발 환경: HTTP URL을 WebSocket URL로 변환
+      // 개발 환경: HTTP/HTTPS URL을 WebSocket URL로 변환
       const httpUrl = config.apiBaseUrl;
-      wsUrl = httpUrl.replace(/^http/, 'ws');
+      // https:// -> wss://, http:// -> ws://
+      wsUrl = httpUrl.replace(/^https/, 'wss').replace(/^http/, 'ws');
     } else if (typeof window !== 'undefined') {
       // 프로덕션 또는 브라우저 환경: 현재 호스트 기반
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
