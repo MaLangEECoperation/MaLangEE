@@ -36,7 +36,7 @@ export default function ConversationTestPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Failed to fetch sessions");
-      
+
       const data = await response.json();
       const items = Array.isArray(data) ? data : data.items || [];
       setSessions(items);

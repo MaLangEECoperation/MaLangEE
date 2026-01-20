@@ -108,7 +108,7 @@ export function useInfiniteChatSessions(limit: number = 10, userId?: number) {
 /**
  * 특정 대화 세션 상세 조회 (메시지 포함)
  */
-export function useGetChatSession(sessionId: string) {
+export function useGetChatSession(sessionId: string | null) {
   return useQuery({
     queryKey: ["chatSession", sessionId],
     queryFn: async () => {
@@ -186,7 +186,7 @@ export function useDeleteChatSession() {
 /**
  * LLM 추천 답변(힌트) 조회
  */
-export function useGetHints(sessionId: string) {
+export function useGetHints(sessionId: string | null) {
   return useQuery({
     queryKey: ["chatHints", sessionId],
     queryFn: async () => {
