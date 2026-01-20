@@ -5,7 +5,7 @@ import { Button, ChatMicButton, MalangEE, MalangEEStatus } from "@/shared/ui";
 import { PopupLayout } from "@/shared/ui/PopupLayout";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useConversationChatNew } from "@/features/chat/hook/useConversationChatNew";
-import { Captions, CaptionsOff, Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX } from "lucide-react";
 import { useAuth } from "@/features/auth";
 import { debugLog, debugError } from "@/shared/lib";
 
@@ -338,9 +338,6 @@ export default function ConversationPage() {
     router.push("/auth/signup");
   };
 
-  // 자막 표시 여부 (자막이 켜져 있고, 내용이 있을 때)
-  const hasSubtitleContent = showSubtitle && (state.aiMessage || state.userTranscript);
-
   return (
     <>
       {/* Character */}
@@ -391,24 +388,6 @@ export default function ConversationPage() {
       </div>
 
       <div className="mt-4 flex items-center gap-3">
-        {/* 자막 토글 버튼 */}
-        <button
-          onClick={toggleSubtitle}
-          className="text-text-secondary hover:text-brand flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium transition-colors"
-        >
-          {showSubtitle ? (
-            <>
-              <Captions size={14} />
-              자막 끄기
-            </>
-          ) : (
-            <>
-              <CaptionsOff size={14} />
-              자막 켜기
-            </>
-          )}
-        </button>
-
         {/* 음소거 토글 버튼 */}
         <button
           onClick={handleMuteToggle}
@@ -428,27 +407,6 @@ export default function ConversationPage() {
           )}
         </button>
       </div>
-
-      {/* Area 2: 자막 영역 (하단, 내용이 있을 때만 표시) */}
-      {hasSubtitleContent && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 mt-3 flex w-full justify-center duration-300">
-          <div className="inline-block w-full max-w-md px-6 py-6 text-center">
-            <div className="flex flex-col gap-3">
-              {/* 3. 사용자 (닉네임 또는 나) */}
-              {state.userTranscript && (
-                <div className="border-white-70 mt-2 border-t pt-3">
-                  <p className="text-text-secondary mb-1 text-right text-xs font-medium">
-                    {userName}
-                  </p>
-                  <p className="text-text-primary text-right text-[12px] italic">
-                    {state.userTranscript}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Login Popup */}
       {showLoginPopup && (
