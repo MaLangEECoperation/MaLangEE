@@ -19,9 +19,12 @@ const buttonVariants = cva(
           "bg-[#7666f5] text-white hover:bg-[#6758e8] focus-visible:ring-[#7B6CF6] rounded-full",
         "outline-purple":
           "border-2 border-[#7B6CF6] bg-white text-[#7B6CF6] hover:bg-[#f6f4ff] focus-visible:ring-[#7B6CF6] rounded-full",
+        "outline-gray":
+          "border-2 border-[#cccccc] bg-white hover:bg-[#f5f5f5] focus-visible:ring-[#7B6CF6] rounded-full",
         secondary:
           "bg-[#D4CCFF] text-[#5F51D9] hover:bg-[#C9BFFF] focus-visible:ring-[#5F51D9] rounded-full",
-        solid: "bg-[#5F51D9] text-white hover:bg-[#4a3ec4] focus-visible:ring-[#5F51D9] rounded-full",
+        solid:
+          "bg-[#5F51D9] text-white hover:bg-[#4a3ec4] focus-visible:ring-[#5F51D9] rounded-full",
       },
       size: {
         default: "h-10 px-4 py-2 text-sm",

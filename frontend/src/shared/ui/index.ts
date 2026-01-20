@@ -6,7 +6,7 @@ export { Logo } from "./Logo";
 export { MalangEE } from "./MalangEE";
 export type { MalangEEStatus } from "./MalangEE";
 export { MicButton } from "./MicButton/MicButton";
-export { ChatMicButton } from "./MicButton/ChatMicButton"; // 추가
+export { ChatMicButton } from "./MicButton/ChatMicButton";
 export { PopupLayout } from "./PopupLayout";
 export { FullLayout } from "./FullLayout";
 export { SplitViewLayout } from "./SplitViewLayout";
@@ -16,3 +16,4 @@ export { GlassmorphicCard } from "./GlassmorphicCard";
 export { DecorativeCircle } from "./DecorativeCircle";
 export { DebugStatus } from "./DebugStatus";
 export { ChatStatusBadge } from "./ChatStatusBadge";
+export { Toggle } from "./Toggle";
