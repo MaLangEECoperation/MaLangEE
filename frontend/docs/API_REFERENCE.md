@@ -530,7 +530,7 @@ ws://49.50.137.35:8080/api/v1/chat/ws/guest-chat/{session_id}?voice=alloy&show_t
 ### 5.3 시나리오 빌더 (회원용)
 
 ```
-ws://49.50.137.35:8080/api/v1/scenario/ws/scenario?token={access_token}
+ws://49.50.137.35:8080/api/v1/scenarios/ws/scenario?token={access_token}
 ```
 
 **설명:**
@@ -544,7 +544,7 @@ ws://49.50.137.35:8080/api/v1/scenario/ws/scenario?token={access_token}
 ### 5.4 시나리오 빌더 (게스트용)
 
 ```
-ws://49.50.137.35:8080/api/v1/scenario/ws/guest-scenario
+ws://49.50.137.35:8080/api/v1/scenarios/ws/guest-scenario
 ```
 
 **특징:**
