@@ -13,8 +13,16 @@ export default function ScenarioTestPage() {
   const [isMuted, setIsMuted] = useState(false);
 
   const handleConnectAndStart = async () => {
-    initAudio();
-    connect();
+    try {
+      console.log("🔧 [DEBUG] Starting connection process...");
+      console.log("🔧 [DEBUG] Initializing audio...");
+      initAudio();
+      console.log("🔧 [DEBUG] Audio initialized, connecting to WebSocket...");
+      connect();
+      console.log("🔧 [DEBUG] Connect function called");
+    } catch (error) {
+      console.error("❌ [ERROR] Connection failed:", error);
+    }
   };
 
   const handleDisconnect = () => {

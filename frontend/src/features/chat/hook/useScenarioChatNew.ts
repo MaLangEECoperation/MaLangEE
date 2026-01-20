@@ -30,12 +30,16 @@ export function useScenarioChatNew() {
     const envWsUrl = process.env.NEXT_PUBLIC_WS_URL;
     let wsBaseUrl = envWsUrl;
 
+    console.log("🔧 [DEBUG] Token:", token ? "EXISTS" : "NONE");
+    console.log("🔧 [DEBUG] NEXT_PUBLIC_WS_URL:", envWsUrl);
+
     if (!wsBaseUrl && process.env.NEXT_PUBLIC_API_URL) {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       wsBaseUrl = apiUrl.replace(/^http/, "ws");
       if (window.location.protocol === "https:" && wsBaseUrl.startsWith("ws:")) {
         wsBaseUrl = wsBaseUrl.replace(/^ws:/, "wss:");
       }
+      console.log("🔧 [DEBUG] wsBaseUrl from API_URL:", wsBaseUrl);
     }
 
     if (!wsBaseUrl) {
@@ -43,13 +47,18 @@ export function useScenarioChatNew() {
       const host = window.location.hostname;
       const port = window.location.port ? `:${window.location.port}` : "";
       wsBaseUrl = `${protocol}://${host}${port}`;
+      console.log("🔧 [DEBUG] wsBaseUrl from location:", wsBaseUrl);
     }
 
-    const endpoint = token ? "/api/v1/ws/scenario" : "/api/v1/ws/guest-scenario";
+    const endpoint = token ? "/api/v1/scenarios/ws/scenario" : "/api/v1/scenarios/ws/guest-scenario";
     const params = new URLSearchParams();
     if (token) params.append("token", token);
 
-    return `${wsBaseUrl}${endpoint}?${params.toString()}`;
+    const queryString = params.toString();
+    const finalUrl = queryString ? `${wsBaseUrl}${endpoint}?${queryString}` : `${wsBaseUrl}${endpoint}`;
+    console.log("🔧 [DEBUG] Final WebSocket URL:", finalUrl);
+
+    return finalUrl;
   }, []);
 
   // onMessage 콜백을 ref로 관리
@@ -64,6 +73,9 @@ export function useScenarioChatNew() {
     autoConnect: false,
   });
 
+  // 세션 초기화 함수를 ref로 관리하여 순환 참조 방지
+  const startScenarioSessionRef = useRef<(() => void) | null>(null);
+
   // onMessage 구현 (base를 사용할 수 있도록 여기서 정의)
   onMessageRef.current = (event: MessageEvent) => {
     try {
@@ -72,8 +84,12 @@ export function useScenarioChatNew() {
       switch (data.type) {
         case "ready":
           base.addLog("✅ Received 'ready'. Scenario session initialized.");
-          base.addLog("ℹ️ AI will automatically start greeting. Waiting for AI's first message...");
+          base.addLog("ℹ️ Automatically starting scenario session...");
           base.setIsReady(true);
+          // ready 수신 즉시 세션 초기화
+          if (startScenarioSessionRef.current) {
+            startScenarioSessionRef.current();
+          }
           break;
 
         case "response.audio.delta":
@@ -199,6 +215,9 @@ export function useScenarioChatNew() {
       base.addLog("Sent response.create");
     }
   }, [base.wsRef, base.isReady, base.addLog]);
+
+  // ref에 함수 할당
+  startScenarioSessionRef.current = startScenarioSession;
 
   return {
     state: {
