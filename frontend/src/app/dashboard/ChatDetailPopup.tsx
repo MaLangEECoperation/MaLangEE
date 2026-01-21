@@ -162,7 +162,7 @@ export const ChatDetailPopup: React.FC<ChatDetailPopupProps> = ({ session, onClo
             {/* 세 번째 행: 피드백 목록 */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-[#1F1C2B]">피드백</h3>
-              <div className="max-h-[400px] overflow-y-auto space-y-4 pr-2">
+              <div className="max-h-[250px] overflow-y-auto space-y-4 pr-2">
                 {feedbackMessages.length > 0 ? (
                   feedbackMessages.map((m, idx) => (
                     <div key={idx} className="rounded-2xl bg-gray-50 p-6 space-y-3 border border-gray-100">
@@ -175,8 +175,8 @@ export const ChatDetailPopup: React.FC<ChatDetailPopupProps> = ({ session, onClo
                         <div className="text-sm text-[#1F1C2B] font-semibold">{m.feedback}</div>
                       </div>
                       {m.reason && (
-                        <div className="text-xs text-[#6A667A] bg-white/50 p-3 rounded-xl leading-relaxed">
-                          <span className="font-bold text-[#5F51D9]">이유:</span> {m.reason}
+                        <div className="text-xs text-[#6A667A] bg-white  p-3 rounded-xl leading-relaxed">
+                          <span className="font-bold text-[#5F51D9]"></span> {m.reason}
                         </div>
                       )}
                     </div>
