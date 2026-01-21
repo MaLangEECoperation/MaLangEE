@@ -10,16 +10,18 @@ import {useScenarioChatNew} from "@/features/chat/hook/useScenarioChatNew";
 import {useInactivityTimer} from "@/shared/hooks";
 import {DirectSpeech, SubtitleSettings, VoiceSelection, TopicSuggestion} from "@/app/scenario-select/steps";
 import { MapPin, Users, Target, Volume2, VolumeX } from "lucide-react";
+import { useAuth } from "@/features/auth";
 
 export default function ScenarioSelectPage() {
     const router = useRouter();
+    const { user } = useAuth();
     const [isListening, setIsListening] = useState(false);
     const [hasStarted, setHasStarted] = useState(false);
     const [textOpacity, setTextOpacity] = useState(1);
     const [showNotUnderstood, setShowNotUnderstood] = useState(false);
     const [showEndChatPopup, setShowEndChatPopup] = useState(false);
     const [showScenarioResultPopup, setShowScenarioResultPopup] = useState(false);
-    const [isMuted, setIsMuted] = useState(false); // 음소거 상태 추가
+    const [isMuted, setIsMuted] = useState(false);
     
     // 스텝 정의: 1:주제제안, 2:직접말하기, 3:자막설정, 4:목소리선택
     const [stepIndex, setStepIndex] = useState<1 | 2 | 3 | 4>(1);
@@ -172,7 +174,13 @@ export default function ScenarioSelectPage() {
         setIsListening(false);
         stopMicrophone();
         disconnect();
-        router.push("/");
+        
+        // 회원인 경우 대시보드로, 게스트인 경우 메인으로 이동
+        if (user) {
+            router.push("/dashboard");
+        } else {
+            router.push("/");
+        }
     };
 
     const handleContinueFromEnd = () => {
