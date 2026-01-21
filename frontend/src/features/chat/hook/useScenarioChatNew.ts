@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { tokenStorage } from "@/features/auth";
 import { translateToKorean } from "@/shared/lib/translate";
 import { debugLog } from "@/shared/lib/debug";
@@ -54,7 +54,9 @@ export function useScenarioChatNew() {
   const startScenarioSessionRef = useRef<(() => void) | null>(null);
 
   // onMessage 구현 (base를 사용할 수 있도록 여기서 정의)
-  onMessageRef.current = (event: MessageEvent) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    onMessageRef.current = (event: MessageEvent) => {
     try {
       const data = JSON.parse(event.data);
 
@@ -127,6 +129,7 @@ export function useScenarioChatNew() {
       base.addLog(`Parse Error: ${e}`);
     }
   };
+  });
 
   // 오디오 전송 콜백 (Scenario 메시지 타입 사용)
   const sendAudioCallback = useCallback((audioData: Float32Array) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useScenarioChatNew } from "@/features/chat/hook/useScenarioChatNew";
 
 export default function ScenarioTestPage() {
@@ -213,7 +213,7 @@ export default function ScenarioTestPage() {
                 <h3 className="mb-2 text-sm font-bold text-purple-900">📋 사용 가이드</h3>
                 <div className="space-y-1 text-xs text-gray-700">
                   <div>
-                    <strong className="text-purple-700">1. 연결:</strong> "연결 및 오디오 초기화" 클릭
+                    <strong className="text-purple-700">1. 연결:</strong> &ldquo;연결 및 오디오 초기화&rdquo; 클릭
                   </div>
                   <div className="ml-4 text-gray-600">
                     ➜ 서버가 자동으로 AI 첫 인사를 시작합니다

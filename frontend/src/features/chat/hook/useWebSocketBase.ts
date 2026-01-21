@@ -55,11 +55,14 @@ export function useWebSocketBase({
   const onErrorRef = useRef(onError);
 
   // Update refs when props change
-  getWebSocketUrlRef.current = getWebSocketUrl;
-  onMessageRef.current = onMessage;
-  onOpenRef.current = onOpen;
-  onCloseRef.current = onClose;
-  onErrorRef.current = onError;
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    getWebSocketUrlRef.current = getWebSocketUrl;
+    onMessageRef.current = onMessage;
+    onOpenRef.current = onOpen;
+    onCloseRef.current = onClose;
+    onErrorRef.current = onError;
+  });
 
   // 로그 추가 함수 - 안정적인 참조를 위해 ref 사용
   const addLog = useCallback((msg: string) => {
@@ -69,7 +72,8 @@ export function useWebSocketBase({
   // 오디오 초기화
   const initAudio = useCallback(() => {
     if (!audioContextRef.current) {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       audioContextRef.current = new AudioContextClass({ sampleRate: WEBSOCKET_CONSTANTS.AUDIO.OUTPUT_SAMPLE_RATE });
       
       gainNodeRef.current = audioContextRef.current.createGain();

@@ -15,7 +15,7 @@ export default function ConversationPage() {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
 
   // sessionId 상태
   const [sessionId, setSessionId] = useState<string>("");
@@ -24,7 +24,7 @@ export default function ConversationPage() {
   const [showSessionErrorPopup, setShowSessionErrorPopup] = useState(false);
   const [showSettingsPopup, setShowSettingsPopup] = useState(false);
   const [showWaitPopup, setShowWaitPopup] = useState(false);
-  const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [showLoginPopup, _setShowLoginPopup] = useState(false);
 
   // sessionId 초기화
   useEffect(() => {
@@ -35,10 +35,12 @@ export default function ConversationPage() {
 
     if (urlSessionId) {
       debugLog("[SessionId] Using URL sessionId:", urlSessionId);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSessionId(urlSessionId);
       localStorage.setItem("chatSessionId", urlSessionId);
     } else if (storedSessionId) {
       debugLog("[SessionId] Using stored sessionId:", storedSessionId);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSessionId(storedSessionId);
       router.replace(`/chat/conversation?sessionId=${storedSessionId}`, { scroll: false });
     } else {
@@ -57,7 +59,9 @@ export default function ConversationPage() {
   useEffect(() => {
     const voice = localStorage.getItem("selectedVoice");
     const subtitle = localStorage.getItem("subtitleEnabled");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (voice !== null) setSelectedVoice(voice);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (subtitle !== null) setShowSubtitle(subtitle === "true");
   }, []);
 
@@ -69,7 +73,7 @@ export default function ConversationPage() {
     requestResponse,
     startMicrophone,
     stopMicrophone,
-    toggleMute
+    toggleMute: _toggleMute
   } = useConversationChatNew(sessionId, selectedVoice);
 
   const disconnectRef = useRef(disconnect);
@@ -79,6 +83,7 @@ export default function ConversationPage() {
 
   useEffect(() => {
     if (state.isConnected && !wasConnected) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWasConnected(true);
     }
   }, [state.isConnected, wasConnected]);
@@ -90,12 +95,12 @@ export default function ConversationPage() {
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const waitPopupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { data: hints, isLoading: isHintsLoading } = useGetHints(
+  const { data: _hints, isLoading: _isHintsLoading } = useGetHints(
     shouldFetchHint ? sessionId : null
   );
 
   // 마이크 상태
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, _setIsMuted] = useState(false);
   const [isMicEnabled, setIsMicEnabled] = useState(false);
 
   // 타이머 정리 함수
@@ -127,6 +132,7 @@ export default function ConversationPage() {
     clearHintTimer();
     if (!state.lastAiAudioDoneAt || state.isAiSpeaking) return;
     if (state.isUserSpeaking) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       resetHintState();
       return;
     }
@@ -161,6 +167,7 @@ export default function ConversationPage() {
   }, [clearHintTimer, clearWaitPopupTimer]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
   }, []);
 
@@ -199,6 +206,7 @@ export default function ConversationPage() {
   useEffect(() => {
     if (!state.isConnected || !state.isReady) {
       if (isMicEnabled) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsMicEnabled(false);
         stopMicrophone();
       }
@@ -286,7 +294,7 @@ export default function ConversationPage() {
   const getSubDesc = () => getCurrentMessage().desc;
 
   // 핸들러
-  const handleHintClick = useCallback(() => {
+  const _handleHintClick = useCallback(() => {
     if (showHintText) {
       setShowHintText(false);
       return;

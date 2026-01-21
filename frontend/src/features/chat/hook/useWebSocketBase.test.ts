@@ -112,7 +112,8 @@ describe("useWebSocketBase", () => {
 
     // Mock AudioContext
     global.AudioContext = MockAudioContext as unknown as typeof AudioContext;
-    (global as any).window = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (global as unknown as Record<string, unknown>).window = {
       AudioContext: MockAudioContext,
       webkitAudioContext: MockAudioContext,
       atob: global.atob || ((str: string) => Buffer.from(str, "base64").toString("binary")),

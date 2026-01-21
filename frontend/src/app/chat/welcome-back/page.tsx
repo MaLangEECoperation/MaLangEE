@@ -45,12 +45,12 @@ function WelcomeBackPage() {
   // 세션 정보 로컬 스토리지 저장 (voice, subtitleEnabled, scenario info)
   useEffect(() => {
     if (sessionDetail) {
-      // any 타입으로 캐스팅하여 API 응답 구조에 유연하게 대응
-      const detail = sessionDetail as any;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const detail = sessionDetail as unknown as Record<string, unknown>;
 
       // voice 설정 (없으면 기본값 'nova')
       if (detail.voice) {
-        localStorage.setItem("selectedVoice", detail.voice);
+        localStorage.setItem("selectedVoice", String(detail.voice));
       } else {
         localStorage.setItem("selectedVoice", "nova");
       }
@@ -64,13 +64,13 @@ function WelcomeBackPage() {
 
       // 시나리오 정보 저장 (conversationGoal, conversationPartner, place)
       if (detail.scenario_goal) {
-        localStorage.setItem("conversationGoal", detail.scenario_goal);
+        localStorage.setItem("conversationGoal", String(detail.scenario_goal));
       }
       if (detail.scenario_partner) {
-        localStorage.setItem("conversationPartner", detail.scenario_partner);
+        localStorage.setItem("conversationPartner", String(detail.scenario_partner));
       }
       if (detail.scenario_place) {
-        localStorage.setItem("place", detail.scenario_place);
+        localStorage.setItem("place", String(detail.scenario_place));
       }
     }
   }, [sessionDetail]);
@@ -103,7 +103,8 @@ function WelcomeBackPage() {
   // 현재 useGetChatSession은 ChatSessionDetail을 반환하며, 이는 { session: ChatSession, messages: ChatMessage[] } 구조임
   // 하지만 API 응답 예시에 따르면 최상위에 title이 있을 수도 있음. 안전하게 접근.
   const title =
-    (sessionDetail as any).title || (sessionDetail as any).session?.title || "이전 대화";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (sessionDetail as unknown as Record<string, unknown>).title as string || ((sessionDetail as unknown as Record<string, { title?: string }>).session?.title) || "이전 대화";
 
   return (
     <>

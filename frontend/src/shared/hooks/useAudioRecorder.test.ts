@@ -19,7 +19,7 @@ class MockAudioContext {
   createScriptProcessor = vi.fn(() => ({
     connect: vi.fn(),
     disconnect: vi.fn(),
-    onaudioprocess: null as ((e: any) => void) | null,
+    onaudioprocess: null as ((e: AudioProcessingEvent) => void) | null,
   }));
 
   close = vi.fn();
@@ -125,7 +125,8 @@ describe("useAudioRecorder", () => {
 
     act(() => {
       if (mockProcessor.onaudioprocess) {
-        mockProcessor.onaudioprocess({ inputBuffer: mockInputBuffer } as any);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        mockProcessor.onaudioprocess({ inputBuffer: mockInputBuffer } as unknown as AudioProcessingEvent);
       }
     });
 
@@ -150,7 +151,8 @@ describe("useAudioRecorder", () => {
 
     act(() => {
       if (mockProcessor.onaudioprocess) {
-        mockProcessor.onaudioprocess({ inputBuffer: mockInputBuffer } as any);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        mockProcessor.onaudioprocess({ inputBuffer: mockInputBuffer } as unknown as AudioProcessingEvent);
       }
     });
 

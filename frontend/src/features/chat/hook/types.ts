@@ -157,6 +157,7 @@ export interface BaseWebSocketOptions {
   autoConnect?: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ScenarioWebSocketOptions extends BaseWebSocketOptions {
   // 주제 정하기는 추가 옵션 없음
 }

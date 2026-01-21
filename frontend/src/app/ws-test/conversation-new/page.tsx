@@ -242,7 +242,7 @@ export default function ConversationTestPage() {
                     ➜ 같은 세션으로 재연결 시 이전 대화가 자동 복원됩니다
                   </div>
                   <div>
-                    <strong className="text-purple-700">2. 연결:</strong> "연결 및 마이크 시작" 클릭
+                    <strong className="text-purple-700">2. 연결:</strong> &ldquo;연결 및 마이크 시작&rdquo; 클릭
                   </div>
                   <div className="ml-4 text-gray-600">
                     ➜ 서버가 자동으로 AI 첫 인사를 시작합니다
@@ -254,7 +254,7 @@ export default function ConversationTestPage() {
                     ➜ Server VAD가 자동으로 발화 시작/종료를 감지합니다
                   </div>
                   <div>
-                    <strong className="text-purple-700">4. 종료:</strong> "연결 종료" 클릭
+                    <strong className="text-purple-700">4. 종료:</strong> &ldquo;연결 종료&rdquo; 클릭
                   </div>
                   <div className="ml-4 text-gray-600">
                     ➜ 세션 리포트와 피드백이 자동 생성됩니다 (메시지 10개 이상 시)

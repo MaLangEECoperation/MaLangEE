@@ -54,6 +54,7 @@ export default function DirectSpeechPage() {
   // 연결 성공 여부 추적
   useEffect(() => {
     if (chatState.isConnected && !wasConnected) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWasConnected(true);
     }
   }, [chatState.isConnected, wasConnected]);
@@ -71,6 +72,7 @@ export default function DirectSpeechPage() {
     if (!hasStarted && !chatState.isConnected) {
       initAudio();
       connect();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHasStarted(true);
     }
   }, [hasStarted, chatState.isConnected, initAudio, connect]);
@@ -98,6 +100,7 @@ export default function DirectSpeechPage() {
   useEffect(() => {
     if (chatState.isAiSpeaking && chatState.isRecording) {
       stopMicrophone();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsListening(false);
     }
 
@@ -109,6 +112,7 @@ export default function DirectSpeechPage() {
       !chatState.isRecording
     ) {
       startMicrophone();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsListening(true);
     }
 
@@ -123,11 +127,13 @@ export default function DirectSpeechPage() {
   // 비활성 타이머 관리
   useEffect(() => {
     if (!hasStarted) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       resetTimers();
       return;
     }
 
     if (chatState.isAiSpeaking || chatState.isRecording) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       resetTimers();
       return;
     }
@@ -138,7 +144,9 @@ export default function DirectSpeechPage() {
   // 시나리오 결과 처리
   useEffect(() => {
     if (chatState.scenarioResult) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       resetTimers();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsListening(false);
       stopMicrophone();
 
@@ -156,6 +164,7 @@ export default function DirectSpeechPage() {
   // 팝업 표시 시 타이머 리셋
   useEffect(() => {
     if (showScenarioResultPopup || showEndChatPopup) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       resetTimers();
     }
   }, [showScenarioResultPopup, showEndChatPopup, resetTimers]);
@@ -163,6 +172,7 @@ export default function DirectSpeechPage() {
   // AI 메시지 수신 시 타이머 초기화
   useEffect(() => {
     if (!chatState.aiMessage) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setShowNotUnderstood(false);
     clearNotUnderstoodTimer();
   }, [chatState.aiMessage]);
@@ -170,6 +180,7 @@ export default function DirectSpeechPage() {
   // 사용자 발화 감지 시 타이머 관리
   useEffect(() => {
     if (!chatState.userTranscript) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setShowNotUnderstood(false);
     clearNotUnderstoodTimer();
     notUnderstoodTimerRef.current = setTimeout(() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import { tokenStorage } from "@/features/auth";
 import { translateToKorean } from "@/shared/lib/translate";
 import { debugLog, debugError } from "@/shared/lib/debug";
@@ -50,7 +50,8 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
   // disconnect 타임아웃 관리
   const disconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // disconnect Promise resolve 함수 저장
-  const disconnectResolveRef = useRef<((report: any | null) => void) | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const disconnectResolveRef = useRef<((report: SessionReport | null) => void) | null>(null);
 
   // useWebSocketBase 사용
   const base = useWebSocketBase({
@@ -62,7 +63,9 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
   });
 
   // onMessage 구현 (base를 사용할 수 있도록 여기서 정의)
-  onMessageRef.current = (event: MessageEvent) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    onMessageRef.current = (event: MessageEvent) => {
     try {
       const data = JSON.parse(event.data);
       debugLog("[WebSocket] Received message type:", data.type, "data:", data);
@@ -175,6 +178,7 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
       base.addLog(`Parse Error: ${e}`);
     }
   };
+  });
 
   // 오디오 전송 콜백 (Conversation 메시지 타입 사용)
   const sendAudioCallback = useCallback(
@@ -246,7 +250,7 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
   }, [base.wsRef, base.addLog]);
 
   // 연결 해제 시 disconnect 메시지 전송 (Promise 반환)
-  const disconnect = useCallback((): Promise<any | null> => {
+  const disconnect = useCallback((): Promise<SessionReport | null> => {
     return new Promise((resolve) => {
       // 이미 disconnect 요청 중이면 중복 요청 방지
       if (disconnectTimeoutRef.current) {

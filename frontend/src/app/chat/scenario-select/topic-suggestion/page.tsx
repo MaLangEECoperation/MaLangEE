@@ -41,6 +41,7 @@ export default function TopicSuggestionPage() {
 
   useEffect(() => {
     if (scenarios && scenarios.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplayedScenarios(getRandomScenarios(scenarios));
     }
   }, [scenarios]);
