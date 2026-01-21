@@ -1,56 +1,32 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useConversationChatNew } from "@/features/chat/hook/useConversationChatNew";
-import { tokenStorage } from "@/features/auth";
-
-interface ChatSession {
-  session_id: string;
-  title: string;
-  started_at: string;
-  message_count: number;
-}
+import { useGetChatSessions } from "@/features/chat/api/use-chat-sessions";
 
 export default function ConversationTestPage() {
   const [sessionId, setSessionId] = useState("");
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [loadingSessions, setLoadingSessions] = useState(false);
   const [textInput, setTextInput] = useState("");
   const [isMuted, setIsMuted] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState("alloy");
 
-  const { state, connect, disconnect, initAudio, startMicrophone, stopMicrophone, sendText, commitAudio, updateVoice, requestResponse, toggleMute } = useConversationChatNew(sessionId);
+  // 공통 API 훅 사용 (Mixed Content 방지 및 일관성 유지)
+  const { data: sessionsData, isLoading: loadingSessions, refetch: fetchSessions } = useGetChatSessions(0, 20);
+  const sessions = sessionsData?.items || [];
 
-  // 세션 목록 가져오기
-  const fetchSessions = async () => {
-    const token = tokenStorage.get();
-    if (!token) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
-
-    setLoadingSessions(true);
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://49.50.137.35:8080";
-      const response = await fetch(`${apiUrl}/api/v1/chat/sessions?skip=0&limit=20`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error("Failed to fetch sessions");
-
-      const data = await response.json();
-      const items = Array.isArray(data) ? data : data.items || [];
-      setSessions(items);
-    } catch (e) {
-      console.error(e);
-      alert("세션 목록을 불러오지 못했습니다.");
-    } finally {
-      setLoadingSessions(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSessions();
-  }, []);
+  const { 
+    state, 
+    connect, 
+    disconnect, 
+    initAudio, 
+    startMicrophone, 
+    stopMicrophone, 
+    sendText, 
+    commitAudio, 
+    updateVoice, 
+    requestResponse, 
+    toggleMute 
+  } = useConversationChatNew(sessionId);
 
   const handleConnectAndStart = async () => {
     initAudio();
@@ -97,7 +73,13 @@ export default function ConversationTestPage() {
             <div className="mb-4">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium">세션 선택</span>
-                <button onClick={fetchSessions} className="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-gray-300" disabled={loadingSessions}>새로고침</button>
+                <button 
+                  onClick={() => fetchSessions()} 
+                  className="text-xs bg-gray-200 px-2 py-1 rounded hover:bg-gray-300" 
+                  disabled={loadingSessions}
+                >
+                  {loadingSessions ? "로딩 중..." : "새로고침"}
+                </button>
               </div>
               <select
                 value={sessionId}
