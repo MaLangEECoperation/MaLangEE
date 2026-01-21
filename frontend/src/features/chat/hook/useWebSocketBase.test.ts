@@ -361,6 +361,10 @@ describe("useWebSocketBase", () => {
 
   describe("reconnection", () => {
     it("should attempt reconnection on close", async () => {
+      // Mock Math.random for predictable backoff delay
+      const originalRandom = Math.random;
+      Math.random = () => 0.5; // Middle value, no jitter
+
       const { result } = renderHook(() =>
         useWebSocketBase({
           getWebSocketUrl: () => "ws://test.com",
@@ -383,13 +387,18 @@ describe("useWebSocketBase", () => {
         mockWs.close();
       });
 
-      // Wait for reconnect delay (exponential backoff)
+      // Wait for reconnect delay (exponential backoff with jitter)
+      // Initial delay: 1000ms, jitter factor 0.3 → 700ms~1300ms
+      // Using 1500ms to account for maximum jitter
       await act(async () => {
-        vi.advanceTimersByTime(1000);
+        vi.advanceTimersByTime(1500);
       });
 
       // WebSocket should be called twice (initial + reconnect)
       expect(global.WebSocket).toHaveBeenCalledTimes(2);
+
+      // Restore Math.random
+      Math.random = originalRandom;
     });
 
     it("should not reconnect on manual disconnect", async () => {
