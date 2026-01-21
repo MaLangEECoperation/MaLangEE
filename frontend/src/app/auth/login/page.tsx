@@ -168,7 +168,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="text-text-secondary flex flex-col gap-3 px-1 text-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-text-secondary flex flex-row items-center justify-between gap-3 px-1 text-sm">
           <a
             href="#"
             onClick={handleFindClick}

@@ -203,6 +203,18 @@
   }
 }
 
+/* 모바일 배경 이미지 설정 */
+@media (max-width: 768px) {
+  body.bg-login-01,
+  body.bg-auth-flow,
+  body.bg-chat-history {
+    background-image: url(/images/mobile-bg.svg);
+    background-size: 100% auto;
+    background-position: top center;
+    background-repeat: repeat-y;
+  }
+}
+
 @keyframes slideInFromRight {
   0% {
     opacity: 0;
@@ -323,7 +335,7 @@
 
 /* Glassmorphism card */
 .glass-card {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.3);
   box-shadow: 0 8px 32px 0 rgba(123, 108, 246, 0.3);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(20px);
