@@ -45,12 +45,12 @@ export const scenarioKeys = {
 const scenarioApi = {
   // 모든 시나리오 목록 조회
   getScenarios: () => {
-    return apiClient.get<Scenario[]>("/scenarios/");
+    return apiClient.get<Scenario[]>("/scenarios");
   },
 
   // 새로운 시나리오 등록
   createScenario: (data: CreateScenarioRequest) => {
-    return apiClient.post<Scenario>("/scenarios/", data);
+    return apiClient.post<Scenario>("/scenarios", data);
   },
 
   // 특정 시나리오 상세 정보 조회

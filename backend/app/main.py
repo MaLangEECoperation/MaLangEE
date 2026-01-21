@@ -32,10 +32,6 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Trust Proxy Headers (for HTTPS/WSS behind Nginx/LB)
-from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
-app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
-
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(

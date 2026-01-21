@@ -25,7 +25,7 @@ from scenario.realtime_bridge import handle_client
 router = APIRouter()
 
 
-@router.get("/", response_model=List[ScenarioResponse], summary="전체 시나리오 목록 조회 (메뉴판)")
+@router.get("", response_model=List[ScenarioResponse], summary="전체 시나리오 목록 조회 (메뉴판)")
 async def get_scenarios(
     db: AsyncSession = Depends(get_db),
     # Optional: Pagination
@@ -56,7 +56,7 @@ async def get_scenario_detail(
     return scenario
 
 
-@router.post("/", response_model=ScenarioResponse, summary="새 시나리오 등록 (Admin)")
+@router.post("", response_model=ScenarioResponse, summary="새 시나리오 등록 (Admin)")
 async def create_scenario(
     scenario_in: ScenarioResponse, # Request Body는 Create Schema 사용 권장되나, 여기선 구조 동일하므로 Response/Base 등 유연하게 처리
     db: AsyncSession = Depends(get_db),
