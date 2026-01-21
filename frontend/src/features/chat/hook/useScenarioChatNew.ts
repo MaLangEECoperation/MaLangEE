@@ -110,11 +110,12 @@ export function useScenarioChatNew() {
         case "scenario.completed":
           base.addLog(`✅ Scenario Completed: ${JSON.stringify(data.json)}`);
           base.addLog("ℹ️ Scenario has been automatically saved to the database.");
+          // 서버에서 snake_case 또는 camelCase로 올 수 있으므로 둘 다 처리
           setScenarioResult({
-            place: data.json?.place || null,
-            conversationPartner: data.json?.conversation_partner || null,
-            conversationGoal: data.json?.conversation_goal || null,
-            sessionId: data.json?.sessionId,
+            place: data.json?.place ?? null,
+            conversationPartner: data.json?.conversation_partner ?? data.json?.conversationPartner ?? null,
+            conversationGoal: data.json?.conversation_goal ?? data.json?.conversationGoal ?? null,
+            sessionId: data.json?.sessionId ?? data.json?.session_id,
           });
           break;
 
@@ -169,27 +170,10 @@ export function useScenarioChatNew() {
   }, [base.wsRef, base.addLog]);
 
   // 시나리오 세션 초기화 및 대화 시작
+  // 서버에서 세션 설정 및 AI 응답을 자동으로 처리하므로 클라이언트에서는 별도 메시지를 보내지 않음
   const startScenarioSession = useCallback(() => {
     if (base.wsRef.current?.readyState === WebSocket.OPEN && base.isReady) {
-      // 초기 설정 - turn_detection을 활성화해야 마이크가 작동함
-      base.wsRef.current.send(JSON.stringify({
-        type: "session.update",
-        session: {
-          //instructions: "You are a scenario selector. Ask the user what situation they want to practice. Keep it brief and friendly.",
-          turn_detection: { type: "server_vad", threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 1000 }
-        }
-      }));
-      base.addLog("Sent session.update");
-
-      // AI 발화 요청 (AI가 먼저 인사)
-      base.wsRef.current.send(JSON.stringify({
-        type: "response.create",
-        response: {
-          modalities: ["text", "audio"],
-         // instructions: "Greet the user and ask what kind of situation they want to practice."
-        }
-      }));
-      base.addLog("Sent response.create");
+      base.addLog("Scenario session started (server handles initialization)");
     }
   }, [base.wsRef, base.isReady, base.addLog]);
 
