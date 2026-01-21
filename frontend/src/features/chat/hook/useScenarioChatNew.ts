@@ -3,7 +3,10 @@
 import { useState, useCallback, useRef } from "react";
 import { tokenStorage } from "@/features/auth";
 import { translateToKorean } from "@/shared/lib/translate";
+import { debugLog } from "@/shared/lib/debug";
+import { buildScenarioWebSocketUrl } from "@/shared/lib/websocket";
 import { useWebSocketBase } from "./useWebSocketBase";
+import type { ScenarioResult } from "./types";
 
 export interface ScenarioChatStateNew {
   isConnected: boolean;
@@ -14,7 +17,7 @@ export interface ScenarioChatStateNew {
   userTranscript: string;
   isAiSpeaking: boolean;
   isRecording: boolean;
-  scenarioResult: any | null;
+  scenarioResult: ScenarioResult | null;
 }
 
 export function useScenarioChatNew() {
@@ -22,41 +25,15 @@ export function useScenarioChatNew() {
   const [aiMessage, setAiMessage] = useState("");
   const [aiMessageKR, setAiMessageKR] = useState("");
   const [userTranscript, setUserTranscript] = useState("");
-  const [scenarioResult, setScenarioResult] = useState<any | null>(null);
+  const [scenarioResult, setScenarioResult] = useState<ScenarioResult | null>(null);
 
   // WebSocket URL 생성
   const getWebSocketUrl = useCallback(() => {
     const token = tokenStorage.get();
-    const envWsUrl = process.env.NEXT_PUBLIC_WS_URL;
-    let wsBaseUrl = envWsUrl;
+    debugLog("[Scenario WS] Token:", token ? "EXISTS" : "NONE");
 
-    console.log("🔧 [DEBUG] Token:", token ? "EXISTS" : "NONE");
-    console.log("🔧 [DEBUG] NEXT_PUBLIC_WS_URL:", envWsUrl);
-
-    if (!wsBaseUrl && process.env.NEXT_PUBLIC_API_URL) {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      wsBaseUrl = apiUrl.replace(/^http/, "ws");
-      if (window.location.protocol === "https:" && wsBaseUrl.startsWith("ws:")) {
-        wsBaseUrl = wsBaseUrl.replace(/^ws:/, "wss:");
-      }
-      console.log("🔧 [DEBUG] wsBaseUrl from API_URL:", wsBaseUrl);
-    }
-
-    if (!wsBaseUrl) {
-      const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-      const host = window.location.hostname;
-      const port = window.location.port ? `:${window.location.port}` : "";
-      wsBaseUrl = `${protocol}://${host}${port}`;
-      console.log("🔧 [DEBUG] wsBaseUrl from location:", wsBaseUrl);
-    }
-
-    const endpoint = token ? "/api/v1/scenarios/ws/scenario" : "/api/v1/scenarios/ws/guest-scenario";
-    const params = new URLSearchParams();
-    if (token) params.append("token", token);
-
-    const queryString = params.toString();
-    const finalUrl = queryString ? `${wsBaseUrl}${endpoint}?${queryString}` : `${wsBaseUrl}${endpoint}`;
-    console.log("🔧 [DEBUG] Final WebSocket URL:", finalUrl);
+    const finalUrl = buildScenarioWebSocketUrl(token);
+    debugLog("[Scenario WS] Final WebSocket URL:", finalUrl);
 
     return finalUrl;
   }, []);
@@ -135,8 +112,8 @@ export function useScenarioChatNew() {
           base.addLog("ℹ️ Scenario has been automatically saved to the database.");
           setScenarioResult({
             place: data.json?.place || null,
-            conversation_partner: data.json?.conversation_partner || null,
-            conversation_goal: data.json?.conversation_goal || null,
+            conversationPartner: data.json?.conversation_partner || null,
+            conversationGoal: data.json?.conversation_goal || null,
             sessionId: data.json?.sessionId,
           });
           break;

@@ -3,10 +3,12 @@
 import { useCallback, useRef, useState } from "react";
 import { tokenStorage } from "@/features/auth";
 import { translateToKorean } from "@/shared/lib/translate";
-import { useWebSocketBase } from "./useWebSocketBase";
 import { debugLog, debugError } from "@/shared/lib/debug";
+import { buildConversationWebSocketUrl, WEBSOCKET_CONSTANTS } from "@/shared/lib/websocket";
+import { useWebSocketBase } from "./useWebSocketBase";
+import type { SessionReport } from "./types";
 
-const DISCONNECT_TIMEOUT_MS = 5000;
+const DISCONNECT_TIMEOUT_MS = WEBSOCKET_CONSTANTS.TIMEOUT.DISCONNECT_MS;
 
 export interface ConversationChatStateNew {
   isConnected: boolean;
@@ -18,7 +20,7 @@ export interface ConversationChatStateNew {
   isAiSpeaking: boolean;
   isUserSpeaking: boolean;
   isRecording: boolean;
-  sessionReport: any | null;
+  sessionReport: SessionReport | null;
   feedback?: string;
   scenarioSummary?: string;
 }
@@ -28,7 +30,7 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
   const [aiMessage, setAiMessage] = useState("");
   const [aiMessageKR, setAiMessageKR] = useState("");
   const [userTranscript, setUserTranscript] = useState("");
-  const [sessionReport, setSessionReport] = useState<any | null>(null);
+  const [sessionReport, setSessionReport] = useState<SessionReport | null>(null);
   const [feedback, setFeedback] = useState<string | undefined>(undefined);
   const [scenarioSummary, setScenarioSummary] = useState<string | undefined>(undefined);
 
@@ -37,34 +39,7 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
     if (!sessionId) return "";
 
     const token = tokenStorage.get();
-    const envWsUrl = process.env.NEXT_PUBLIC_WS_URL;
-    let wsBaseUrl = envWsUrl;
-
-    if (!wsBaseUrl && process.env.NEXT_PUBLIC_API_URL) {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      wsBaseUrl = apiUrl.replace(/^http/, "ws");
-      if (window.location.protocol === "https:" && wsBaseUrl.startsWith("ws:")) {
-        wsBaseUrl = wsBaseUrl.replace(/^ws:/, "wss:");
-      }
-    }
-
-    if (!wsBaseUrl) {
-      const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-      const host = window.location.hostname;
-      const port = window.location.port ? `:${window.location.port}` : "";
-      wsBaseUrl = `${protocol}://${host}${port}`;
-    }
-
-    const endpoint = token
-      ? `/api/v1/chat/ws/chat/${sessionId}`
-      : `/api/v1/chat/ws/guest-chat/${sessionId}`;
-
-    const params = new URLSearchParams();
-    if (token) params.append("token", token);
-    params.append("voice", voice);
-    params.append("show_text", "true");
-
-    return `${wsBaseUrl}${endpoint}?${params.toString()}`;
+    return buildConversationWebSocketUrl(sessionId, token, voice, true);
   }, [sessionId, voice]);
 
   // onMessage 콜백을 ref로 관리

@@ -2,6 +2,7 @@
 
 import { useRef, useCallback, useState, useEffect, useMemo } from "react";
 import { debugLog } from "@/shared/lib/debug";
+import { WEBSOCKET_CONSTANTS, calculateBackoffDelay } from "@/shared/lib/websocket";
 
 export interface UseWebSocketBaseConfig {
   getWebSocketUrl: () => string;
@@ -20,7 +21,7 @@ export function useWebSocketBase({
   onClose,
   onError,
   autoConnect = true,
-  maxReconnectAttempts = 5,
+  maxReconnectAttempts = WEBSOCKET_CONSTANTS.RECONNECT.MAX_ATTEMPTS,
 }: UseWebSocketBaseConfig) {
   // 상태 관리
   const [isConnected, setIsConnected] = useState(false);
@@ -69,7 +70,7 @@ export function useWebSocketBase({
   const initAudio = useCallback(() => {
     if (!audioContextRef.current) {
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      audioContextRef.current = new AudioContextClass({ sampleRate: 24000 });
+      audioContextRef.current = new AudioContextClass({ sampleRate: WEBSOCKET_CONSTANTS.AUDIO.OUTPUT_SAMPLE_RATE });
       
       gainNodeRef.current = audioContextRef.current.createGain();
       gainNodeRef.current.connect(audioContextRef.current.destination);
@@ -138,7 +139,7 @@ export function useWebSocketBase({
         speakingEndTimeoutRef.current = setTimeout(() => {
           setIsAiSpeaking(false);
           speakingEndTimeoutRef.current = null;
-        }, 500);
+        }, WEBSOCKET_CONSTANTS.AUDIO.SPEAKING_END_DELAY_MS);
       }
     };
   }, []);
@@ -195,7 +196,7 @@ export function useWebSocketBase({
 
       // 4. AudioProcessor 생성 및 연결
       const source = audioContextRef.current.createMediaStreamSource(stream);
-      const processor = audioContextRef.current.createScriptProcessor(4096, 1, 1);
+      const processor = audioContextRef.current.createScriptProcessor(WEBSOCKET_CONSTANTS.AUDIO.BUFFER_SIZE, 1, 1);
       processorRef.current = processor;
 
       processor.onaudioprocess = (e) => {
@@ -275,7 +276,7 @@ export function useWebSocketBase({
         onCloseRef.current?.(event);
 
         if (!isManuallyClosedRef.current && reconnectCountRef.current < maxReconnectAttempts) {
-          const delay = Math.min(1000 * Math.pow(2, reconnectCountRef.current), 10000);
+          const delay = calculateBackoffDelay(reconnectCountRef.current);
           addLog(`Reconnecting in ${delay}ms...`);
           reconnectTimerRef.current = setTimeout(() => {
             reconnectCountRef.current++;
