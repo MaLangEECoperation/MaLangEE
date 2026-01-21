@@ -24,12 +24,11 @@ export const ChatDetailPopup: React.FC<ChatDetailPopupProps> = ({ session, onClo
   const messages = useMemo(() => {
     if (!sessionDetail?.messages) return [];
     return sessionDetail.messages.map((msg) => {
-      const timestamp = new Date(msg.timestamp);
-      const timeStr = `${String(timestamp.getHours()).padStart(2, "0")}:${String(timestamp.getMinutes()).padStart(2, "0")}`;
+      // timestamp를 가공하지 않고 원본 ISO 문자열 그대로 전달 (ChatTranscriptPopup에서 처리)
       return {
         speaker: msg.role === "assistant" ? "말랭이" : "나",
         content: msg.content,
-        timestamp: timeStr,
+        timestamp: msg.timestamp,
         isFeedback: msg.is_feedback,
         feedback: msg.feedback,
         reason: msg.reason,
