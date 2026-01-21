@@ -187,10 +187,14 @@ class ConnectionHandler:
                         }))
                      
                 elif data.get("type") == "response.create":
-                    if self.openai_ws:
-                        await self.openai_ws.send(json.dumps({
-                            "type": "response.create"
-                        }))
+                    # [Changed] 사용자의 요청으로 response.create 이벤트를 OpenAI로 전달하지 않음
+                    # 불필요한 응답 생성 및 로직 간섭 방지
+                    logger.info("클라이언트로부터 response.create 수신됨 (OpenAI로 전달하지 않음)")
+                    pass
+                    # if self.openai_ws:
+                    #     await self.openai_ws.send(json.dumps({
+                    #         "type": "response.create"
+                    #     }))
 
                 elif data.get("type") == "session.update":
                     new_config = data.get("config", {})
