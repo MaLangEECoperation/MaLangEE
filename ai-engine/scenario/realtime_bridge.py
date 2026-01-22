@@ -256,12 +256,12 @@ async def handle_client(client_ws, user_id: Optional[int] = None) -> None:
     #         ]
     #     }
     # })
-    # await openai_client.send_event({
-    #     "type": "response.create",
-    #     "response": {
-    #         "modalities": ["audio", "text"]
-    #     }
-    # })
+    await openai_client.send_event({
+        "type": "response.create",
+        "response": {
+            "modalities": ["audio", "text"]
+        }
+    })
     try:
         async for message in client_ws:
             # logger.info("Client event: %s", _safe_event_type(message))
