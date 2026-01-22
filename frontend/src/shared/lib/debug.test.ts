@@ -28,73 +28,39 @@ describe("debug utilities", () => {
   });
 
   describe("isDev", () => {
-    it("should return true in development environment", () => {
-      vi.stubEnv("NODE_ENV", "development");
-      expect(isDev()).toBe(true);
-    });
-
-    it("should return false in production environment", () => {
-      vi.stubEnv("NODE_ENV", "production");
-      expect(isDev()).toBe(false);
-    });
-
-    it("should return false in test environment", () => {
-      vi.stubEnv("NODE_ENV", "test");
+    it("should return false (disabled for production safety)", () => {
+      // isDev()는 프로덕션 안전을 위해 항상 false 반환
       expect(isDev()).toBe(false);
     });
   });
 
   describe("debugLog", () => {
-    it("should log in development environment", () => {
-      vi.stubEnv("NODE_ENV", "development");
+    it("should not log when isDev returns false", () => {
+      // isDev()가 false이므로 로그가 출력되지 않음
       debugLog("test message", { data: 123 });
-      expect(console.log).toHaveBeenCalledWith("test message", { data: 123 });
-    });
-
-    it("should not log in production environment", () => {
-      vi.stubEnv("NODE_ENV", "production");
-      debugLog("test message");
       expect(console.log).not.toHaveBeenCalled();
     });
   });
 
   describe("debugError", () => {
-    it("should log error in development environment", () => {
-      vi.stubEnv("NODE_ENV", "development");
+    it("should not log when isDev returns false", () => {
+      // isDev()가 false이므로 에러가 출력되지 않음
       debugError("error message", new Error("test"));
-      expect(console.error).toHaveBeenCalledWith("error message", expect.any(Error));
-    });
-
-    it("should not log error in production environment", () => {
-      vi.stubEnv("NODE_ENV", "production");
-      debugError("error message");
       expect(console.error).not.toHaveBeenCalled();
     });
   });
 
   describe("debugWarn", () => {
-    it("should log warning in development environment", () => {
-      vi.stubEnv("NODE_ENV", "development");
-      debugWarn("warning message");
-      expect(console.warn).toHaveBeenCalledWith("warning message");
-    });
-
-    it("should not log warning in production environment", () => {
-      vi.stubEnv("NODE_ENV", "production");
+    it("should not log when isDev returns false", () => {
+      // isDev()가 false이므로 경고가 출력되지 않음
       debugWarn("warning message");
       expect(console.warn).not.toHaveBeenCalled();
     });
   });
 
   describe("debugInfo", () => {
-    it("should log info in development environment", () => {
-      vi.stubEnv("NODE_ENV", "development");
-      debugInfo("info message");
-      expect(console.info).toHaveBeenCalledWith("info message");
-    });
-
-    it("should not log info in production environment", () => {
-      vi.stubEnv("NODE_ENV", "production");
+    it("should not log when isDev returns false", () => {
+      // isDev()가 false이므로 정보가 출력되지 않음
       debugInfo("info message");
       expect(console.info).not.toHaveBeenCalled();
     });

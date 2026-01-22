@@ -136,19 +136,21 @@ describe("useNicknameCheck", () => {
   it("should check after debounce when value is valid", async () => {
     vi.mocked(authApi.checkNickname).mockResolvedValue({ is_available: true });
 
-    renderHook(() => useNicknameCheck("TestNick"));
+    // 닉네임 규칙: 2~6자, 영문 또는 한글만 허용
+    renderHook(() => useNicknameCheck("테스터"));
 
     await act(async () => {
       vi.advanceTimersByTime(1000);
     });
 
-    expect(authApi.checkNickname).toHaveBeenCalledWith("TestNick");
+    expect(authApi.checkNickname).toHaveBeenCalledWith("테스터");
   });
 
   it("should set error when nickname is taken", async () => {
     vi.mocked(authApi.checkNickname).mockResolvedValue({ is_available: false });
 
-    const { result } = renderHook(() => useNicknameCheck("TakenNick"));
+    // 닉네임 규칙: 2~6자, 영문 또는 한글만 허용
+    const { result } = renderHook(() => useNicknameCheck("사용중"));
 
     await act(async () => {
       vi.advanceTimersByTime(1000);
