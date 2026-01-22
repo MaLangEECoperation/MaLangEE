@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { SignupPromptDialog, useAuth } from "@/features/auth";
 import { useGetChatSession } from "@/features/chat/api/use-chat-sessions";
 import { STORAGE_KEYS } from "@/shared/config";
 import { Button, MalangEE } from "@/shared/ui";
@@ -15,6 +16,10 @@ function getInitialSessionId(): string | null {
 
 export default function ChatCompletePage() {
   const router = useRouter();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+
+  // 회원가입 권유 팝업 상태
+  const [showSignupPrompt, setShowSignupPrompt] = useState(false);
 
   // 컴포넌트 마운트 시점에 sessionId 결정 (effect 없이)
   const sessionId = useMemo(() => getInitialSessionId(), []);
@@ -25,6 +30,33 @@ export default function ChatCompletePage() {
   // 세션 정보에서 직접 duration 값 추출 (상태 없이)
   const totalDuration = sessionDetail?.total_duration_sec ?? 0;
   const userSpeakDuration = sessionDetail?.user_speech_duration_sec ?? 0;
+
+  // 게스트 사용자에게 회원가입 권유 팝업 표시
+  useEffect(() => {
+    if (!isAuthLoading && !isAuthenticated) {
+      // 약간의 딜레이 후 팝업 표시 (사용자가 결과를 먼저 볼 수 있도록)
+      const timer = setTimeout(() => {
+        setShowSignupPrompt(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthLoading, isAuthenticated]);
+
+  // 회원가입 버튼 핸들러
+  const handleSignup = useCallback(() => {
+    setShowSignupPrompt(false);
+    router.push("/auth/signup");
+  }, [router]);
+
+  // 나중에 하기 버튼 핸들러
+  const handleContinueAsGuest = useCallback(() => {
+    setShowSignupPrompt(false);
+  }, []);
+
+  // 팝업 닫기 핸들러
+  const handleCloseSignupPrompt = useCallback(() => {
+    setShowSignupPrompt(false);
+  }, []);
 
   useEffect(() => {
     // 페이지 진입 시 음소거 이벤트 발송
@@ -101,6 +133,14 @@ export default function ChatCompletePage() {
           처음으로 돌아가기
         </Button>
       </div>
+
+      {/* 회원가입 권유 팝업 (게스트 사용자 전용) */}
+      <SignupPromptDialog
+        isOpen={showSignupPrompt}
+        onSignup={handleSignup}
+        onContinueAsGuest={handleContinueAsGuest}
+        onClose={handleCloseSignupPrompt}
+      />
     </>
   );
 }
