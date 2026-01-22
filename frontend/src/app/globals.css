@@ -351,8 +351,15 @@
 
 @media (max-width: 768px) {
   .glass-card {
-    border-radius: 40px;
+    border-radius: 32px;
+    min-height: auto;
+    min-height: calc(100dvh - 40px);
+  }
+}
 
+@media (max-width: 480px) {
+  .glass-card {
+    border-radius: 28px;
   }
 }
 
