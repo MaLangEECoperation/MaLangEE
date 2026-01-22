@@ -87,8 +87,23 @@ MaLangEE는 **두 가지 독립적인 WebSocket 기능**을 제공하며, 각각
 
 **Query Parameters:**
 
-- `voice` (선택): AI 음성 (`alloy`, `echo`, `fable`, `onyx`, `nova`, `shimmer`)
-- `show_text` (선택): 자막 표시 여부 (`true`/`false`)
+- `voice` (선택): AI 음성 - 아래 Voice 옵션 참조
+- `show_text` (선택): 자막 표시 여부 (`true`/`false`) - DB에 사용자 설정 저장
+
+**Voice 옵션:**
+
+| Voice     | 설명   |
+| --------- | ------ |
+| `alloy`   | 기본값 |
+| `ash`     | -      |
+| `ballad`  | -      |
+| `coral`   | -      |
+| `echo`    | -      |
+| `sage`    | -      |
+| `shimmer` | -      |
+| `verse`   | -      |
+
+> **참고**: `show_text` 파라미터 값과 관계없이 서버는 항상 자막 이벤트(`user.transcript`, `transcript.done`)를 전송합니다. 이 파라미터의 목적은 DB에 사용자의 자막 설정 상태를 저장하여 재접속 시에도 설정을 유지하기 위함입니다.
 
 ---
 
