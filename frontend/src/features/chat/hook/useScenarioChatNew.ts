@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+
 import { tokenStorage } from "@/features/auth";
-import { translateToKorean } from "@/shared/lib/translate";
 import { debugLog } from "@/shared/lib/debug";
+import { translateToKorean } from "@/shared/lib/translate";
 import { buildScenarioWebSocketUrl } from "@/shared/lib/websocket";
-import { useWebSocketBase } from "./useWebSocketBase";
+
 import type { ScenarioResult } from "./types";
+import { useWebSocketBase } from "./useWebSocketBase";
 
 export interface ScenarioChatStateNew {
   isConnected: boolean;
@@ -54,96 +56,103 @@ export function useScenarioChatNew() {
   const startScenarioSessionRef = useRef<(() => void) | null>(null);
 
   // onMessage 구현 (base를 사용할 수 있도록 여기서 정의)
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+
   useEffect(() => {
     onMessageRef.current = (event: MessageEvent) => {
-    try {
-      const data = JSON.parse(event.data);
+      try {
+        const data = JSON.parse(event.data);
 
-      switch (data.type) {
-        case "ready":
-          base.addLog("✅ Received 'ready'. Scenario session initialized.");
-          base.addLog("ℹ️ Automatically starting scenario session...");
-          base.setIsReady(true);
-          // ready 수신 즉시 세션 초기화
-          if (startScenarioSessionRef.current) {
-            startScenarioSessionRef.current();
+        switch (data.type) {
+          case "ready":
+            base.addLog("✅ Received 'ready'. Scenario session initialized.");
+            base.addLog("ℹ️ Automatically starting scenario session...");
+            base.setIsReady(true);
+            // ready 수신 즉시 세션 초기화
+            if (startScenarioSessionRef.current) {
+              startScenarioSessionRef.current();
+            }
+            break;
+
+          case "response.audio.delta":
+            base.playAudioChunk(data.delta, data.sample_rate || 24000);
+            break;
+
+          case "response.audio.done":
+            base.addLog("AI audio stream completed");
+            break;
+
+          case "response.audio_transcript.delta":
+            if (data.transcript_delta) {
+              setAiMessage((prev) => prev + data.transcript_delta);
+              base.addLog(`AI (delta): ${data.transcript_delta}`);
+            }
+            break;
+
+          case "response.audio_transcript.done":
+            setAiMessage(data.transcript);
+            base.addLog(`AI: ${data.transcript}`);
+            translateToKorean(data.transcript).then((translated) => {
+              setAiMessageKR(translated);
+              base.addLog(`AI (KR): ${translated}`);
+            });
+            break;
+
+          case "speech.started":
+            base.addLog("User speech started (VAD)");
+            base.stopAudio();
+            base.setIsUserSpeaking(true);
+            break;
+
+          case "input_audio.transcript":
+            if (data.transcript) {
+              setUserTranscript(data.transcript);
+              base.setIsUserSpeaking(false);
+              base.addLog(`User: ${data.transcript}`);
+            }
+            break;
+
+          case "scenario.completed": {
+            base.addLog(`✅ Scenario Completed: ${JSON.stringify(data.json)}`);
+            base.addLog("ℹ️ Scenario has been automatically saved to the database.");
+
+            const result = {
+              place: data.json?.place ?? null,
+              conversationPartner:
+                data.json?.conversation_partner ?? data.json?.conversationPartner ?? null,
+              conversationGoal: data.json?.conversation_goal ?? data.json?.conversationGoal ?? null,
+              sessionId: data.json?.sessionId ?? data.json?.session_id,
+            };
+
+            setScenarioResult(result);
+            break;
           }
-          break;
 
-        case "response.audio.delta":
-          base.playAudioChunk(data.delta, data.sample_rate || 24000);
-          break;
-
-        case "response.audio.done":
-          base.addLog("AI audio stream completed");
-          break;
-
-        case "response.audio_transcript.delta":
-          if (data.transcript_delta) {
-            setAiMessage(prev => prev + data.transcript_delta);
-            base.addLog(`AI (delta): ${data.transcript_delta}`);
-          }
-          break;
-
-        case "response.audio_transcript.done":
-          setAiMessage(data.transcript);
-          base.addLog(`AI: ${data.transcript}`);
-          translateToKorean(data.transcript).then(translated => {
-            setAiMessageKR(translated);
-            base.addLog(`AI (KR): ${translated}`);
-          });
-          break;
-
-        case "speech.started":
-          base.addLog("User speech started (VAD)");
-          base.stopAudio();
-          base.setIsUserSpeaking(true);
-          break;
-
-        case "input_audio.transcript":
-          if (data.transcript) {
-            setUserTranscript(data.transcript);
-            base.setIsUserSpeaking(false);
-            base.addLog(`User: ${data.transcript}`);
-          }
-          break;
-
-        case "scenario.completed":
-          base.addLog(`✅ Scenario Completed: ${JSON.stringify(data.json)}`);
-          base.addLog("ℹ️ Scenario has been automatically saved to the database.");
-          
-          const result = {
-            place: data.json?.place ?? null,
-            conversationPartner: data.json?.conversation_partner ?? data.json?.conversationPartner ?? null,
-            conversationGoal: data.json?.conversation_goal ?? data.json?.conversationGoal ?? null,
-            sessionId: data.json?.sessionId ?? data.json?.session_id,
-          };
-          
-          setScenarioResult(result);
-          break;
-
-        case "error":
-          base.addLog(`Error: ${data.message}`);
-          break;
+          case "error":
+            base.addLog(`Error: ${data.message}`);
+            break;
+        }
+      } catch (e) {
+        base.addLog(`Parse Error: ${e}`);
       }
-    } catch (e) {
-      base.addLog(`Parse Error: ${e}`);
-    }
-  };
+    };
   });
 
   // 오디오 전송 콜백 (Scenario 메시지 타입 사용)
-  const sendAudioCallback = useCallback((audioData: Float32Array) => {
-    if (base.wsRef.current?.readyState === WebSocket.OPEN) {
-      const base64 = base.encodeAudio(audioData);
-      base.wsRef.current.send(JSON.stringify({
-        type: "input_audio_chunk",
-        audio: base64,
-        sample_rate: 24000
-      }));
-    }
-  }, [base.wsRef, base.encodeAudio]);
+  const sendAudioCallback = useCallback(
+    (audioData: Float32Array) => {
+      if (base.wsRef.current?.readyState === WebSocket.OPEN) {
+        const base64 = base.encodeAudio(audioData);
+        base.wsRef.current.send(
+          JSON.stringify({
+            type: "input_audio_chunk",
+            audio: base64,
+            sample_rate: 24000,
+          })
+        );
+      }
+    },
+    [base.wsRef, base.encodeAudio]
+  );
 
   // 마이크 시작 (base의 startMicrophone + sendAudioCallback)
   const startMicrophone = useCallback(() => {
@@ -151,12 +160,15 @@ export function useScenarioChatNew() {
   }, [base.startMicrophone, sendAudioCallback]);
 
   // 텍스트 전송
-  const sendText = useCallback((text: string) => {
-    if (base.wsRef.current?.readyState === WebSocket.OPEN) {
-      base.wsRef.current.send(JSON.stringify({ type: "text", text }));
-      base.addLog(`Sent Text: ${text}`);
-    }
-  }, [base.wsRef, base.addLog]);
+  const sendText = useCallback(
+    (text: string) => {
+      if (base.wsRef.current?.readyState === WebSocket.OPEN) {
+        base.wsRef.current.send(JSON.stringify({ type: "text", text }));
+        base.addLog(`Sent Text: ${text}`);
+      }
+    },
+    [base.wsRef, base.addLog]
+  );
 
   // 오디오 버퍼 초기화
   const clearAudioBuffer = useCallback(() => {
@@ -182,8 +194,10 @@ export function useScenarioChatNew() {
     }
   }, [base.wsRef, base.isReady, base.addLog]);
 
-  // ref에 함수 할당
-  startScenarioSessionRef.current = startScenarioSession;
+  // ref에 함수 할당 (useEffect로 감싸서 렌더링 중 ref 접근 방지)
+  useEffect(() => {
+    startScenarioSessionRef.current = startScenarioSession;
+  }, [startScenarioSession]);
 
   return {
     state: {

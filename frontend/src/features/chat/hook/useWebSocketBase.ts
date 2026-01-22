@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useCallback, useState, useEffect, useMemo } from "react";
+
 import { debugLog } from "@/shared/lib/debug";
 import { WEBSOCKET_CONSTANTS, calculateBackoffDelay } from "@/shared/lib/websocket";
 
@@ -55,7 +56,7 @@ export function useWebSocketBase({
   const onErrorRef = useRef(onError);
 
   // Update refs when props change
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+
   useEffect(() => {
     getWebSocketUrlRef.current = getWebSocketUrl;
     onMessageRef.current = onMessage;
@@ -72,13 +73,16 @@ export function useWebSocketBase({
   // 오디오 초기화
   const initAudio = useCallback(() => {
     if (!audioContextRef.current) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      audioContextRef.current = new AudioContextClass({ sampleRate: WEBSOCKET_CONSTANTS.AUDIO.OUTPUT_SAMPLE_RATE });
-      
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      audioContextRef.current = new AudioContextClass({
+        sampleRate: WEBSOCKET_CONSTANTS.AUDIO.OUTPUT_SAMPLE_RATE,
+      });
+
       gainNodeRef.current = audioContextRef.current.createGain();
       gainNodeRef.current.connect(audioContextRef.current.destination);
-      
+
       addLog("AudioContext created");
     }
     if (audioContextRef.current.state === "suspended") {
@@ -93,8 +97,12 @@ export function useWebSocketBase({
       clearTimeout(speakingEndTimeoutRef.current);
       speakingEndTimeoutRef.current = null;
     }
-    activeSourcesRef.current.forEach(source => {
-      try { source.stop(); } catch (e) {}
+    activeSourcesRef.current.forEach((source) => {
+      try {
+        source.stop();
+      } catch {
+        // Ignore errors from already stopped sources
+      }
     });
     activeSourcesRef.current = [];
     nextStartTimeRef.current = 0;
@@ -137,7 +145,7 @@ export function useWebSocketBase({
     setIsAiSpeaking(true);
 
     source.onended = () => {
-      activeSourcesRef.current = activeSourcesRef.current.filter(s => s !== source);
+      activeSourcesRef.current = activeSourcesRef.current.filter((s) => s !== source);
       if (activeSourcesRef.current.length === 0) {
         if (speakingEndTimeoutRef.current) clearTimeout(speakingEndTimeoutRef.current);
         speakingEndTimeoutRef.current = setTimeout(() => {
@@ -154,10 +162,10 @@ export function useWebSocketBase({
     const view = new DataView(buffer);
     for (let i = 0; i < float32Data.length; i++) {
       let s = Math.max(-1, Math.min(1, float32Data[i]));
-      s = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      s = s < 0 ? s * 0x8000 : s * 0x7fff;
       view.setInt16(i * 2, s, true);
     }
-    
+
     let binary = "";
     const bytes = new Uint8Array(buffer);
     for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
@@ -165,64 +173,74 @@ export function useWebSocketBase({
   }, []);
 
   // 음소거 토글
-  const toggleMute = useCallback((isMuted: boolean) => {
-    if (gainNodeRef.current && audioContextRef.current) {
-      const currentTime = audioContextRef.current.currentTime;
-      gainNodeRef.current.gain.cancelScheduledValues(currentTime);
-      gainNodeRef.current.gain.setValueAtTime(gainNodeRef.current.gain.value, currentTime);
-      gainNodeRef.current.gain.linearRampToValueAtTime(isMuted ? 0 : 1, currentTime + 0.1);
-      addLog(isMuted ? "Muted" : "Unmuted");
-    }
-  }, [addLog]);
+  const toggleMute = useCallback(
+    (isMuted: boolean) => {
+      if (gainNodeRef.current && audioContextRef.current) {
+        const currentTime = audioContextRef.current.currentTime;
+        gainNodeRef.current.gain.cancelScheduledValues(currentTime);
+        gainNodeRef.current.gain.setValueAtTime(gainNodeRef.current.gain.value, currentTime);
+        gainNodeRef.current.gain.linearRampToValueAtTime(isMuted ? 0 : 1, currentTime + 0.1);
+        addLog(isMuted ? "Muted" : "Unmuted");
+      }
+    },
+    [addLog]
+  );
 
   // 마이크 시작
-  const startMicrophone = useCallback(async (onAudioData: (data: Float32Array) => void) => {
-    try {
-      // 1. 마이크 권한 획득
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { sampleRate: 24000 }
-      });
-      streamRef.current = stream;
+  const startMicrophone = useCallback(
+    async (onAudioData: (data: Float32Array) => void) => {
+      try {
+        // 1. 마이크 권한 획득
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: { sampleRate: 24000 },
+        });
+        streamRef.current = stream;
 
-      // 2. AudioContext 재사용 (없으면 initAudio 호출)
-      if (!audioContextRef.current) {
-        initAudio();
+        // 2. AudioContext 재사용 (없으면 initAudio 호출)
+        if (!audioContextRef.current) {
+          initAudio();
+        }
+
+        // 3. AudioContext resume
+        if (audioContextRef.current && audioContextRef.current.state === "suspended") {
+          await audioContextRef.current.resume();
+        }
+
+        if (!audioContextRef.current) {
+          throw new Error("AudioContext initialization failed");
+        }
+
+        // 4. AudioProcessor 생성 및 연결
+        const source = audioContextRef.current.createMediaStreamSource(stream);
+        const processor = audioContextRef.current.createScriptProcessor(
+          WEBSOCKET_CONSTANTS.AUDIO.BUFFER_SIZE,
+          1,
+          1
+        );
+        processorRef.current = processor;
+
+        processor.onaudioprocess = (e) => {
+          const inputData = e.inputBuffer.getChannelData(0);
+          onAudioData(inputData);
+        };
+
+        source.connect(processor);
+        processor.connect(audioContextRef.current.destination);
+
+        setIsRecording(true);
+        addLog("Microphone started");
+      } catch (error) {
+        addLog(`Microphone error: ${error}`);
+        throw error;
       }
-
-      // 3. AudioContext resume
-      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
-        await audioContextRef.current.resume();
-      }
-
-      if (!audioContextRef.current) {
-        throw new Error("AudioContext initialization failed");
-      }
-
-      // 4. AudioProcessor 생성 및 연결
-      const source = audioContextRef.current.createMediaStreamSource(stream);
-      const processor = audioContextRef.current.createScriptProcessor(WEBSOCKET_CONSTANTS.AUDIO.BUFFER_SIZE, 1, 1);
-      processorRef.current = processor;
-
-      processor.onaudioprocess = (e) => {
-        const inputData = e.inputBuffer.getChannelData(0);
-        onAudioData(inputData);
-      };
-
-      source.connect(processor);
-      processor.connect(audioContextRef.current.destination);
-
-      setIsRecording(true);
-      addLog("Microphone started");
-    } catch (error) {
-      addLog(`Microphone error: ${error}`);
-      throw error;
-    }
-  }, [initAudio, addLog]);
+    },
+    [initAudio, addLog]
+  );
 
   // 마이크 중지
   const stopMicrophone = useCallback(() => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
 
@@ -342,35 +360,31 @@ export function useWebSocketBase({
   }, [autoConnect]);
 
   // 함수들을 dependency에 포함하면 무한 루프가 발생하므로 상태값만 포함
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => ({
-    wsRef,
-    audioContextRef,
-    isConnected,
-    isReady,
-    setIsReady,
-    logs,
-    addLog,
-    isAiSpeaking,
-    setIsAiSpeaking,
-    isUserSpeaking,
-    setIsUserSpeaking,
-    isRecording,
-    connect,
-    disconnect,
-    initAudio,
-    playAudioChunk,
-    stopAudio,
-    encodeAudio,
-    toggleMute,
-    startMicrophone,
-    stopMicrophone,
-  }), [
-    isConnected,
-    isReady,
-    logs,
-    isAiSpeaking,
-    isUserSpeaking,
-    isRecording,
-  ]);
+
+  return useMemo(
+    () => ({
+      wsRef,
+      audioContextRef,
+      isConnected,
+      isReady,
+      setIsReady,
+      logs,
+      addLog,
+      isAiSpeaking,
+      setIsAiSpeaking,
+      isUserSpeaking,
+      setIsUserSpeaking,
+      isRecording,
+      connect,
+      disconnect,
+      initAudio,
+      playAudioChunk,
+      stopAudio,
+      encodeAudio,
+      toggleMute,
+      startMicrophone,
+      stopMicrophone,
+    }),
+    [isConnected, isReady, logs, isAiSpeaking, isUserSpeaking, isRecording]
+  );
 }

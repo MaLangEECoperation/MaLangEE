@@ -4,10 +4,11 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
-import { Button, MalangEE } from "@/shared/ui";
-import { useGetChatSession } from "@/features/chat/api/use-chat-sessions";
+import { Suspense, useEffect } from "react";
+
 import { AuthGuard, useCurrentUser } from "@/features/auth";
+import { useGetChatSession } from "@/features/chat/api/use-chat-sessions";
+import { Button, MalangEE } from "@/shared/ui";
 
 function WelcomeBackPage() {
   const router = useRouter();
@@ -45,7 +46,6 @@ function WelcomeBackPage() {
   // 세션 정보 로컬 스토리지 저장 (voice, subtitleEnabled, scenario info)
   useEffect(() => {
     if (sessionDetail) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const detail = sessionDetail as unknown as Record<string, unknown>;
 
       // voice 설정 (없으면 기본값 'nova')
@@ -103,8 +103,9 @@ function WelcomeBackPage() {
   // 현재 useGetChatSession은 ChatSessionDetail을 반환하며, 이는 { session: ChatSession, messages: ChatMessage[] } 구조임
   // 하지만 API 응답 예시에 따르면 최상위에 title이 있을 수도 있음. 안전하게 접근.
   const title =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (sessionDetail as unknown as Record<string, unknown>).title as string || ((sessionDetail as unknown as Record<string, { title?: string }>).session?.title) || "이전 대화";
+    ((sessionDetail as unknown as Record<string, unknown>).title as string) ||
+    (sessionDetail as unknown as Record<string, { title?: string }>).session?.title ||
+    "이전 대화";
 
   return (
     <>
@@ -139,8 +140,16 @@ function WelcomeBackPage() {
 
 export default function WelcomeBackPageWithGuard() {
   return (
-    <AuthGuard>
-      <WelcomeBackPage />
-    </AuthGuard>
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center">
+          <MalangEE status="default" size={150} />
+        </div>
+      }
+    >
+      <AuthGuard>
+        <WelcomeBackPage />
+      </AuthGuard>
+    </Suspense>
   );
 }

@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState, useRef, useCallback } from "react";
+
+import { useAuth } from "@/features/auth";
+import { useGetHints } from "@/features/chat/api/use-chat-sessions";
+import { useConversationChatNew } from "@/features/chat/hook/useConversationChatNew";
+import { debugLog, debugError } from "@/shared/lib";
 import {
   Button,
   ChatMicButton,
@@ -12,16 +18,25 @@ import {
   SettingsTrigger,
   DebugStatus,
 } from "@/shared/ui";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useConversationChatNew } from "@/features/chat/hook/useConversationChatNew";
-import { useGetHints } from "@/features/chat/api/use-chat-sessions";
-import { useAuth } from "@/features/auth";
-import { debugLog, debugError } from "@/shared/lib";
 
 const HINT_DELAY_MS = 15000; // 15초 후 힌트 프롬프트 표시
 const WAIT_POPUP_DELAY_MS = 5000; // 힌트 표시 후 5초 더 대기하면 종료 모달
 
 export default function ConversationPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center">
+          <MalangEE status="default" size={150} />
+        </div>
+      }
+    >
+      <ConversationContent />
+    </Suspense>
+  );
+}
+
+function ConversationContent() {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -50,7 +65,7 @@ export default function ConversationPage() {
       localStorage.setItem("chatSessionId", urlSessionId);
     } else if (storedSessionId) {
       debugLog("[SessionId] Using stored sessionId:", storedSessionId);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+
       setSessionId(storedSessionId);
       router.replace(`/chat/conversation?sessionId=${storedSessionId}`, { scroll: false });
     } else {
@@ -71,7 +86,7 @@ export default function ConversationPage() {
     const subtitle = localStorage.getItem("subtitleEnabled");
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (voice !== null) setSelectedVoice(voice);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+
     if (subtitle !== null) setShowSubtitle(subtitle === "true");
   }, []);
 
@@ -83,7 +98,7 @@ export default function ConversationPage() {
     requestResponse,
     startMicrophone,
     stopMicrophone,
-    toggleMute: _toggleMute
+    toggleMute: _toggleMute,
   } = useConversationChatNew(sessionId, selectedVoice);
 
   const disconnectRef = useRef(disconnect);
@@ -155,7 +170,13 @@ export default function ConversationPage() {
     }, remainingTime);
 
     return clearHintTimer;
-  }, [state.lastAiAudioDoneAt, state.isAiSpeaking, state.isUserSpeaking, clearHintTimer, resetHintState]);
+  }, [
+    state.lastAiAudioDoneAt,
+    state.isAiSpeaking,
+    state.isUserSpeaking,
+    clearHintTimer,
+    resetHintState,
+  ]);
 
   // 5초 추가 대기 후 종료 모달
   useEffect(() => {
@@ -239,7 +260,16 @@ export default function ConversationPage() {
         },
       })
     );
-  }, [state.isConnected, state.isReady, state.isAiSpeaking, state.isUserSpeaking, state.isRecording, state.userTranscript, isMuted, isMicEnabled]);
+  }, [
+    state.isConnected,
+    state.isReady,
+    state.isAiSpeaking,
+    state.isUserSpeaking,
+    state.isRecording,
+    state.userTranscript,
+    isMuted,
+    isMicEnabled,
+  ]);
 
   // 대화 종료 이벤트
   useEffect(() => {
@@ -249,7 +279,8 @@ export default function ConversationPage() {
     };
 
     window.addEventListener("confirm-end-conversation", handleConfirmEndConversation);
-    return () => window.removeEventListener("confirm-end-conversation", handleConfirmEndConversation);
+    return () =>
+      window.removeEventListener("confirm-end-conversation", handleConfirmEndConversation);
   }, [disconnect, router]);
 
   // MalangEE 상태
@@ -299,7 +330,8 @@ export default function ConversationPage() {
     },
   ];
 
-  const getCurrentMessage = () => messageStates.find(s => s.condition()) || messageStates[messageStates.length - 1];
+  const getCurrentMessage = () =>
+    messageStates.find((s) => s.condition()) || messageStates[messageStates.length - 1];
   const getMainTitle = () => getCurrentMessage().title;
   const getSubDesc = () => getCurrentMessage().desc;
 

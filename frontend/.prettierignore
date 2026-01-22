@@ -1,0 +1,40 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+.next
+out
+dist
+build
+storybook-static
+
+# Cache
+.cache
+.turbo
+coverage
+
+# Package manager
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# IDE
+.idea
+.vscode
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env*
+
+# Generated
+*.min.js
+*.min.css
+
+# Playwright
+.playwright-mcp
+test-results
+playwright-report
