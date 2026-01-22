@@ -137,16 +137,6 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
 
   return (
     <>
-      <DebugStatus
-        isConnected={debugInfo.isConnected}
-        isReady={debugInfo.isReady}
-        lastEvent={debugInfo.lastEvent}
-        isAiSpeaking={debugInfo.isAiSpeaking}
-        isUserSpeaking={debugInfo.isUserSpeaking}
-        isMuted={debugInfo.isMuted}
-        isRecording={debugInfo.isRecording}
-        userTranscript={debugInfo.userTranscript}
-      />
 
       <FullLayout showHeader={true} headerRight={headerRightContent}>
         {children}
