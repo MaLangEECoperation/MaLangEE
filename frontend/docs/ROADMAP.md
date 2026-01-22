@@ -99,14 +99,31 @@
 - [x] 대화 WebSocket
 - [x] 오디오 레코더
 
-### Phase 3: 대시보드/학습 기능
+### Phase 3: 언어인지 불가 팝업 (Figma 17/19)
 
-- [ ] Quick Response
-- [ ] Think Aloud
-- [ ] Rephrasing
-- [ ] Daily Reflection
+- [ ] `features/chat/ui/LanguageNotRecognizedDialog.tsx` 생성
+- [ ] WebSocket `error` 이벤트에서 언어 인식 실패 시 트리거
+- [ ] 재시도 / 텍스트 입력 전환 옵션 제공
 
-### Phase 4: 테스트/품질 (10% 완료)
+### Phase 4: 대화종료 재확인 팝업 (Figma 15)
+
+- [ ] `features/chat/ui/EndConversationDialog.tsx` 개선
+- [ ] 종료 버튼 클릭 시 확인 다이얼로그 표시
+- [ ] "계속하기" / "종료하기" 옵션
+
+### Phase 5: 회원가입 권유 팝업 (Figma 14)
+
+- [ ] `features/auth/ui/SignupPromptDialog.tsx` 생성
+- [ ] 게스트 사용자 대화 완료 시 트리거
+- [ ] 대화 기록 저장 혜택 안내 + 가입 유도
+
+### Phase 6: 실시간 힌트 UI (Figma 13)
+
+- [ ] `features/chat/ui/RealtimeHint.tsx` 개선
+- [ ] WebSocket `hint` 이벤트 연동
+- [ ] 말풍선 스타일 + 애니메이션 적용
+
+### Phase 7: 테스트/품질 (10% 완료)
 
 - [x] E2E 테스트 기본 구조
 - [ ] 단위 테스트 보강
@@ -175,12 +192,15 @@
 
 ## 6. 버전 관리
 
-| 버전     | 마일스톤             | 상태    |
-| -------- | -------------------- | ------- |
-| `v0.1.0` | Phase 1 (UI/UX)      | 진행중  |
-| `v0.2.0` | Phase 2 (WebSocket)  | ✅ 완료 |
-| `v0.3.0` | Phase 3 (대시보드)   | 예정    |
-| `v1.0.0` | Phase 4 (테스트/MVP) | 예정    |
+| 버전     | 마일스톤                       | 상태    |
+| -------- | ------------------------------ | ------- |
+| `v0.1.0` | Phase 1 (UI/UX)                | 진행중  |
+| `v0.2.0` | Phase 2 (WebSocket)            | ✅ 완료 |
+| `v0.3.0` | Phase 3 (언어인지 불가 팝업)   | 예정    |
+| `v0.4.0` | Phase 4 (대화종료 재확인 팝업) | 예정    |
+| `v0.5.0` | Phase 5 (회원가입 권유 팝업)   | 예정    |
+| `v0.6.0` | Phase 6 (실시간 힌트 UI)       | 예정    |
+| `v1.0.0` | Phase 7 (테스트/MVP)           | 예정    |
 
 ---
 
