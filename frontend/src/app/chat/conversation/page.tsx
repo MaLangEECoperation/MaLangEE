@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState, useRef, useCallback } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 import { useAuth } from "@/features/auth";
 import { useGetHints } from "@/features/chat/api/use-chat-sessions";
@@ -50,6 +50,7 @@ function ConversationContent() {
   // 팝업 상태
   const [showSessionErrorPopup, setShowSessionErrorPopup] = useState(false);
   const [showSettingsPopup, setShowSettingsPopup] = useState(false);
+  const voiceBeforeSettingsRef = useRef("");
   const [showWaitPopup, setShowWaitPopup] = useState(false);
   const [showLoginPopup, _setShowLoginPopup] = useState(false);
   const [showLanguageErrorPopup, setShowLanguageErrorPopup] = useState(false);
@@ -102,6 +103,7 @@ function ConversationContent() {
     startMicrophone,
     stopMicrophone,
     toggleMute: _toggleMute,
+    updateVoice,
   } = useConversationChatNew(sessionId, selectedVoice);
 
   const disconnectRef = useRef(disconnect);
@@ -441,13 +443,23 @@ function ConversationContent() {
 
       {/* 설정 변경하기 버튼 */}
       <div className="mt-6">
-        <SettingsTrigger onClick={() => setShowSettingsPopup(true)} />
+        <SettingsTrigger
+          onClick={() => {
+            voiceBeforeSettingsRef.current = selectedVoice;
+            setShowSettingsPopup(true);
+          }}
+        />
       </div>
 
       {/* 설정 팝업 */}
       <SettingsPopup
         isOpen={showSettingsPopup}
-        onClose={() => setShowSettingsPopup(false)}
+        onClose={() => {
+          setShowSettingsPopup(false);
+          if (selectedVoice !== voiceBeforeSettingsRef.current) {
+            updateVoice(selectedVoice);
+          }
+        }}
         showSubtitle={showSubtitle}
         onSubtitleChange={handleSubtitleChange}
         selectedVoice={selectedVoice}
