@@ -1,12 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { useScenarioChatNew } from "@/features/chat/hook/useScenarioChatNew";
 
 export default function ScenarioTestPage() {
   const {
-    state, connect, disconnect, initAudio, startMicrophone, stopMicrophone,
-    sendText, toggleMute, clearAudioBuffer, commitAudio
+    state,
+    connect,
+    disconnect,
+    initAudio,
+    startMicrophone,
+    stopMicrophone,
+    sendText,
+    toggleMute,
+    clearAudioBuffer,
+    commitAudio,
   } = useScenarioChatNew();
 
   const [textInput, setTextInput] = useState("");
@@ -213,22 +222,26 @@ export default function ScenarioTestPage() {
                 <h3 className="mb-2 text-sm font-bold text-purple-900">📋 사용 가이드</h3>
                 <div className="space-y-1 text-xs text-gray-700">
                   <div>
-                    <strong className="text-purple-700">1. 연결:</strong> &ldquo;연결 및 오디오 초기화&rdquo; 클릭
+                    <strong className="text-purple-700">1. 연결:</strong> &ldquo;연결 및 오디오
+                    초기화&rdquo; 클릭
                   </div>
                   <div className="ml-4 text-gray-600">
                     ➜ 서버가 자동으로 AI 첫 인사를 시작합니다
                   </div>
                   <div>
-                    <strong className="text-purple-700">2. AI 인사:</strong> 말랭이가 먼저 시나리오 정보를 물음
+                    <strong className="text-purple-700">2. AI 인사:</strong> 말랭이가 먼저 시나리오
+                    정보를 물음
                   </div>
                   <div>
-                    <strong className="text-purple-700">3. 대화:</strong> 장소(place), 상대(partner), 목표(goal)를 말하기
+                    <strong className="text-purple-700">3. 대화:</strong> 장소(place),
+                    상대(partner), 목표(goal)를 말하기
                   </div>
                   <div className="ml-4 text-gray-600">
                     ➜ 한 번에 모두 말해도 되고, AI 질문에 순차적으로 답변해도 됩니다
                   </div>
                   <div>
-                    <strong className="text-purple-700">4. 완료:</strong> 3가지 정보가 모두 추출되면 시나리오 자동 생성
+                    <strong className="text-purple-700">4. 완료:</strong> 3가지 정보가 모두 추출되면
+                    시나리오 자동 생성
                   </div>
                   <div className="ml-4 text-gray-600">
                     ➜ DB에 자동 저장되며 sessionId를 반환합니다

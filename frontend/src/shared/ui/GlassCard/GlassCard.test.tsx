@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+
 import { GlassCard } from "./GlassCard";
 
 // Mock dependencies
@@ -39,9 +40,7 @@ describe("GlassCard", () => {
   });
 
   it("should show header when showHeader is true", () => {
-    const { container } = render(
-      <GlassCard showHeader>Content</GlassCard>
-    );
+    const { container } = render(<GlassCard showHeader>Content</GlassCard>);
 
     expect(container.querySelector(".glass-card-header")).toBeInTheDocument();
   });
@@ -74,11 +73,7 @@ describe("GlassCard", () => {
   });
 
   it("should render footer when provided", () => {
-    render(
-      <GlassCard footer={<div data-testid="footer">Footer Content</div>}>
-        Content
-      </GlassCard>
-    );
+    render(<GlassCard footer={<div data-testid="footer">Footer Content</div>}>Content</GlassCard>);
 
     expect(screen.getByTestId("footer")).toBeInTheDocument();
   });
@@ -90,9 +85,7 @@ describe("GlassCard", () => {
   });
 
   it("should apply custom className", () => {
-    const { container } = render(
-      <GlassCard className="custom-class">Content</GlassCard>
-    );
+    const { container } = render(<GlassCard className="custom-class">Content</GlassCard>);
 
     expect(container.querySelector(".glass-card")).toHaveClass("custom-class");
   });

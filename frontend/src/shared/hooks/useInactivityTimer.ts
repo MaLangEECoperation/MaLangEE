@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 interface UseInactivityTimerOptions {
   inactivityTime?: number; // 비활동 감지 시간 (기본 15초)
-  waitTime?: number;       // 응답 대기 시간 (기본 5초)
+  waitTime?: number; // 응답 대기 시간 (기본 5초)
 }
 
 export function useInactivityTimer({
@@ -34,7 +34,7 @@ export function useInactivityTimer({
 
   const startWaitTimer = useCallback(() => {
     if (waitTimerRef.current) clearTimeout(waitTimerRef.current);
-    
+
     waitTimerRef.current = setTimeout(() => {
       setShowWaitPopup(true);
     }, waitTime);
@@ -42,7 +42,7 @@ export function useInactivityTimer({
 
   const startInactivityTimer = useCallback(() => {
     clearTimers();
-    
+
     inactivityTimerRef.current = setTimeout(() => {
       setShowInactivityMessage(true);
       startWaitTimer();

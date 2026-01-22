@@ -2,7 +2,8 @@
 export {
   // Schemas
   loginSchema,
-  registerSchema, nicknameUpdateSchema,
+  registerSchema,
+  nicknameUpdateSchema,
   tokenSchema,
   userSchema,
   // Types

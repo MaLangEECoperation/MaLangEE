@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Volume2 } from "lucide-react";
-import { Button, MalangEE } from "@/shared/ui";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState, useRef, useEffect } from "react";
+
+import { STORAGE_KEYS } from "@/shared/config";
 import { debugError } from "@/shared/lib/debug";
+import { Button, MalangEE } from "@/shared/ui";
 
 interface VoiceOption {
   id: string;
@@ -41,6 +43,20 @@ const voiceOptions: VoiceOption[] = [
 ];
 
 export default function VoiceSelectionPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center">
+          <MalangEE status="default" size={150} />
+        </div>
+      }
+    >
+      <VoiceSelectionContent />
+    </Suspense>
+  );
+}
+
+function VoiceSelectionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentVoiceIndex, setCurrentVoiceIndex] = useState(0);
@@ -73,7 +89,7 @@ export default function VoiceSelectionPage() {
     audio.onended = () => setIsPlaying(false);
     audio.onpause = () => setIsPlaying(false);
 
-    audio.play().catch(err => {
+    audio.play().catch((err) => {
       debugError("Audio play failed:", err);
       setIsPlaying(false);
     });
@@ -90,7 +106,7 @@ export default function VoiceSelectionPage() {
   const handleNextStep = () => {
     stopSample();
     const selectedVoice = currentVoice?.id || "alloy";
-    localStorage.setItem("selectedVoice", selectedVoice);
+    localStorage.setItem(STORAGE_KEYS.SELECTED_VOICE, selectedVoice);
 
     if (sessionId) {
       router.push(`/chat/conversation?sessionId=${sessionId}`);
@@ -115,7 +131,7 @@ export default function VoiceSelectionPage() {
         <MalangEE status="default" size={120} />
       </div>
 
-      <div id="voice-selection" className="flex flex-col items-center w-full">
+      <div id="voice-selection" className="flex w-full flex-col items-center">
         <div className="text-group text-center">
           <h1 className="scenario-title">말랭이 목소리 톤을 선택해 주세요.</h1>
         </div>
@@ -124,22 +140,20 @@ export default function VoiceSelectionPage() {
           <div className="flex items-center justify-center gap-6">
             <button
               onClick={handlePrev}
-              className="flex h-10 w-10 items-center justify-center text-gray-400 transition-all hover:text-gray-600 cursor-pointer"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center text-gray-400 transition-all hover:text-gray-600"
               aria-label="이전 목소리"
             >
               <ChevronLeft size={32} strokeWidth={2.5} />
             </button>
 
             <div className="flex flex-1 flex-col items-center gap-3 py-4 text-center">
-              <h2 className="text-3xl font-bold text-text-primary">{currentVoice.name}</h2>
-              <p className="text-sm text-text-secondary">{currentVoice.description}</p>
+              <h2 className="text-text-primary text-3xl font-bold">{currentVoice.name}</h2>
+              <p className="text-text-secondary text-sm">{currentVoice.description}</p>
 
               <button
                 onClick={isPlaying ? stopSample : playSample}
-                className={`mt-2 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
-                  isPlaying
-                    ? "bg-brand text-white"
-                    : "bg-brand-50 text-brand hover:bg-brand-200"
+                className={`mt-2 flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                  isPlaying ? "bg-brand text-white" : "bg-brand-50 text-brand hover:bg-brand-200"
                 }`}
               >
                 <Volume2 size={16} className={isPlaying ? "animate-pulse" : ""} />
@@ -151,7 +165,7 @@ export default function VoiceSelectionPage() {
                   <div
                     key={index}
                     className={`h-3 rounded-full transition-all ${
-                      index === currentVoiceIndex ? "w-10 bg-brand" : "w-3 bg-border"
+                      index === currentVoiceIndex ? "bg-brand w-10" : "bg-border w-3"
                     }`}
                   />
                 ))}
@@ -160,7 +174,7 @@ export default function VoiceSelectionPage() {
 
             <button
               onClick={handleNext}
-              className="flex h-10 w-10 items-center justify-center text-gray-400 transition-all hover:text-gray-600 cursor-pointer"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center text-gray-400 transition-all hover:text-gray-600"
               aria-label="다음 목소리"
             >
               <ChevronRight size={32} strokeWidth={2.5} />
@@ -169,12 +183,7 @@ export default function VoiceSelectionPage() {
         </div>
 
         <div className="mt-10 w-full max-w-md">
-          <Button
-            onClick={handleNextStep}
-            variant="primary"
-            size="lg"
-            fullWidth
-          >
+          <Button onClick={handleNextStep} variant="primary" size="lg" fullWidth>
             대화 시작하기
           </Button>
         </div>

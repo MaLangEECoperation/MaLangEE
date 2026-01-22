@@ -1,24 +1,32 @@
 "use client";
 
-import Link from "next/link";
-import { useForm, type Resolver } from "react-hook-form";
-import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { PopupLayout } from "@/shared/ui/PopupLayout";
-import { MalangEE } from "@/shared/ui";
-import { authApi, useLogin, useLoginIdCheck, useNicknameCheck, usePasswordValidation, registerSchema, type RegisterFormData } from "@/features/auth";
-import { FullLayout } from "@/shared/ui/FullLayout";
-import { Button } from "@/shared/ui";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useForm, type Resolver } from "react-hook-form";
+
+import {
+  authApi,
+  useLogin,
+  useLoginIdCheck,
+  useNicknameCheck,
+  usePasswordValidation,
+  registerSchema,
+  type RegisterFormData,
+} from "@/features/auth";
 import { useSyncGuestSession } from "@/features/chat/api/use-chat-sessions";
+import { MalangEE, Button } from "@/shared/ui";
+import { FullLayout } from "@/shared/ui/FullLayout";
+import { PopupLayout } from "@/shared/ui/PopupLayout";
 
 // safeParse를 사용하는 커스텀 resolver (콘솔 에러 방지)
 const safeZodResolver: Resolver<RegisterFormData> = async (values) => {
   const result = registerSchema.safeParse(values);
-  
+
   if (result.success) {
     return { values: result.data, errors: {} };
   }
-  
+
   // ZodError를 React Hook Form의 에러 형식으로 변환
   const errors: Record<string, { type: string; message: string }> = {};
   result.error.issues.forEach((issue) => {
@@ -30,7 +38,7 @@ const safeZodResolver: Resolver<RegisterFormData> = async (values) => {
       };
     }
   });
-  
+
   return { values: {}, errors };
 };
 
@@ -38,7 +46,14 @@ const NETWORK_ERROR_MESSAGE = "서버에 연결할 수 없습니다. 네트워�
 const getCheckErrorMessage = (err?: unknown): string | null => {
   if (!err) return null;
   const message = String(err);
-  const networkPatterns = [/failed to fetch/i, /network/i, /ECONNREFUSED/i, /timeout/i, /connect/i, /서버/i];
+  const networkPatterns = [
+    /failed to fetch/i,
+    /network/i,
+    /ECONNREFUSED/i,
+    /timeout/i,
+    /connect/i,
+    /서버/i,
+  ];
   return networkPatterns.some((pattern) => pattern.test(message)) ? NETWORK_ERROR_MESSAGE : message;
 };
 
@@ -143,14 +158,18 @@ export default function RegisterPage() {
   const rightContent = (
     <div className="mx-auto w-full space-y-7 px-6 md:space-y-9 md:px-0">
       <div className="space-y-2">
-        <h1 className="text-text-primary text-3xl font-semibold leading-snug md:text-4xl mb-15">회원가입</h1>
+        <h1 className="text-text-primary mb-15 text-3xl font-semibold leading-snug md:text-4xl">
+          회원가입
+        </h1>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5 sm:gap-6">
         <div className="flex flex-col gap-4 sm:gap-5">
           {/* 이메일 입력 */}
           <div className="flex flex-col gap-2">
-            <label htmlFor="login_id" className="text-text-primary px-1 text-sm font-medium">이메일</label>
+            <label htmlFor="login_id" className="text-text-primary px-1 text-sm font-medium">
+              이메일
+            </label>
             <div className="relative">
               <input
                 id="login_id"
@@ -158,15 +177,19 @@ export default function RegisterPage() {
                 placeholder="이메일을 입력해주세요"
                 {...register("login_id", {
                   onBlur: () => loginIdCheck.trigger(),
-                  onChange: (e) => { e.target.value = e.target.value.toLowerCase(); }
+                  onChange: (e) => {
+                    e.target.value = e.target.value.toLowerCase();
+                  },
                 })}
-                className="border-border text-text-primary placeholder:text-muted-foreground focus:border-brand focus:ring-brand-200 h-14 w-full rounded-full border bg-background px-5 text-base focus:outline-none focus:ring-2 lowercase"
+                className="border-border text-text-primary placeholder:text-muted-foreground focus:border-brand focus:ring-brand-200 bg-background h-14 w-full rounded-full border px-5 text-base lowercase focus:outline-none focus:ring-2"
               />
               <div className="mt-2 min-h-5">
                 {errors.login_id ? (
                   <p className="px-1 text-sm text-red-500">{errors.login_id.message}</p>
                 ) : loginIdCheck.error ? (
-                  <p className="px-1 text-sm text-red-500">{getCheckErrorMessage(loginIdCheck.error)}</p>
+                  <p className="px-1 text-sm text-red-500">
+                    {getCheckErrorMessage(loginIdCheck.error)}
+                  </p>
                 ) : !loginIdCheck.isChecking && loginIdCheck.isAvailable && watchLoginId ? (
                   <p className="px-1 text-sm text-green-600">사용 가능한 이메일입니다</p>
                 ) : null}
@@ -176,14 +199,16 @@ export default function RegisterPage() {
 
           {/* 비밀번호 입력 */}
           <div className="flex flex-col gap-2">
-            <label htmlFor="password" className="text-text-primary px-1 text-sm font-medium">비밀번호</label>
+            <label htmlFor="password" className="text-text-primary px-1 text-sm font-medium">
+              비밀번호
+            </label>
             <div className="relative">
               <input
                 id="password"
                 type="password"
                 placeholder="비밀번호 (영문+숫자 10자리 이상)"
                 {...register("password")}
-                className="border-border text-text-primary placeholder:text-muted-foreground focus:border-brand focus:ring-brand-200 h-14 w-full rounded-full border bg-background px-5 text-base focus:outline-none focus:ring-2"
+                className="border-border text-text-primary placeholder:text-muted-foreground focus:border-brand focus:ring-brand-200 bg-background h-14 w-full rounded-full border px-5 text-base focus:outline-none focus:ring-2"
               />
               <div className="mt-2 min-h-5">
                 {errors.password ? (
@@ -199,7 +224,9 @@ export default function RegisterPage() {
 
           {/* 닉네임 입력 */}
           <div className="flex flex-col gap-2">
-            <label htmlFor="nickname" className="text-text-primary px-1 text-sm font-medium">닉네임</label>
+            <label htmlFor="nickname" className="text-text-primary px-1 text-sm font-medium">
+              닉네임
+            </label>
             <div className="relative">
               <input
                 id="nickname"
@@ -207,13 +234,15 @@ export default function RegisterPage() {
                 placeholder="닉네임"
                 {...register("nickname", { onBlur: () => nicknameCheck.trigger() })}
                 maxLength={6}
-                className="border-border text-text-primary placeholder:text-muted-foreground focus:border-brand focus:ring-brand-200 h-14 w-full rounded-full border bg-background px-5 text-base focus:outline-none focus:ring-2"
+                className="border-border text-text-primary placeholder:text-muted-foreground focus:border-brand focus:ring-brand-200 bg-background h-14 w-full rounded-full border px-5 text-base focus:outline-none focus:ring-2"
               />
               <div className="mt-2 min-h-5">
                 {errors.nickname ? (
                   <p className="px-1 text-sm text-red-500">{errors.nickname.message}</p>
                 ) : nicknameCheck.error ? (
-                  <p className="px-1 text-sm text-red-500">{getCheckErrorMessage(nicknameCheck.error)}</p>
+                  <p className="px-1 text-sm text-red-500">
+                    {getCheckErrorMessage(nicknameCheck.error)}
+                  </p>
                 ) : !nicknameCheck.isChecking && nicknameCheck.isAvailable && watchNickname ? (
                   <p className="px-1 text-sm text-green-600">사용 가능한 닉네임입니다</p>
                 ) : null}
@@ -223,12 +252,21 @@ export default function RegisterPage() {
         </div>
 
         <div className="flex flex-col gap-4 sm:gap-5">
-          <Button type="submit" variant="primary" size="lg" fullWidth disabled={isSubmitDisabled} isLoading={registerPending}>
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            fullWidth
+            disabled={isSubmitDisabled}
+            isLoading={registerPending}
+          >
             {registerPending ? "가입 중..." : "회원가입"}
           </Button>
-          <p className="text-center text-sm text-text-secondary">
+          <p className="text-text-secondary text-center text-sm">
             이미 계정이 있으신가요?{" "}
-            <Link href="/auth/login" className="font-semibold text-brand hover:underline">로그인</Link>
+            <Link href="/auth/login" className="text-brand font-semibold hover:underline">
+              로그인
+            </Link>
           </p>
         </div>
       </form>
@@ -245,7 +283,7 @@ export default function RegisterPage() {
         <PopupLayout onClose={() => {}} showCloseButton={false} maxWidth="sm">
           <div className="flex flex-col items-center gap-6 py-2">
             <MalangEE size={120} />
-            <div className="text-xl font-bold text-primary">회원이 된걸 축하해요!</div>
+            <div className="text-primary text-xl font-bold">회원이 된걸 축하해요!</div>
             <Button variant="primary" size="md" fullWidth onClick={handleLoginClick}>
               로그인하기
             </Button>

@@ -1,10 +1,19 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
 import { FullLayout } from "./FullLayout";
 
 // Mock GlassCard
 vi.mock("./GlassCard", () => ({
-  GlassCard: ({ children, showHeader, headerRight }: { children: React.ReactNode; showHeader?: boolean; headerRight?: React.ReactNode }) => (
+  GlassCard: ({
+    children,
+    showHeader,
+    headerRight,
+  }: {
+    children: React.ReactNode;
+    showHeader?: boolean;
+    headerRight?: React.ReactNode;
+  }) => (
     <div data-testid="glass-card" data-show-header={showHeader}>
       {headerRight && <div data-testid="header-right">{headerRight}</div>}
       {children}
@@ -70,20 +79,14 @@ describe("FullLayout", () => {
   });
 
   it("should render headerRight content", () => {
-    render(
-      <FullLayout headerRight={<span>Header Right</span>}>
-        Content
-      </FullLayout>
-    );
+    render(<FullLayout headerRight={<span>Header Right</span>}>Content</FullLayout>);
 
     expect(screen.getByTestId("header-right")).toBeInTheDocument();
     expect(screen.getByText("Header Right")).toBeInTheDocument();
   });
 
   it("should show background blobs when withBackground is true", () => {
-    const { container } = render(
-      <FullLayout withBackground>Content</FullLayout>
-    );
+    const { container } = render(<FullLayout withBackground>Content</FullLayout>);
 
     expect(container.querySelector(".blob-1")).toBeInTheDocument();
     expect(container.querySelector(".blob-2")).toBeInTheDocument();
@@ -97,9 +100,7 @@ describe("FullLayout", () => {
   });
 
   it("should apply custom maxWidth", () => {
-    const { container } = render(
-      <FullLayout maxWidth="max-w-sm">Content</FullLayout>
-    );
+    const { container } = render(<FullLayout maxWidth="max-w-sm">Content</FullLayout>);
 
     const widthContainer = container.querySelector(".max-w-sm");
     expect(widthContainer).toBeInTheDocument();

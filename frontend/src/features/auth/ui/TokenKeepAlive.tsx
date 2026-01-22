@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
+
+import { debugLog, debugError, isTokenExpired, isTokenExpiringSoon } from "@/shared/lib";
+
 import { useAuth } from "../hook";
 import { tokenStorage } from "../model";
-import { debugLog, debugError, isTokenExpired, isTokenExpiringSoon } from "@/shared/lib";
 
 /**
  * 토큰 유지 컴포넌트

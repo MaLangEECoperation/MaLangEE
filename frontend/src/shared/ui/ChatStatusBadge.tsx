@@ -56,7 +56,9 @@ export const ChatStatusBadge: React.FC<ChatStatusBadgeProps> = ({
 
   return (
     <div className={`flex justify-center ${className}`}>
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${colorClass}`}>
+      <span
+        className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-medium ${colorClass}`}
+      >
         {text}
       </span>
     </div>

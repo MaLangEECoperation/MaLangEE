@@ -16,11 +16,7 @@ const statusImages: Record<MalangEEStatus, string> = {
   sad: "/images/malangee-humm.gif", // sad 상태 이미지가 없으므로 humm으로 대체
 };
 
-export const MalangEE = ({
-  status = "default",
-  size = 300,
-  className = "",
-}: MalangEEProps) => {
+export const MalangEE = ({ status = "default", size = 300, className = "" }: MalangEEProps) => {
   const imgSrc = statusImages[status] || statusImages.default;
 
   return (

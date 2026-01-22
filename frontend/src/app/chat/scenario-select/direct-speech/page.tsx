@@ -1,9 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button, MalangEE, ChatMicButton, ConfirmPopup, ScenarioResultPopup, DebugStatus } from "@/shared/ui";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import {
+  Button,
+  MalangEE,
+  ChatMicButton,
+  ConfirmPopup,
+  ScenarioResultPopup,
+  DebugStatus,
+} from "@/shared/ui";
+import { STORAGE_KEYS } from "@/shared/config";
 import "@/shared/styles/scenario.css";
 import { useScenarioChatNew } from "@/features/chat/hook/useScenarioChatNew";
 import { useInactivityTimer } from "@/shared/hooks";
@@ -109,12 +118,18 @@ export default function DirectSpeechPage() {
       !chatState.isRecording
     ) {
       startMicrophone();
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+
       setIsListening(true);
     }
 
     prevAiSpeakingRef.current = chatState.isAiSpeaking;
-  }, [chatState.isAiSpeaking, chatState.isReady, chatState.isRecording, startMicrophone, stopMicrophone]);
+  }, [
+    chatState.isAiSpeaking,
+    chatState.isReady,
+    chatState.isRecording,
+    startMicrophone,
+    stopMicrophone,
+  ]);
 
   const resetTimers = useCallback(() => {
     resetInactivityTimers();
@@ -130,29 +145,37 @@ export default function DirectSpeechPage() {
     }
 
     if (chatState.isAiSpeaking || chatState.isRecording) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       resetTimers();
       return;
     }
 
     startInactivityTimer();
-  }, [chatState.isAiSpeaking, chatState.isRecording, hasStarted, startInactivityTimer, resetTimers]);
+  }, [
+    chatState.isAiSpeaking,
+    chatState.isRecording,
+    hasStarted,
+    startInactivityTimer,
+    resetTimers,
+  ]);
 
   // 시나리오 결과 처리
   useEffect(() => {
     if (chatState.scenarioResult) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       resetTimers();
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+
       setIsListening(false);
       stopMicrophone();
 
       if (typeof window !== "undefined") {
-        const { conversationGoal, conversationPartner, place, sessionId } = chatState.scenarioResult;
-        if (conversationGoal) localStorage.setItem("conversation_goal", conversationGoal);
-        if (conversationPartner) localStorage.setItem("conversation_partner", conversationPartner);
-        if (place) localStorage.setItem("place", place);
-        if (sessionId) localStorage.setItem("chatSessionId", sessionId);
+        const { conversationGoal, conversationPartner, place, sessionId } =
+          chatState.scenarioResult;
+        if (conversationGoal)
+          localStorage.setItem(STORAGE_KEYS.CONVERSATION_GOAL, conversationGoal);
+        if (conversationPartner)
+          localStorage.setItem(STORAGE_KEYS.CONVERSATION_PARTNER, conversationPartner);
+        if (place) localStorage.setItem(STORAGE_KEYS.PLACE, place);
+        if (sessionId) localStorage.setItem(STORAGE_KEYS.CHAT_SESSION_ID, sessionId);
 
         setShowScenarioResultPopup(true);
         //router.push("/chat/scenario-select/subtitle-settings");
@@ -270,7 +293,7 @@ export default function DirectSpeechPage() {
       <div className="character-box relative flex justify-center">
         <MalangEE status={showInactivityMessage ? "humm" : "default"} size={120} />
         {showInactivityMessage && (
-          <div className="absolute top-[105px] z-50 flex flex-col items-center filter drop-shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="animate-in fade-in slide-in-from-top-2 absolute top-[105px] z-50 flex flex-col items-center drop-shadow-sm filter duration-300">
             {/* 꼬리: 본체 테두리를 덮기 위해 z-10 및 relative 배치 */}
             <div className="relative top-[7px] z-10 h-3 w-3 rotate-45 border-l border-t border-gray-200 bg-white"></div>
             {/* 본체 */}
@@ -300,7 +323,6 @@ export default function DirectSpeechPage() {
               />
             </div>
           </div>
-
         </div>
       </div>
 
@@ -323,7 +345,9 @@ export default function DirectSpeechPage() {
         <ConfirmPopup
           message={
             <p className="text-xl font-semibold leading-relaxed text-gray-800">
-              지금은 여기까지만 할까요?<br />언제든지 다시 시작할 수 있어요.
+              지금은 여기까지만 할까요?
+              <br />
+              언제든지 다시 시작할 수 있어요.
             </p>
           }
           confirmText="이어 말하기"

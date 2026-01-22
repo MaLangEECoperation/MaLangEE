@@ -26,6 +26,7 @@
 MaLangEE Backend는 영어 회화 학습을 위한 RESTful API입니다.
 
 ### 주요 기능
+
 - ✅ **사용자 인증**: JWT 기반 OAuth2 인증
 - 💬 **대화 세션 관리**: 시나리오 기반 영어 회화 세션
 - 🎯 **힌트 생성**: LLM 기반 실시간 대화 힌트 제공
@@ -71,12 +72,12 @@ Content-Type: application/json
 
 **Request Body**
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `login_id` | string | ✅ | 로그인 ID (고유값) |
-| `nickname` | string | ✅ | 닉네임 |
-| `password` | string | ✅ | 비밀번호 |
-| `is_active` | boolean | ❌ | 활성 상태 (기본값: `true`) |
+| Field       | Type    | Required | Description                |
+| ----------- | ------- | -------- | -------------------------- |
+| `login_id`  | string  | ✅       | 로그인 ID (고유값)         |
+| `nickname`  | string  | ✅       | 닉네임                     |
+| `password`  | string  | ✅       | 비밀번호                   |
+| `is_active` | boolean | ❌       | 활성 상태 (기본값: `true`) |
 
 **Request Example**
 
@@ -115,14 +116,14 @@ Content-Type: application/x-www-form-urlencoded
 
 **Request Body**
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `username` | string | ✅ | 로그인 ID |
-| `password` | string | ✅ | 비밀번호 |
-| `grant_type` | string | ❌ | "password" (OAuth2 표준) |
-| `scope` | string | ❌ | OAuth2 scope (기본값: "") |
-| `client_id` | string | ❌ | OAuth2 client ID |
-| `client_secret` | string | ❌ | OAuth2 client secret |
+| Field           | Type   | Required | Description               |
+| --------------- | ------ | -------- | ------------------------- |
+| `username`      | string | ✅       | 로그인 ID                 |
+| `password`      | string | ✅       | 비밀번호                  |
+| `grant_type`    | string | ❌       | "password" (OAuth2 표준)  |
+| `scope`         | string | ❌       | OAuth2 scope (기본값: "") |
+| `client_id`     | string | ❌       | OAuth2 client ID          |
+| `client_secret` | string | ❌       | OAuth2 client secret      |
 
 **Request Example**
 
@@ -166,9 +167,9 @@ Content-Type: application/json
 }
 ```
 
-| Value | Description |
-|-------|-------------|
-| `true` | 사용 가능한 ID |
+| Value   | Description       |
+| ------- | ----------------- |
+| `true`  | 사용 가능한 ID    |
 | `false` | 이미 사용 중인 ID |
 
 ---
@@ -240,10 +241,10 @@ Content-Type: application/json
 
 **Request Body**
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `nickname` | string | ❌ | 새 닉네임 |
-| `password` | string | ❌ | 새 비밀번호 |
+| Field      | Type   | Required | Description |
+| ---------- | ------ | -------- | ----------- |
+| `nickname` | string | ❌       | 새 닉네임   |
+| `password` | string | ❌       | 새 비밀번호 |
 
 > 💡 변경하고 싶은 필드만 포함하세요.
 
@@ -281,6 +282,7 @@ Authorization: Bearer <access_token>
 ```
 
 > ⚠️ **주의사항**
+>
 > - 실제 데이터를 삭제하지 않고 `is_active`를 `false`로 변경합니다.
 > - 탈퇴 후에는 로그인이 불가능합니다.
 > - 데이터는 서버에 보관되며 복구 가능합니다.
@@ -313,11 +315,12 @@ Authorization: Bearer <access_token>
 
 **Path Parameters**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter    | Type          | Description             |
+| ------------ | ------------- | ----------------------- |
 | `session_id` | string (UUID) | 피드백을 생성할 세션 ID |
 
 **동작 방식**
+
 1. DB에서 세션의 메시지를 조회합니다.
 2. AI 엔진에 메시지를 전달하여 피드백을 생성합니다.
 3. 피드백 결과를 반환합니다.
@@ -346,10 +349,10 @@ Authorization: Bearer <access_token>
 
 **Query Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `skip` | integer | `0` | 건너뛸 세션 개수 (페이징) |
-| `limit` | integer | `20` | 조회할 세션 개수 (최대) |
+| Parameter | Type    | Default | Description               |
+| --------- | ------- | ------- | ------------------------- |
+| `skip`    | integer | `0`     | 건너뛸 세션 개수 (페이징) |
+| `limit`   | integer | `20`    | 조회할 세션 개수 (최대)   |
 
 **Response** `200 OK`
 
@@ -393,8 +396,8 @@ Authorization: Bearer <access_token>
 
 **Path Parameters**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter    | Type          | Description    |
+| ------------ | ------------- | -------------- |
 | `session_id` | string (UUID) | 조회할 세션 ID |
 
 **Response** `200 OK`
@@ -445,23 +448,23 @@ Authorization: Bearer <access_token>
 
 **Response Fields 설명**
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `session_id` | string | 세션 고유 ID |
-| `title` | string \| null | 세션 제목 |
-| `started_at` | string | 세션 시작 시각 (ISO 8601) |
-| `ended_at` | string | 세션 종료 시각 (ISO 8601) |
-| `total_duration_sec` | number | 전체 대화 시간 (초) |
-| `user_speech_duration_sec` | number | 사용자 발화 시간 (초) |
-| `messages` | array | 대화 메시지 목록 |
-| `scenario_place` | string \| null | 시나리오 장소 (예: "cafe", "airport") |
-| `scenario_partner` | string \| null | 대화 상대 역할 (예: "barista", "receptionist") |
-| `scenario_goal` | string \| null | 시나리오 목표 |
-| `scenario_state_json` | object \| null | 시나리오 진행 상태 (JSON) |
-| `scenario_completed_at` | string \| null | 시나리오 완료 시각 |
-| `voice` | string \| null | 사용된 음성 프로필 (예: "alloy", "echo") |
-| `show_text` | boolean \| null | 텍스트 표시 여부 |
-| `deleted` | boolean \| null | 삭제 여부 |
+| Field                      | Type            | Description                                    |
+| -------------------------- | --------------- | ---------------------------------------------- |
+| `session_id`               | string          | 세션 고유 ID                                   |
+| `title`                    | string \| null  | 세션 제목                                      |
+| `started_at`               | string          | 세션 시작 시각 (ISO 8601)                      |
+| `ended_at`                 | string          | 세션 종료 시각 (ISO 8601)                      |
+| `total_duration_sec`       | number          | 전체 대화 시간 (초)                            |
+| `user_speech_duration_sec` | number          | 사용자 발화 시간 (초)                          |
+| `messages`                 | array           | 대화 메시지 목록                               |
+| `scenario_place`           | string \| null  | 시나리오 장소 (예: "cafe", "airport")          |
+| `scenario_partner`         | string \| null  | 대화 상대 역할 (예: "barista", "receptionist") |
+| `scenario_goal`            | string \| null  | 시나리오 목표                                  |
+| `scenario_state_json`      | object \| null  | 시나리오 진행 상태 (JSON)                      |
+| `scenario_completed_at`    | string \| null  | 시나리오 완료 시각                             |
+| `voice`                    | string \| null  | 사용된 음성 프로필 (예: "alloy", "echo")       |
+| `show_text`                | boolean \| null | 텍스트 표시 여부                               |
+| `deleted`                  | boolean \| null | 삭제 여부                                      |
 
 ---
 
@@ -475,17 +478,19 @@ Authorization: Bearer <access_token>
 ```
 
 > 💡 **사용 시나리오**
+>
 > 1. 사용자가 비로그인 상태에서 체험 대화 진행
 > 2. 마음에 들어서 회원가입/로그인
 > 3. 이 API를 호출하여 체험 세션을 자신의 계정으로 이동
 
 **Path Parameters**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter    | Type          | Description           |
+| ------------ | ------------- | --------------------- |
 | `session_id` | string (UUID) | 연동할 게스트 세션 ID |
 
 **동작 방식**
+
 - WebSocket 연결 종료 시 데이터는 서버에서 자동 저장됩니다.
 - 이 엔드포인트는 **사용자 ID 매핑(Map User ID)** 용도입니다.
 - 입력받은 `session_id`의 `user_id`를 현재 로그인한 사용자로 업데이트합니다.
@@ -550,14 +555,15 @@ GET /api/v1/chat/hints/{session_id}
 > 🔓 **인증 불필요** - 게스트 사용자도 힌트를 사용할 수 있습니다.
 
 **사용 시나리오**
+
 - 사용자가 5초 이상 응답하지 않을 때 프론트엔드에서 호출
 - LLM이 현재 대화 맥락을 분석하여 3개의 추천 답변 생성
 - 사용자가 힌트를 클릭하면 해당 문장을 음성으로 발화
 
 **Path Parameters**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter    | Type          | Description            |
+| ------------ | ------------- | ---------------------- |
 | `session_id` | string (UUID) | 현재 진행 중인 세션 ID |
 
 **Response** `200 OK`
@@ -583,12 +589,12 @@ GET /api/v1/chat/hints/{session_id}
 
 ```typescript
 interface User {
-  id: number;                    // 사용자 고유 ID
-  login_id: string;              // 로그인 ID (고유값)
-  nickname?: string | null;      // 닉네임
-  is_active?: boolean;           // 활성 상태 (기본값: true)
-  created_at?: string;           // 생성 시각 (ISO 8601)
-  updated_at?: string;           // 수정 시각 (ISO 8601)
+  id: number; // 사용자 고유 ID
+  login_id: string; // 로그인 ID (고유값)
+  nickname?: string | null; // 닉네임
+  is_active?: boolean; // 활성 상태 (기본값: true)
+  created_at?: string; // 생성 시각 (ISO 8601)
+  updated_at?: string; // 수정 시각 (ISO 8601)
 }
 ```
 
@@ -600,10 +606,10 @@ interface User {
 
 ```typescript
 interface UserCreate {
-  login_id: string;              // 로그인 ID
-  nickname: string;              // 닉네임
-  password: string;              // 비밀번호
-  is_active?: boolean;           // 활성 상태 (기본값: true)
+  login_id: string; // 로그인 ID
+  nickname: string; // 닉네임
+  password: string; // 비밀번호
+  is_active?: boolean; // 활성 상태 (기본값: true)
 }
 ```
 
@@ -615,8 +621,8 @@ interface UserCreate {
 
 ```typescript
 interface UserUpdate {
-  nickname?: string | null;      // 새 닉네임
-  password?: string | null;      // 새 비밀번호
+  nickname?: string | null; // 새 닉네임
+  password?: string | null; // 새 비밀번호
 }
 ```
 
@@ -628,8 +634,8 @@ JWT 토큰
 
 ```typescript
 interface Token {
-  access_token: string;          // JWT 액세스 토큰
-  token_type: string;            // "bearer"
+  access_token: string; // JWT 액세스 토큰
+  token_type: string; // "bearer"
 }
 ```
 
@@ -641,23 +647,23 @@ interface Token {
 
 ```typescript
 interface SessionResponse {
-  session_id: string;                        // 세션 고유 ID (UUID)
-  title?: string | null;                     // 세션 제목
-  started_at: string;                        // 시작 시각 (ISO 8601)
-  ended_at: string;                          // 종료 시각 (ISO 8601)
-  total_duration_sec: number;                // 전체 대화 시간 (초)
-  user_speech_duration_sec: number;          // 사용자 발화 시간 (초)
-  messages: MessageSchema[];                 // 대화 메시지 목록
-  scenario_place?: string | null;            // 시나리오 장소
-  scenario_partner?: string | null;          // 대화 상대 역할
-  scenario_goal?: string | null;             // 시나리오 목표
-  scenario_state_json?: Record<string, any> | null;  // 시나리오 진행 상태
-  scenario_completed_at?: string | null;     // 시나리오 완료 시각
-  voice?: string | null;                     // 음성 프로필 (예: "alloy", "echo")
-  show_text?: boolean | null;                // 텍스트 표시 여부
-  deleted?: boolean | null;                  // 삭제 여부
-  created_at?: string;                       // 생성 시각 (ISO 8601)
-  updated_at?: string;                       // 수정 시각 (ISO 8601)
+  session_id: string; // 세션 고유 ID (UUID)
+  title?: string | null; // 세션 제목
+  started_at: string; // 시작 시각 (ISO 8601)
+  ended_at: string; // 종료 시각 (ISO 8601)
+  total_duration_sec: number; // 전체 대화 시간 (초)
+  user_speech_duration_sec: number; // 사용자 발화 시간 (초)
+  messages: MessageSchema[]; // 대화 메시지 목록
+  scenario_place?: string | null; // 시나리오 장소
+  scenario_partner?: string | null; // 대화 상대 역할
+  scenario_goal?: string | null; // 시나리오 목표
+  scenario_state_json?: Record<string, any> | null; // 시나리오 진행 상태
+  scenario_completed_at?: string | null; // 시나리오 완료 시각
+  voice?: string | null; // 음성 프로필 (예: "alloy", "echo")
+  show_text?: boolean | null; // 텍스트 표시 여부
+  deleted?: boolean | null; // 삭제 여부
+  created_at?: string; // 생성 시각 (ISO 8601)
+  updated_at?: string; // 수정 시각 (ISO 8601)
 }
 ```
 
@@ -669,15 +675,15 @@ interface SessionResponse {
 
 ```typescript
 interface SessionSummary {
-  session_id: string;                 // 세션 고유 ID (UUID)
-  title?: string | null;              // 세션 제목
-  started_at: string;                 // 시작 시각 (ISO 8601)
-  ended_at: string;                   // 종료 시각 (ISO 8601)
-  total_duration_sec: number;         // 전체 대화 시간 (초)
-  user_speech_duration_sec: number;   // 사용자 발화 시간 (초)
-  message_count: number;              // 메시지 개수
-  created_at?: string;                // 생성 시각 (ISO 8601)
-  updated_at?: string;                // 수정 시각 (ISO 8601)
+  session_id: string; // 세션 고유 ID (UUID)
+  title?: string | null; // 세션 제목
+  started_at: string; // 시작 시각 (ISO 8601)
+  ended_at: string; // 종료 시각 (ISO 8601)
+  total_duration_sec: number; // 전체 대화 시간 (초)
+  user_speech_duration_sec: number; // 사용자 발화 시간 (초)
+  message_count: number; // 메시지 개수
+  created_at?: string; // 생성 시각 (ISO 8601)
+  updated_at?: string; // 수정 시각 (ISO 8601)
 }
 ```
 
@@ -689,10 +695,10 @@ interface SessionSummary {
 
 ```typescript
 interface MessageSchema {
-  role: string;           // "user" | "assistant"
-  content: string;        // 메시지 내용
-  timestamp: string;      // 발화 시각 (ISO 8601)
-  duration_sec: number;   // 발화 시간 (초, 기본값: 0.0)
+  role: string; // "user" | "assistant"
+  content: string; // 메시지 내용
+  timestamp: string; // 발화 시각 (ISO 8601)
+  duration_sec: number; // 발화 시간 (초, 기본값: 0.0)
 }
 ```
 
@@ -704,8 +710,8 @@ interface MessageSchema {
 
 ```typescript
 interface HintResponse {
-  hints: string[];        // 추천 답변 목록 (3개)
-  session_id: string;     // 세션 ID
+  hints: string[]; // 추천 답변 목록 (3개)
+  session_id: string; // 세션 ID
 }
 ```
 
@@ -717,8 +723,8 @@ interface HintResponse {
 
 ```typescript
 interface SyncSessionResponse {
-  status: string;         // "success"
-  session_id: string;     // 동기화된 세션 ID
+  status: string; // "success"
+  session_id: string; // 동기화된 세션 ID
 }
 ```
 
@@ -730,7 +736,7 @@ interface SyncSessionResponse {
 
 ```typescript
 interface CheckAvailabilityResponse {
-  is_available: boolean;  // true: 사용 가능, false: 이미 사용 중
+  is_available: boolean; // true: 사용 가능, false: 이미 사용 중
 }
 ```
 
@@ -746,9 +752,9 @@ interface HTTPValidationError {
 }
 
 interface ValidationError {
-  loc: (string | number)[];   // 오류 위치 (예: ["body", "login_id"])
-  msg: string;                // 오류 메시지
-  type: string;               // 오류 타입 (예: "value_error.missing")
+  loc: (string | number)[]; // 오류 위치 (예: ["body", "login_id"])
+  msg: string; // 오류 메시지
+  type: string; // 오류 타입 (예: "value_error.missing")
 }
 ```
 
@@ -806,6 +812,7 @@ interface ValidationError {
 ```
 
 **발생 상황**
+
 - `Authorization` 헤더가 없는 경우
 - 토큰이 만료된 경우
 - 토큰 형식이 잘못된 경우
@@ -898,29 +905,29 @@ curl -X POST "http://49.50.137.35:8080/api/v1/feedback/550e8400-e29b-41d4-a716-4
 
 ```javascript
 // 1. 로그인
-const loginResponse = await fetch('http://49.50.137.35:8080/api/v1/auth/login', {
-  method: 'POST',
+const loginResponse = await fetch("http://49.50.137.35:8080/api/v1/auth/login", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
+    "Content-Type": "application/x-www-form-urlencoded",
   },
   body: new URLSearchParams({
-    username: 'user123',
-    password: 'securePassword123!',
-    grant_type: 'password',
+    username: "user123",
+    password: "securePassword123!",
+    grant_type: "password",
   }),
 });
 
 const { access_token, token_type } = await loginResponse.json();
 
 // 2. 토큰을 사용하여 인증 API 호출
-const userResponse = await fetch('http://49.50.137.35:8080/api/v1/users/me', {
+const userResponse = await fetch("http://49.50.137.35:8080/api/v1/users/me", {
   headers: {
-    'Authorization': `${token_type} ${access_token}`,
+    Authorization: `${token_type} ${access_token}`,
   },
 });
 
 const user = await userResponse.json();
-console.log('사용자 정보:', user);
+console.log("사용자 정보:", user);
 ```
 
 #### 대화 세션 목록 조회 (페이지네이션)
@@ -932,7 +939,7 @@ const getSessionList = async (page = 0, pageSize = 20) => {
     `http://49.50.137.35:8080/api/v1/chat/sessions?skip=${skip}&limit=${pageSize}`,
     {
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     }
   );
@@ -948,12 +955,10 @@ const sessions = await getSessionList(0, 10);
 
 ```javascript
 const getHints = async (sessionId) => {
-  const response = await fetch(
-    `http://49.50.137.35:8080/api/v1/chat/hints/${sessionId}`
-  );
+  const response = await fetch(`http://49.50.137.35:8080/api/v1/chat/hints/${sessionId}`);
 
   if (!response.ok) {
-    throw new Error('힌트 생성 실패');
+    throw new Error("힌트 생성 실패");
   }
 
   const { hints } = await response.json();
@@ -961,9 +966,9 @@ const getHints = async (sessionId) => {
 };
 
 // 사용 예시
-const sessionId = '550e8400-e29b-41d4-a716-446655440000';
+const sessionId = "550e8400-e29b-41d4-a716-446655440000";
 const hints = await getHints(sessionId);
-console.log('추천 답변:', hints);
+console.log("추천 답변:", hints);
 // ["I'd like a latte, please.", "Can I get an iced coffee?", ...]
 ```
 
@@ -971,29 +976,26 @@ console.log('추천 답변:', hints);
 
 ```javascript
 const syncGuestSession = async (sessionId, accessToken) => {
-  const response = await fetch(
-    `http://49.50.137.35:8080/api/v1/chat/sessions/${sessionId}/sync`,
-    {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
-    }
-  );
+  const response = await fetch(`http://49.50.137.35:8080/api/v1/chat/sessions/${sessionId}/sync`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
 
   if (!response.ok) {
-    throw new Error('세션 연동 실패');
+    throw new Error("세션 연동 실패");
   }
 
   return await response.json();
 };
 
 // 사용 시나리오: 비로그인으로 체험 → 회원가입 → 세션 연동
-const guestSessionId = localStorage.getItem('guestSessionId');
+const guestSessionId = localStorage.getItem("guestSessionId");
 if (guestSessionId && accessToken) {
   const result = await syncGuestSession(guestSessionId, accessToken);
-  console.log('세션 연동 완료:', result.status);
-  localStorage.removeItem('guestSessionId');
+  console.log("세션 연동 완료:", result.status);
+  localStorage.removeItem("guestSessionId");
 }
 ```
 
@@ -1001,27 +1003,24 @@ if (guestSessionId && accessToken) {
 
 ```javascript
 const createFeedback = async (sessionId, accessToken) => {
-  const response = await fetch(
-    `http://49.50.137.35:8080/api/v1/feedback/${sessionId}`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
-    }
-  );
+  const response = await fetch(`http://49.50.137.35:8080/api/v1/feedback/${sessionId}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
 
   if (!response.ok) {
-    throw new Error('피드백 생성 실패');
+    throw new Error("피드백 생성 실패");
   }
 
   return await response.json();
 };
 
 // 사용 예시
-const sessionId = '550e8400-e29b-41d4-a716-446655440000';
+const sessionId = "550e8400-e29b-41d4-a716-446655440000";
 const feedback = await createFeedback(sessionId, accessToken);
-console.log('피드백:', feedback);
+console.log("피드백:", feedback);
 ```
 
 ---
@@ -1031,13 +1030,13 @@ console.log('피드백:', feedback);
 #### API Client 설정
 
 ```typescript
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance } from "axios";
 
 class MaLangEEClient {
   private client: AxiosInstance;
   private accessToken?: string;
 
-  constructor(baseURL: string = 'http://49.50.137.35:8080') {
+  constructor(baseURL: string = "http://49.50.137.35:8080") {
     this.client = axios.create({
       baseURL,
       timeout: 10000,
@@ -1057,11 +1056,11 @@ class MaLangEEClient {
     const params = new URLSearchParams({
       username: loginId,
       password,
-      grant_type: 'password',
+      grant_type: "password",
     });
 
-    const response = await this.client.post<Token>('/api/v1/auth/login', params, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    const response = await this.client.post<Token>("/api/v1/auth/login", params, {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
 
     this.accessToken = response.data.access_token;
@@ -1070,19 +1069,19 @@ class MaLangEEClient {
 
   // 회원가입
   async signup(userData: UserCreate): Promise<User> {
-    const response = await this.client.post<User>('/api/v1/auth/signup', userData);
+    const response = await this.client.post<User>("/api/v1/auth/signup", userData);
     return response.data;
   }
 
   // 내 정보 조회
   async getMyProfile(): Promise<User> {
-    const response = await this.client.get<User>('/api/v1/users/me');
+    const response = await this.client.get<User>("/api/v1/users/me");
     return response.data;
   }
 
   // 대화 세션 목록 조회
   async getSessionList(skip = 0, limit = 20): Promise<SessionSummary[]> {
-    const response = await this.client.get<SessionSummary[]>('/api/v1/chat/sessions', {
+    const response = await this.client.get<SessionSummary[]>("/api/v1/chat/sessions", {
       params: { skip, limit },
     });
     return response.data;
@@ -1090,23 +1089,19 @@ class MaLangEEClient {
 
   // 대화 세션 상세 조회
   async getSessionDetail(sessionId: string): Promise<SessionResponse> {
-    const response = await this.client.get<SessionResponse>(
-      `/api/v1/chat/sessions/${sessionId}`
-    );
+    const response = await this.client.get<SessionResponse>(`/api/v1/chat/sessions/${sessionId}`);
     return response.data;
   }
 
   // 최근 세션 조회
   async getRecentSession(): Promise<SessionResponse | null> {
-    const response = await this.client.get<SessionResponse | null>('/api/v1/chat/recent');
+    const response = await this.client.get<SessionResponse | null>("/api/v1/chat/recent");
     return response.data;
   }
 
   // 힌트 생성 (인증 불필요)
   async getHints(sessionId: string): Promise<string[]> {
-    const response = await this.client.get<HintResponse>(
-      `/api/v1/chat/hints/${sessionId}`
-    );
+    const response = await this.client.get<HintResponse>(`/api/v1/chat/hints/${sessionId}`);
     return response.data.hints;
   }
 
@@ -1120,9 +1115,7 @@ class MaLangEEClient {
 
   // 피드백 생성
   async createFeedback(sessionId: string): Promise<any> {
-    const response = await this.client.post(
-      `/api/v1/feedback/${sessionId}`
-    );
+    const response = await this.client.post(`/api/v1/feedback/${sessionId}`);
     return response.data;
   }
 }
@@ -1131,7 +1124,7 @@ class MaLangEEClient {
 const client = new MaLangEEClient();
 
 // 로그인
-await client.login('user123', 'securePassword123!');
+await client.login("user123", "securePassword123!");
 
 // 내 정보 조회
 const user = await client.getMyProfile();
@@ -1156,6 +1149,7 @@ console.log(sessions);
 `SessionResponse`의 `voice` 필드는 OpenAI TTS 음성 프로필을 나타냅니다.
 
 지원 음성:
+
 - `alloy` - 균형잡힌 중성 음성
 - `echo` - 남성 음성
 - `fable` - 영국식 남성 음성
@@ -1166,6 +1160,7 @@ console.log(sessions);
 ### 시나리오 시스템
 
 `SessionResponse`의 시나리오 관련 필드:
+
 - `scenario_place`: 대화 장소 (예: "cafe", "airport", "hospital")
 - `scenario_partner`: 대화 상대 역할 (예: "barista", "receptionist", "doctor")
 - `scenario_goal`: 대화 목표 (예: "order a coffee", "check in for flight")

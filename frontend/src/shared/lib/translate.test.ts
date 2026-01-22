@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
 import { translateToKorean } from "./translate";
 
 describe("translateToKorean", () => {
@@ -26,21 +27,19 @@ describe("translateToKorean", () => {
   it("should return translated text on successful API call", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve([[["안녕하세요", "Hello"]]])
+      json: () => Promise.resolve([[["안녕하세요", "Hello"]]]),
     });
 
     const result = await translateToKorean("Hello");
 
     expect(result).toBe("안녕하세요");
-    expect(global.fetch).toHaveBeenCalledWith(
-      expect.stringContaining("translate.googleapis.com")
-    );
+    expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining("translate.googleapis.com"));
   });
 
   it("should return empty string on API error", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
-      status: 500
+      status: 500,
     });
 
     const result = await translateToKorean("Hello");
@@ -61,7 +60,7 @@ describe("translateToKorean", () => {
   it("should return empty string for malformed API response", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(null)
+      json: () => Promise.resolve(null),
     });
 
     const result = await translateToKorean("Hello");
@@ -72,7 +71,7 @@ describe("translateToKorean", () => {
   it("should return empty string for empty API response", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve([[]])
+      json: () => Promise.resolve([[]]),
     });
 
     const result = await translateToKorean("Hello");
@@ -83,7 +82,7 @@ describe("translateToKorean", () => {
   it("should properly encode special characters in URL", async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve([[["번역된 텍스트", "Hello & world"]]])
+      json: () => Promise.resolve([[["번역된 텍스트", "Hello & world"]]]),
     });
 
     await translateToKorean("Hello & world");

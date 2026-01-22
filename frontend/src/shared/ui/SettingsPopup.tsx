@@ -1,10 +1,12 @@
 "use client";
 
+import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
 import { type FC, useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
-import { Button } from "./Button";
+
 import { cn } from "@/shared/lib/utils";
+
+import { Button } from "./Button";
 
 export interface VoiceOption {
   id: string;
@@ -151,7 +153,7 @@ export const SettingsPopup: FC<SettingsPopupProps> = ({
                 onClick={() => onSubtitleChange(!showSubtitle)}
                 className={cn(
                   "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-                  "focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2",
+                  "focus:ring-brand focus:outline-none focus:ring-2 focus:ring-offset-2",
                   showSubtitle ? "bg-brand" : "bg-gray-300"
                 )}
               >

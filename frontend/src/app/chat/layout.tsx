@@ -1,10 +1,12 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { FullLayout } from "@/shared/ui/FullLayout";
-import { Button, DebugStatus, MalangEE, ConfirmPopup } from "@/shared/ui";
 import { History, LogOut, Volume2, VolumeX } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { ReactNode, useEffect, useState } from "react";
+
+import { Button, DebugStatus, MalangEE, ConfirmPopup } from "@/shared/ui";
+import { FullLayout } from "@/shared/ui/FullLayout";
+
 import "@/shared/styles/scenario.css";
 import { useAuth } from "@/features/auth";
 
@@ -147,7 +149,8 @@ export default function ChatLayout({ children }: ChatLayoutProps) {
         <ConfirmPopup
           message={
             <div className="text-xl font-bold text-[#1F1C2B]">
-              지금은 여기까지만 할까요?<br />
+              지금은 여기까지만 할까요?
+              <br />
               나중에 같은 주제로 다시 대화할 수 있어요.
             </div>
           }

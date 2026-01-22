@@ -1,5 +1,6 @@
-import { config } from "@/shared/lib/config";
 import { apiClient } from "@/shared/lib/api-client";
+import { config } from "@/shared/lib/config";
+
 import type {
   Token,
   User,
@@ -38,19 +39,11 @@ export const authApi = {
       const errorData = await response.json().catch(() => ({}));
 
       if (response.status === 400) {
-        throw new Error(
-          errorData.detail || "이메일 또는 비밀번호가 올바르지 않습니다"
-        );
+        throw new Error(errorData.detail || "이메일 또는 비밀번호가 올바르지 않습니다");
       }
 
-      if (
-        response.status === 422 &&
-        errorData.detail &&
-        Array.isArray(errorData.detail)
-      ) {
-        const validationErrors = errorData.detail
-          .map((err: { msg: string }) => err.msg)
-          .join(", ");
+      if (response.status === 422 && errorData.detail && Array.isArray(errorData.detail)) {
+        const validationErrors = errorData.detail.map((err: { msg: string }) => err.msg).join(", ");
         throw new Error(validationErrors || "입력 정보를 확인해주세요");
       }
 
@@ -84,9 +77,7 @@ export const authApi = {
   /**
    * 닉네임 중복 확인
    */
-  checkNickname: async (
-    nickname: string
-  ): Promise<CheckAvailabilityResponse> => {
+  checkNickname: async (nickname: string): Promise<CheckAvailabilityResponse> => {
     return apiClient.post<CheckAvailabilityResponse>("/auth/check-nickname", {
       nickname,
     });

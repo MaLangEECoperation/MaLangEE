@@ -53,12 +53,10 @@ export function useAudioRecorder({
         successCallback: (stream: MediaStream) => void,
         errorCallback: (error: Error) => void
       ) => void;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const legacyNav = navigator as unknown as Record<string, LegacyGetUserMedia | undefined>;
       const legacyApi =
-        legacyNav.webkitGetUserMedia ||
-        legacyNav.mozGetUserMedia ||
-        legacyNav.msGetUserMedia;
+        legacyNav.webkitGetUserMedia || legacyNav.mozGetUserMedia || legacyNav.msGetUserMedia;
       if (legacyApi) {
         return new Promise((resolve, reject) => {
           legacyApi.call(navigator, constraints, resolve, reject);
@@ -87,8 +85,9 @@ export function useAudioRecorder({
 
       streamRef.current = stream;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       audioContextRef.current = new AudioContextClass({ sampleRate });
 
       const source = audioContextRef.current.createMediaStreamSource(stream);
@@ -96,11 +95,12 @@ export function useAudioRecorder({
 
       processor.onaudioprocess = (e) => {
         const inputData = e.inputBuffer.getChannelData(0);
-        
+
         // 볼륨 계산 (RMS)
         if (onVolumeChange) {
           let sum = 0;
-          for (let i = 0; i < inputData.length; i += 10) { // 성능을 위해 샘플링
+          for (let i = 0; i < inputData.length; i += 10) {
+            // 성능을 위해 샘플링
             sum += inputData[i] * inputData[i];
           }
           const rms = Math.sqrt(sum / (inputData.length / 10));
@@ -118,7 +118,6 @@ export function useAudioRecorder({
       sourceRef.current = source;
       processorRef.current = processor;
       setIsRecording(true);
-
     } catch (error) {
       console.error("[Recording] Failed to start:", error);
       if (

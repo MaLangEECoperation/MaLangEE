@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
 import { SettingsPopup, SettingsTrigger, VOICE_OPTIONS } from "./SettingsPopup";
 
 describe("SettingsPopup", () => {

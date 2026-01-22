@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+
 import { DecorativeCircle } from "./DecorativeCircle";
 
 describe("DecorativeCircle", () => {
@@ -110,9 +111,7 @@ describe("DecorativeCircle", () => {
   });
 
   it("should apply custom className", () => {
-    const { container } = render(
-      <DecorativeCircle className="absolute top-10 left-10" />
-    );
+    const { container } = render(<DecorativeCircle className="absolute left-10 top-10" />);
     const circle = container.firstChild;
 
     expect(circle).toHaveClass("absolute", "top-10", "left-10");

@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+
 import { GlassmorphicCard } from "./GlassmorphicCard";
 
 describe("GlassmorphicCard", () => {
@@ -15,27 +16,21 @@ describe("GlassmorphicCard", () => {
   });
 
   it("should apply default variant classes", () => {
-    const { container } = render(
-      <GlassmorphicCard>Content</GlassmorphicCard>
-    );
+    const { container } = render(<GlassmorphicCard>Content</GlassmorphicCard>);
 
     const contentDiv = container.querySelector(".relative.px-8");
     expect(contentDiv).toBeInTheDocument();
   });
 
   it("should apply compact variant classes", () => {
-    const { container } = render(
-      <GlassmorphicCard variant="compact">Content</GlassmorphicCard>
-    );
+    const { container } = render(<GlassmorphicCard variant="compact">Content</GlassmorphicCard>);
 
     const contentDiv = container.querySelector(".relative.px-6");
     expect(contentDiv).toBeInTheDocument();
   });
 
   it("should show decorations when showDecorations is true", () => {
-    const { container } = render(
-      <GlassmorphicCard showDecorations>Content</GlassmorphicCard>
-    );
+    const { container } = render(<GlassmorphicCard showDecorations>Content</GlassmorphicCard>);
 
     const decorations = container.querySelectorAll('[aria-hidden="true"]');
     expect(decorations.length).toBe(2);
@@ -59,9 +54,7 @@ describe("GlassmorphicCard", () => {
   });
 
   it("should have glassmorphism styling", () => {
-    const { container } = render(
-      <GlassmorphicCard>Content</GlassmorphicCard>
-    );
+    const { container } = render(<GlassmorphicCard>Content</GlassmorphicCard>);
 
     expect(container.firstChild).toHaveClass("backdrop-blur-2xl");
     expect(container.firstChild).toHaveClass("rounded-[32px]");

@@ -4,7 +4,12 @@
 
 // 상수
 export { WEBSOCKET_CONSTANTS } from "./constants";
-export type { AudioConstants, ReconnectConstants, TimeoutConstants, VadConstants } from "./constants";
+export type {
+  AudioConstants,
+  ReconnectConstants,
+  TimeoutConstants,
+  VadConstants,
+} from "./constants";
 
 // URL 빌더
 export {
@@ -30,9 +35,5 @@ export { ConnectionState, canTransition, createConnectionStateMachine } from "./
 export type { ConnectionStateMachine, StateChangeListener } from "./connection-state";
 
 // Backoff 알고리즘
-export {
-  calculateBackoffDelay,
-  createBackoffManager,
-  DEFAULT_BACKOFF_CONFIG,
-} from "./backoff";
+export { calculateBackoffDelay, createBackoffManager, DEFAULT_BACKOFF_CONFIG } from "./backoff";
 export type { BackoffConfig, BackoffManager } from "./backoff";

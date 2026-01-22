@@ -1,9 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  calculateBackoffDelay,
-  createBackoffManager,
-  DEFAULT_BACKOFF_CONFIG,
-} from "./backoff";
+
+import { calculateBackoffDelay, createBackoffManager, DEFAULT_BACKOFF_CONFIG } from "./backoff";
 
 describe("backoff", () => {
   describe("DEFAULT_BACKOFF_CONFIG", () => {

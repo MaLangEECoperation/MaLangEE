@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
 import { GuestGuard } from "./GuestGuard";
 
 // Mock next/navigation
@@ -37,9 +38,7 @@ const createTestQueryClient = () =>
 
 const renderWithProviders = (ui: React.ReactElement) => {
   const queryClient = createTestQueryClient();
-  return render(
-    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
-  );
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
 };
 
 describe("GuestGuard", () => {

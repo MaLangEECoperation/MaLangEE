@@ -1,11 +1,12 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { useForm, type Resolver } from "react-hook-form";
 import { useEffect, useState } from "react";
-import { SplitViewLayout } from "@/shared/ui/SplitViewLayout";
-import { Button } from "@/shared/ui";
+import { useForm, type Resolver } from "react-hook-form";
+
 import { type LoginFormData, loginSchema, useLogin } from "@/features/auth";
+import { Button } from "@/shared/ui";
+import { SplitViewLayout } from "@/shared/ui/SplitViewLayout";
 
 // safeParse를 사용하는 커스텀 resolver (콘솔 에러 방지)
 const loginResolver: Resolver<LoginFormData> = async (values) => {

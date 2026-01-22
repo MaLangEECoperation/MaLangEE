@@ -1,6 +1,6 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
-type PopupType = 'logout' | 'deleteUser' | null;
+type PopupType = "logout" | "deleteUser" | null;
 
 interface PopupState {
   type: PopupType;

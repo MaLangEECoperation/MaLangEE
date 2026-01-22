@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
 import { SplitViewLayout } from "./SplitViewLayout";
 
 // Mock next/image
@@ -26,7 +27,9 @@ vi.mock("./GlassCard", () => ({
 // Mock MalangEE
 vi.mock("./MalangEE", () => ({
   MalangEE: ({ size }: { size: number }) => (
-    <div data-testid="malangee" data-size={size}>MalangEE</div>
+    <div data-testid="malangee" data-size={size}>
+      MalangEE
+    </div>
   ),
 }));
 
@@ -40,9 +43,7 @@ describe("SplitViewLayout", () => {
   });
 
   it("should render rightChildren", () => {
-    render(
-      <SplitViewLayout rightChildren={<div data-testid="right">Right Content</div>} />
-    );
+    render(<SplitViewLayout rightChildren={<div data-testid="right">Right Content</div>} />);
 
     expect(screen.getByTestId("right")).toBeInTheDocument();
     expect(screen.getByText("Right Content")).toBeInTheDocument();
@@ -79,9 +80,7 @@ describe("SplitViewLayout", () => {
   });
 
   it("should apply custom bgClass to body", () => {
-    render(
-      <SplitViewLayout bgClass="bg-custom" rightChildren={<div>Right</div>} />
-    );
+    render(<SplitViewLayout bgClass="bg-custom" rightChildren={<div>Right</div>} />);
 
     expect(document.body.classList.contains("bg-custom")).toBe(true);
   });
@@ -106,9 +105,7 @@ describe("SplitViewLayout", () => {
   });
 
   it("should hide header when showHeader is false", () => {
-    render(
-      <SplitViewLayout showHeader={false} rightChildren={<div>Right</div>} />
-    );
+    render(<SplitViewLayout showHeader={false} rightChildren={<div>Right</div>} />);
 
     const glassCard = screen.getByTestId("glass-card");
     expect(glassCard).toHaveAttribute("data-show-header", "false");
@@ -124,10 +121,7 @@ describe("SplitViewLayout", () => {
 
   it("should apply custom leftClassName", () => {
     const { container } = render(
-      <SplitViewLayout
-        leftClassName="custom-left-class"
-        rightChildren={<div>Right</div>}
-      />
+      <SplitViewLayout leftClassName="custom-left-class" rightChildren={<div>Right</div>} />
     );
 
     expect(container.querySelector("#sv-left-content")).toHaveClass("custom-left-class");
@@ -135,10 +129,7 @@ describe("SplitViewLayout", () => {
 
   it("should apply custom rightClassName", () => {
     const { container } = render(
-      <SplitViewLayout
-        rightClassName="custom-right-class"
-        rightChildren={<div>Right</div>}
-      />
+      <SplitViewLayout rightClassName="custom-right-class" rightChildren={<div>Right</div>} />
     );
 
     const rightContainer = container.querySelector(".custom-right-class");
@@ -146,18 +137,14 @@ describe("SplitViewLayout", () => {
   });
 
   it("should have main-page and glass-page classes", () => {
-    const { container } = render(
-      <SplitViewLayout rightChildren={<div>Right</div>} />
-    );
+    const { container } = render(<SplitViewLayout rightChildren={<div>Right</div>} />);
 
     expect(container.firstChild).toHaveClass("main-page");
     expect(container.firstChild).toHaveClass("glass-page");
   });
 
   it("should use default colSpan values", () => {
-    const { container } = render(
-      <SplitViewLayout rightChildren={<div>Right</div>} />
-    );
+    const { container } = render(<SplitViewLayout rightChildren={<div>Right</div>} />);
 
     const leftSection = container.querySelector("#sv-left-content");
     expect(leftSection).toHaveClass("md:col-span-5");

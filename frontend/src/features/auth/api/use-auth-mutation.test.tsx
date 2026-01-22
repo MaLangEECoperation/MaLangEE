@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
 import React, { ReactNode } from "react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+import { authApi } from "./auth-api";
 import {
   useLogin,
   useRegister,
@@ -56,8 +58,6 @@ vi.mock("@/features/chat/api/use-chat-sessions", () => ({
   }),
 }));
 
-import { authApi } from "./auth-api";
-
 const createTestQueryClient = () =>
   new QueryClient({
     defaultOptions: {
@@ -91,7 +91,9 @@ describe("useLogin", () => {
     const mockToken = { access_token: "test-token", token_type: "bearer" };
     const mockUser = { id: 1, login_id: "test@test.com" };
     vi.mocked(authApi.login).mockResolvedValue(mockToken);
-    vi.mocked(authApi.getCurrentUser).mockResolvedValue(mockUser as unknown as Awaited<ReturnType<typeof authApi.getCurrentUser>>);
+    vi.mocked(authApi.getCurrentUser).mockResolvedValue(
+      mockUser as unknown as Awaited<ReturnType<typeof authApi.getCurrentUser>>
+    );
 
     const { result } = renderHook(() => useLogin(), {
       wrapper: createWrapper(),
@@ -116,7 +118,9 @@ describe("useRegister", () => {
 
   it("should register and redirect to login", async () => {
     const mockUser = { id: 1, login_id: "new@test.com" };
-    vi.mocked(authApi.register).mockResolvedValue(mockUser as unknown as Awaited<ReturnType<typeof authApi.register>>);
+    vi.mocked(authApi.register).mockResolvedValue(
+      mockUser as unknown as Awaited<ReturnType<typeof authApi.register>>
+    );
 
     const { result } = renderHook(() => useRegister(), {
       wrapper: createWrapper(),
@@ -164,7 +168,9 @@ describe("useDeleteAccount", () => {
   });
 
   it("should delete account and redirect to login", async () => {
-    vi.mocked(authApi.deleteCurrentUser).mockResolvedValue({ id: 1 } as unknown as Awaited<ReturnType<typeof authApi.deleteCurrentUser>>);
+    vi.mocked(authApi.deleteCurrentUser).mockResolvedValue({ id: 1 } as unknown as Awaited<
+      ReturnType<typeof authApi.deleteCurrentUser>
+    >);
 
     const { result } = renderHook(() => useDeleteAccount(), {
       wrapper: createWrapper(),
@@ -236,7 +242,9 @@ describe("useUpdateNickname", () => {
 
   it("should update nickname", async () => {
     const updatedUser = { id: 1, nickname: "NewNickname" };
-    vi.mocked(authApi.updateCurrentUser).mockResolvedValue(updatedUser as unknown as Awaited<ReturnType<typeof authApi.updateCurrentUser>>);
+    vi.mocked(authApi.updateCurrentUser).mockResolvedValue(
+      updatedUser as unknown as Awaited<ReturnType<typeof authApi.updateCurrentUser>>
+    );
 
     const { result } = renderHook(() => useUpdateNickname(), {
       wrapper: createWrapper(),

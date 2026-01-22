@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
 import { TokenKeepAlive } from "./TokenKeepAlive";
 
 // Mock useAuth
@@ -82,9 +83,7 @@ describe("TokenKeepAlive", () => {
 
     render(<TokenKeepAlive />);
 
-    expect(global.alert).toHaveBeenCalledWith(
-      "로그인 세션이 만료되었습니다. 다시 로그인해주세요."
-    );
+    expect(global.alert).toHaveBeenCalledWith("로그인 세션이 만료되었습니다. 다시 로그인해주세요.");
     expect(mockLogout).toHaveBeenCalled();
   });
 

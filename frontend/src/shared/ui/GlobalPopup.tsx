@@ -1,10 +1,11 @@
 "use client";
 
+import { useAuth, useDeleteUser } from "@/features/auth";
 import { usePopupStore } from "@/shared/lib/store";
-import { PopupLayout } from "./PopupLayout";
+
 import { Button } from "./Button";
 import { MalangEE } from "./MalangEE";
-import { useAuth, useDeleteUser } from "@/features/auth";
+import { PopupLayout } from "./PopupLayout";
 
 export const GlobalPopup = () => {
   const { type, isOpen, closePopup } = usePopupStore();
@@ -65,7 +66,7 @@ export const GlobalPopup = () => {
                 fullWidth
                 onClick={handleDeleteUserConfirm}
                 disabled={isDeletingUser}
-                className="bg-red-500 hover:bg-red-600 border-red-500 hover:border-red-600"
+                className="border-red-500 bg-red-500 hover:border-red-600 hover:bg-red-600"
               >
                 {isDeletingUser ? "탈퇴 중..." : "탈퇴하기"}
               </Button>

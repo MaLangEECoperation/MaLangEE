@@ -1,7 +1,8 @@
-import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
+import * as React from "react";
+
 import { cn } from "../lib/utils";
 
 const buttonVariants = cva(
@@ -48,16 +49,28 @@ const buttonVariants = cva(
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   isLoading?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, fullWidth, asChild = false, isLoading, disabled, children, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      fullWidth,
+      asChild = false,
+      isLoading,
+      disabled,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const Comp = asChild ? Slot : "button";
-    
+
     // boolean 타입 보장을 위한 명시적 변환
     const isFullWidth = fullWidth === true;
     const isDisabled = !!(disabled || isLoading);

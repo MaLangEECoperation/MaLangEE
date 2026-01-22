@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+
 import { isDev } from "@/shared/lib/debug";
 
 interface DebugStatusProps {
@@ -41,7 +42,7 @@ export const DebugStatus: React.FC<DebugStatusProps> = ({
       {/* User Transcript Debug (Only in Debug Bar) */}
       {userTranscript && (
         <div className="pointer-events-auto rounded-lg bg-green-900/80 px-3 py-1 text-[10px] text-white backdrop-blur-md">
-          <span className="font-bold text-green-400 mr-2">YOU:</span>
+          <span className="mr-2 font-bold text-green-400">YOU:</span>
           {userTranscript}
         </div>
       )}
@@ -59,7 +60,9 @@ export const DebugStatus: React.FC<DebugStatusProps> = ({
         {isReady !== undefined && (
           <div className="border-l border-white/20 pl-3">
             <div className="flex items-center gap-1">
-              <div className={`h-1.5 w-1.5 rounded-full ${isReady ? "bg-green-500" : "bg-yellow-500"}`} />
+              <div
+                className={`h-1.5 w-1.5 rounded-full ${isReady ? "bg-green-500" : "bg-yellow-500"}`}
+              />
               <span>{isReady ? "READY" : "NOT READY"}</span>
             </div>
           </div>
@@ -69,24 +72,21 @@ export const DebugStatus: React.FC<DebugStatusProps> = ({
         {isRecording !== undefined && (
           <div className="border-l border-white/20 pl-3">
             <div className="flex items-center gap-1">
-              <div className={`h-1.5 w-1.5 rounded-full ${isRecording ? "bg-red-500 animate-pulse" : "bg-gray-500"}`} />
+              <div
+                className={`h-1.5 w-1.5 rounded-full ${isRecording ? "animate-pulse bg-red-500" : "bg-gray-500"}`}
+              />
               <span>{isRecording ? "MIC ON" : "MIC OFF"}</span>
             </div>
           </div>
         )}
 
         {/* 음소거 상태 */}
-        {isMuted && (
-          <div className="border-l border-white/20 pl-3 text-orange-400">
-            🔇 MUTED
-          </div>
-        )}
+        {isMuted && <div className="border-l border-white/20 pl-3 text-orange-400">🔇 MUTED</div>}
 
         {/* 마지막 이벤트 */}
         {lastEvent && (
           <div className="border-l border-white/20 pl-3">
-            LAST EVENT:{" "}
-            <span className="font-mono text-yellow-400">{lastEvent.toUpperCase()}</span>
+            LAST EVENT: <span className="font-mono text-yellow-400">{lastEvent.toUpperCase()}</span>
           </div>
         )}
 

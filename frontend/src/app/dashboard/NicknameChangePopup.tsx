@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
+
 import {
   type NicknameUpdateFormData,
   nicknameUpdateSchema,
@@ -9,8 +10,8 @@ import {
   useNicknameCheck,
   useUpdateNickname,
 } from "@/features/auth";
-import { PopupLayout } from "@/shared/ui/PopupLayout";
 import { Button, MalangEE } from "@/shared/ui";
+import { PopupLayout } from "@/shared/ui/PopupLayout";
 
 // safeParse를 사용하는 커스텀 resolver (콘솔 에러 방지)
 const nicknameUpdateResolver: Resolver<NicknameUpdateFormData> = async (values) => {
@@ -84,7 +85,11 @@ export const NicknameChangePopup: React.FC<NicknameChangePopupProps> = ({ onClos
   const updateNicknameMutation = useUpdateNickname();
 
   // 기존 닉네임과 동일한지 실시간 체크
-  const isSameAsCurrent = !!(watchNewNickname && watchCurrentNickname && watchNewNickname === watchCurrentNickname);
+  const isSameAsCurrent = !!(
+    watchNewNickname &&
+    watchCurrentNickname &&
+    watchNewNickname === watchCurrentNickname
+  );
 
   useEffect(() => {
     if (isSameAsCurrent) {
@@ -135,27 +140,26 @@ export const NicknameChangePopup: React.FC<NicknameChangePopupProps> = ({ onClos
     });
   };
 
-  const isSubmitDisabled = (
+  const isSubmitDisabled =
     updateNicknameMutation.isPending ||
     (nicknameCheck.isChecking && !isSameAsCurrent) ||
     (!!nicknameCheck.error && !isSameAsCurrent) ||
     (!nicknameCheck.isAvailable && !isSameAsCurrent) ||
     !!successMessage ||
-    isSameAsCurrent
-  );
+    isSameAsCurrent;
 
   return (
-    <PopupLayout onClose={onClose} title={successMessage ? "" : "닉네임 변경"} maxWidth="md" showCloseButton={!successMessage}>
+    <PopupLayout
+      onClose={onClose}
+      title={successMessage ? "" : "닉네임 변경"}
+      maxWidth="md"
+      showCloseButton={!successMessage}
+    >
       {successMessage ? (
         <div className="flex flex-col items-center gap-6 py-4">
           <MalangEE size={120} />
           <div className="text-xl font-bold text-[#1F1C2B]">{successMessage}</div>
-          <Button
-            variant="primary"
-            size="md"
-            fullWidth
-            onClick={onClose}
-          >
+          <Button variant="primary" size="md" fullWidth onClick={onClose}>
             확인
           </Button>
         </div>
@@ -163,7 +167,10 @@ export const NicknameChangePopup: React.FC<NicknameChangePopupProps> = ({ onClos
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           {/* 기존 닉네임 입력 (읽기 전용) */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-[#1F1C2B]" style={{ letterSpacing: "-0.2px" }}>
+            <label
+              className="text-sm font-medium text-[#1F1C2B]"
+              style={{ letterSpacing: "-0.2px" }}
+            >
               기존 닉네임
             </label>
             <div className="relative">
@@ -184,7 +191,10 @@ export const NicknameChangePopup: React.FC<NicknameChangePopupProps> = ({ onClos
 
           {/* 새로운 닉네임 입력 */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-[#1F1C2B]" style={{ letterSpacing: "-0.2px" }}>
+            <label
+              className="text-sm font-medium text-[#1F1C2B]"
+              style={{ letterSpacing: "-0.2px" }}
+            >
               새로운 닉네임
             </label>
             <div className="relative">
@@ -199,9 +209,9 @@ export const NicknameChangePopup: React.FC<NicknameChangePopupProps> = ({ onClos
                 className="h-12 w-full rounded-full border border-[#d4d0df] bg-white px-5 text-sm text-[#1F1C2B] shadow-[0_2px_6px_rgba(0,0,0,0.03)] placeholder:text-[#8c869c] focus:border-[#7B6CF6] focus:outline-none focus:ring-2 focus:ring-[#cfc5ff]"
                 style={{ letterSpacing: "-0.2px" }}
               />
-              
+
               {/* 메시지 표시 영역 통합 (단일 우선순위 체인으로 변경하여 무조건 한 줄만 표시) */}
-              <div className="mt-1 px-1 min-h-5">
+              <div className="mt-1 min-h-5 px-1">
                 {validationError ? (
                   <p className="text-xs text-red-500" style={{ letterSpacing: "-0.1px" }}>
                     *{validationError}

@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { usePopupStore } from "./store";
 import { act } from "@testing-library/react";
+import { describe, it, expect, beforeEach } from "vitest";
+
+import { usePopupStore } from "./store";
 
 describe("usePopupStore", () => {
   beforeEach(() => {

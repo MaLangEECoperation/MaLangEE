@@ -4,10 +4,12 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
-import { Button, MalangEE } from "@/shared/ui";
-import { useGetChatSession } from "@/features/chat/api/use-chat-sessions";
+import { Suspense, useEffect } from "react";
+
 import { AuthGuard, useCurrentUser } from "@/features/auth";
+import { useGetChatSession } from "@/features/chat/api/use-chat-sessions";
+import { STORAGE_KEYS } from "@/shared/config";
+import { Button, MalangEE } from "@/shared/ui";
 
 function WelcomeBackPage() {
   const router = useRouter();
@@ -23,20 +25,20 @@ function WelcomeBackPage() {
     if (typeof window !== "undefined") {
       // entryType 설정
       if (currentUser) {
-        localStorage.setItem("entryType", "member");
+        localStorage.setItem(STORAGE_KEYS.ENTRY_TYPE, "member");
         if (currentUser.login_id) {
-          localStorage.setItem("loginId", currentUser.login_id);
+          localStorage.setItem(STORAGE_KEYS.LOGIN_ID, currentUser.login_id);
         }
       } else {
-        localStorage.setItem("entryType", "guest");
+        localStorage.setItem(STORAGE_KEYS.ENTRY_TYPE, "guest");
       }
     }
   }, [currentUser]);
 
   if (sessionId == null) {
-    sessionId = localStorage.getItem("chatSessionId");
+    sessionId = localStorage.getItem(STORAGE_KEYS.CHAT_SESSION_ID);
   } else {
-    localStorage.setItem("chatSessionId", sessionId);
+    localStorage.setItem(STORAGE_KEYS.CHAT_SESSION_ID, sessionId);
   }
 
   // 1. 특정 세션 ID가 있을 경우 해당 세션 조회
@@ -45,32 +47,31 @@ function WelcomeBackPage() {
   // 세션 정보 로컬 스토리지 저장 (voice, subtitleEnabled, scenario info)
   useEffect(() => {
     if (sessionDetail) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const detail = sessionDetail as unknown as Record<string, unknown>;
 
       // voice 설정 (없으면 기본값 'nova')
       if (detail.voice) {
-        localStorage.setItem("selectedVoice", String(detail.voice));
+        localStorage.setItem(STORAGE_KEYS.SELECTED_VOICE, String(detail.voice));
       } else {
-        localStorage.setItem("selectedVoice", "nova");
+        localStorage.setItem(STORAGE_KEYS.SELECTED_VOICE, "nova");
       }
 
       // subtitleEnabled 설정 (boolean -> string)
       if (detail.show_text) {
-        localStorage.setItem("subtitleEnabled", String(detail.show_text));
+        localStorage.setItem(STORAGE_KEYS.SUBTITLE_ENABLED, String(detail.show_text));
       } else {
-        localStorage.setItem("subtitleEnabled", "true");
+        localStorage.setItem(STORAGE_KEYS.SUBTITLE_ENABLED, "true");
       }
 
       // 시나리오 정보 저장 (conversationGoal, conversationPartner, place)
       if (detail.scenario_goal) {
-        localStorage.setItem("conversationGoal", String(detail.scenario_goal));
+        localStorage.setItem(STORAGE_KEYS.CONVERSATION_GOAL, String(detail.scenario_goal));
       }
       if (detail.scenario_partner) {
-        localStorage.setItem("conversationPartner", String(detail.scenario_partner));
+        localStorage.setItem(STORAGE_KEYS.CONVERSATION_PARTNER, String(detail.scenario_partner));
       }
       if (detail.scenario_place) {
-        localStorage.setItem("place", String(detail.scenario_place));
+        localStorage.setItem(STORAGE_KEYS.PLACE, String(detail.scenario_place));
       }
     }
   }, [sessionDetail]);
@@ -103,8 +104,9 @@ function WelcomeBackPage() {
   // 현재 useGetChatSession은 ChatSessionDetail을 반환하며, 이는 { session: ChatSession, messages: ChatMessage[] } 구조임
   // 하지만 API 응답 예시에 따르면 최상위에 title이 있을 수도 있음. 안전하게 접근.
   const title =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (sessionDetail as unknown as Record<string, unknown>).title as string || ((sessionDetail as unknown as Record<string, { title?: string }>).session?.title) || "이전 대화";
+    ((sessionDetail as unknown as Record<string, unknown>).title as string) ||
+    (sessionDetail as unknown as Record<string, { title?: string }>).session?.title ||
+    "이전 대화";
 
   return (
     <>
@@ -139,8 +141,16 @@ function WelcomeBackPage() {
 
 export default function WelcomeBackPageWithGuard() {
   return (
-    <AuthGuard>
-      <WelcomeBackPage />
-    </AuthGuard>
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center">
+          <MalangEE status="default" size={150} />
+        </div>
+      }
+    >
+      <AuthGuard>
+        <WelcomeBackPage />
+      </AuthGuard>
+    </Suspense>
   );
 }
