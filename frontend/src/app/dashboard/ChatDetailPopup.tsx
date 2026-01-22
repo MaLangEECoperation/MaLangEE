@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { ChatHistoryItem } from "@/shared/types/chat";
 import { ChatTranscriptPopup } from "./ChatTranscriptPopup";
 import { PopupLayout } from "@/shared/ui/PopupLayout";
-import { Button } from "@/shared/ui";
+import { Button, Tooltip } from "@/shared/ui";
 import { useGetChatSession } from "@/features/chat";
 
 interface ChatDetailPopupProps {
@@ -80,7 +80,10 @@ export const ChatDetailPopup: React.FC<ChatDetailPopupProps> = ({ session, onClo
               <>
                 <div className="relative flex items-center">
                   <h3 className="text-base font-semibold text-[#1F1C2B]">시나리오 정보</h3>
-                  <div id="scenario-info-actions" className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-2">
+                  <div
+                    id="scenario-info-actions"
+                    className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-2"
+                  >
                     <Button
                       variant="solid"
                       size="sm"
@@ -90,9 +93,7 @@ export const ChatDetailPopup: React.FC<ChatDetailPopupProps> = ({ session, onClo
                       전문보기
                     </Button>
                     <Button asChild variant="outline-purple" size="sm">
-                      <Link href={`/chat/welcome-back?sessionId=${session.id}`}>
-                        다시 대화하기
-                      </Link>
+                      <Link href={`/chat/welcome-back?sessionId=${session.id}`}>다시 대화하기</Link>
                     </Button>
                   </div>
                 </div>
@@ -154,23 +155,107 @@ export const ChatDetailPopup: React.FC<ChatDetailPopupProps> = ({ session, onClo
               </div>
             </div>
 
+            {/* 어휘 다양성 지수 */}
+            {sessionDetail?.analytics && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-[#1F1C2B]">어휘 다양성</h3>
+                </div>
+                <div className="rounded-2xl bg-gray-50 p-5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-[#6A667A]">
+                      어휘 다양성 지수 :{" "}
+                      <span className="font-semibold text-md text-[#1F1C2B]">
+                        {Math.round(sessionDetail.analytics.richness_score)}
+                      </span>
+                      {(() => {
+                        // 직전 대화 대비 계산
+                        const diff =
+                          sessionDetail.analytics.unique_words_count -
+                          sessionDetail.analytics.word_count;
+                        if (diff !== 0) {
+                          const sign = diff > 0 ? "+" : "";
+                          const color = diff > 0 ? "text-green-600" : "text-red-600";
+                          return (
+                            <span className={`ml-1  text-sm`}>
+                              (직전 대화 대비{" "}
+                              <span className={`${color} font-semibold`}>
+                                {sign}
+                                {diff}
+                              </span>
+                              {")"}
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </span>
+                    <Tooltip
+                      content={
+                        <div className="space-y-2">
+                          <div className="font-semibold">어휘 다양성 지수란?</div>
+                          <div className="text-[11px] leading-relaxed">
+                            대화에서 얼마나 다양한 단어를 썼는지 보여주는 지표에요.
+                          </div>
+                          <div className="border-t border-gray-600 pt-2">
+                            <div className="mb-1 font-semibold">계산 방식</div>
+                            <div className="text-[11px]">(고유 단어 수 / 전체 단어 수) × 100</div>
+                          </div>
+                          <div className="space-y-1 border-t border-gray-600 pt-2 text-[11px]">
+                            <div>
+                              <span className="font-semibold">0~40:</span> 비슷한 단어를 주로
+                              썼어요.
+                            </div>
+                            <div>
+                              <span className="font-semibold">41~65:</span> 단어가 조금씩
+                              달라졌어요.
+                            </div>
+                            <div>
+                              <span className="font-semibold">66~85:</span> 다양한 단어를 써봤어요.
+                            </div>
+                            <div>
+                              <span className="font-semibold">86~100:</span> 어휘가 아주 다양했어요.
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    >
+                      <button
+                        type="button"
+                        className="flex h-5 w-5 items-center justify-center rounded-full border border-[#6A667A] text-[11px] text-[#6A667A] transition-colors hover:border-[#5F51D9] hover:bg-[#5F51D9] hover:text-white"
+                      >
+                        ?
+                      </button>
+                    </Tooltip>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* 세 번째 행: 피드백 목록 */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-[#1F1C2B]">피드백</h3>
-              <div className="max-h-[250px] overflow-y-auto space-y-4 pr-2">
+              <div className="max-h-[250px] space-y-4 overflow-y-auto pr-2">
                 {feedbackMessages.length > 0 ? (
                   feedbackMessages.map((m, idx) => (
-                    <div key={idx} className="rounded-2xl bg-gray-50 p-6 space-y-3 border border-gray-100">
+                    <div
+                      key={idx}
+                      className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50 p-6"
+                    >
                       <div>
-                        <div className="text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">나의 표현</div>
-                        <div className="text-sm text-red-500 font-medium">{m.content}</div>
+                        <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                          나의 표현
+                        </div>
+                        <div className="text-sm font-medium text-red-500">{m.content}</div>
                       </div>
-                      <div className="pt-3 border-t border-gray-200">
-                        <div className="text-[10px] font-bold text-[#5F51D9] mb-1 uppercase tracking-wider">더 나은 답변</div>
-                        <div className="text-sm text-[#1F1C2B] font-semibold">{m.feedback}</div>
+                      <div className="border-t border-gray-200 pt-3">
+                        <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#5F51D9]">
+                          더 나은 답변
+                        </div>
+                        <div className="text-sm font-semibold text-[#1F1C2B]">{m.feedback}</div>
                       </div>
                       {m.reason && (
-                        <div className="text-xs text-[#6A667A] bg-white  p-3 rounded-xl leading-relaxed">
+                        <div className="rounded-xl bg-white p-3  text-xs leading-relaxed text-[#6A667A]">
                           <span className="font-bold text-[#5F51D9]"></span> {m.reason}
                         </div>
                       )}
