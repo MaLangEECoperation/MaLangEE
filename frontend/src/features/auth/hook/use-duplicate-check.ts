@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { authApi } from "../api";
-import { registerSchema } from "../model/schema";
+import { nicknameValidation, registerSchema } from "../model/schema";
 
 interface UseDuplicateCheckOptions {
   /** 디바운스 지연 시간 (ms) */
@@ -141,6 +141,15 @@ export function useNicknameCheck(
       if (!val || val.length < minLength) {
         setError(null);
         setIsAvailable(null);
+        setIsChecking(false);
+        return;
+      }
+
+      // 1. 클라이언트 측 유효성 검사 (Zod 스키마 사용)
+      const validationResult = nicknameValidation.safeParse(val);
+      if (!validationResult.success) {
+        setError(validationResult.error.issues[0].message);
+        setIsAvailable(false);
         setIsChecking(false);
         return;
       }

@@ -96,13 +96,13 @@ export const NicknameChangePopup: React.FC<NicknameChangePopupProps> = ({ onClos
 
     // 유효성 검사 오류가 있는지 확인
     if (nicknameCheck.error) {
-      setValidationError("새로운 닉네임을 확인해주세요");
+      setValidationError(nicknameCheck.error);
       return;
     }
 
     // 중복 체크가 완료되지 않았거나 사용 불가능한 경우
     if (!nicknameCheck.isAvailable) {
-      setValidationError("새로운 닉네임을 확인해주세요");
+      setValidationError("이미 사용중인 닉네임입니다");
       return;
     }
 
@@ -192,12 +192,12 @@ export const NicknameChangePopup: React.FC<NicknameChangePopupProps> = ({ onClos
               
               {/* 메시지 표시 영역 통합 (단일 우선순위 체인으로 변경하여 무조건 한 줄만 표시) */}
               <div className="mt-1 px-1 min-h-5">
-                {errors.new_nickname ? (
-                  <p className="text-xs text-red-500">{errors.new_nickname.message}</p>
-                ) : validationError ? (
+                {validationError ? (
                   <p className="text-xs text-red-500" style={{ letterSpacing: "-0.1px" }}>
                     *{validationError}
                   </p>
+                ) : errors.new_nickname ? (
+                  <p className="text-xs text-red-500">{errors.new_nickname.message}</p>
                 ) : nicknameCheck.isChecking && !isSameAsCurrent ? (
                   <p className="text-xs text-blue-500">확인 중...</p>
                 ) : nicknameCheck.error && !isSameAsCurrent ? (

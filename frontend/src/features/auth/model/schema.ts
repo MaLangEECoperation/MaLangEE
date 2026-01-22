@@ -9,11 +9,11 @@ const loginIdValidation = z
   .min(1, "이메일을 입력해주세요")
   .email("올바른 이메일 형식이 아닙니다");
 
-const nicknameValidation = z
+export const nicknameValidation = z
   .string()
   .min(2, "닉네임은 2~6자 사이로 입력해주세요")
   .max(6, "닉네임은 2~6자 사이로 입력해주세요")
-  .regex(/^[a-zA-Z가-힣]+$/, "영문 또는 한글만 입력 가능합니다");
+  .regex(/^[a-zA-Z가-힣]+$/, "영문 또는 완성된 한글만 입력 가능합니다 (자음/모음 제외)");
 
 export const loginSchema = z.object({
   username: z.string().min(1, "이메일을 입력해주세요").email("올바른 이메일 형식이 아닙니다"),
