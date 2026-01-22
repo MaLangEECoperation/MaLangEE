@@ -80,6 +80,22 @@
   animation: wave 1s ease-in-out infinite;
 }
 
+/* Fade in up animation for hint bubble */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s ease-out forwards;
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);

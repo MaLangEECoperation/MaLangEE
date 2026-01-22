@@ -6,6 +6,7 @@ import { Suspense, useEffect, useState, useRef, useCallback } from "react";
 import { useAuth } from "@/features/auth";
 import { useGetHints } from "@/features/chat/api/use-chat-sessions";
 import { useConversationChatNew } from "@/features/chat/hook/useConversationChatNew";
+import { RealtimeHint } from "@/features/chat/ui";
 import { STORAGE_KEYS } from "@/shared/config";
 import { debugLog, debugError } from "@/shared/lib";
 import {
@@ -121,7 +122,7 @@ function ConversationContent() {
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const waitPopupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { data: _hints, isLoading: _isHintsLoading } = useGetHints(
+  const { data: hints, isLoading: isHintsLoading } = useGetHints(
     shouldFetchHint ? sessionId : null
   );
 
@@ -337,7 +338,7 @@ function ConversationContent() {
   const getSubDesc = () => getCurrentMessage().desc;
 
   // 핸들러
-  const _handleHintClick = useCallback(() => {
+  const handleHintClick = useCallback(() => {
     if (showHintText) {
       setShowHintText(false);
       return;
@@ -345,6 +346,10 @@ function ConversationContent() {
     setShouldFetchHint(true);
     setShowHintText(true);
   }, [showHintText]);
+
+  const handleHintDismiss = useCallback(() => {
+    setShowHintText(false);
+  }, []);
 
   const handleStopFromWait = async () => {
     setShowWaitPopup(false);
@@ -381,6 +386,16 @@ function ConversationContent() {
       <div className="character-box relative">
         <MalangEE status={getMalangEEStatus()} size={150} />
       </div>
+
+      {/* 실시간 힌트 */}
+      <RealtimeHint
+        hints={hints || []}
+        isLoading={isHintsLoading}
+        showPrompt={showHintPrompt && !state.isUserSpeaking && !state.isAiSpeaking}
+        showHintText={showHintText}
+        onRequestHint={handleHintClick}
+        onDismiss={handleHintDismiss}
+      />
 
       {/* 메시지 및 마이크 */}
       <div className="flex w-full flex-col items-center transition-all duration-300">
