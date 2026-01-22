@@ -20,18 +20,15 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-slot": "^1.2.4",
     "@tanstack/react-query": "^5.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
     "next": "16.1.0",
-    "next-intl": "^3.0.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hook-form": "^7.0.0",
-    "recharts": "^2.10.0",
     "tailwind-merge": "^3.4.0",
     "zod": "^4.0.17",
     "zustand": "^5.0.8"
