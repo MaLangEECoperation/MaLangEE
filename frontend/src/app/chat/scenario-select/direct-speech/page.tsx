@@ -154,7 +154,8 @@ export default function DirectSpeechPage() {
         if (place) localStorage.setItem("place", place);
         if (sessionId) localStorage.setItem("chatSessionId", sessionId);
 
-        router.push("/chat/scenario-select/subtitle-settings");
+        setShowScenarioResultPopup(true);
+        //router.push("/chat/scenario-select/subtitle-settings");
       }
     }
   }, [chatState.scenarioResult, stopMicrophone, resetTimers, router]);
@@ -266,13 +267,15 @@ export default function DirectSpeechPage() {
         userTranscript={chatState.userTranscript}
       />
 
-      <div className="character-box relative">
+      <div className="character-box relative flex justify-center">
         <MalangEE status={showInactivityMessage ? "humm" : "default"} size={120} />
         {showInactivityMessage && (
-          <div className="absolute -bottom-[25px] left-1/2 z-50 -translate-x-1/2">
-            <div className="absolute -top-[8px] left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-l-2 border-t-2 border-gray-100 bg-white"></div>
-            <div className="relative rounded-2xl border-2 border-gray-100 bg-white px-6 py-3 shadow-lg">
-              <p className="whitespace-nowrap text-sm text-gray-700">{hintMessage}</p>
+          <div className="absolute top-[105px] z-50 flex flex-col items-center filter drop-shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+            {/* 꼬리: 본체 테두리를 덮기 위해 z-10 및 relative 배치 */}
+            <div className="relative top-[7px] z-10 h-3 w-3 rotate-45 border-l border-t border-gray-200 bg-white"></div>
+            {/* 본체 */}
+            <div className="relative rounded-2xl border border-gray-200 bg-white px-5 py-2.5">
+              <p className="whitespace-nowrap text-sm font-medium text-gray-600">{hintMessage}</p>
             </div>
           </div>
         )}
