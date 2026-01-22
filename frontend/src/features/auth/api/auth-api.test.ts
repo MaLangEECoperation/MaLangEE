@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
 import { authApi } from "./auth-api";
 
 // Mock dependencies
@@ -59,9 +60,7 @@ describe("authApi", () => {
         json: () => Promise.resolve({ detail: "Invalid credentials" }),
       });
 
-      await expect(authApi.login("user@test.com", "wrong")).rejects.toThrow(
-        "Invalid credentials"
-      );
+      await expect(authApi.login("user@test.com", "wrong")).rejects.toThrow("Invalid credentials");
     });
 
     it("should handle 422 validation error", async () => {
@@ -74,9 +73,7 @@ describe("authApi", () => {
           }),
       });
 
-      await expect(authApi.login("", "")).rejects.toThrow(
-        "Field required, Invalid format"
-      );
+      await expect(authApi.login("", "")).rejects.toThrow("Field required, Invalid format");
     });
 
     it("should throw generic error on other failures", async () => {
@@ -86,9 +83,7 @@ describe("authApi", () => {
         json: () => Promise.resolve({}),
       });
 
-      await expect(authApi.login("user@test.com", "pass")).rejects.toThrow(
-        "로그인에 실패했습니다"
-      );
+      await expect(authApi.login("user@test.com", "pass")).rejects.toThrow("로그인에 실패했습니다");
     });
   });
 

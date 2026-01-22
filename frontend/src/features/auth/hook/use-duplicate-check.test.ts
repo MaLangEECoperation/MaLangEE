@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
 import { useLoginIdCheck, useNicknameCheck, usePasswordValidation } from "./use-duplicate-check";
 
 // Mock authApi
@@ -212,10 +213,9 @@ describe("usePasswordValidation", () => {
   });
 
   it("should reset when value becomes empty", async () => {
-    const { result, rerender } = renderHook(
-      ({ value }) => usePasswordValidation(value),
-      { initialProps: { value: "ValidPass1!" } }
-    );
+    const { result, rerender } = renderHook(({ value }) => usePasswordValidation(value), {
+      initialProps: { value: "ValidPass1!" },
+    });
 
     await act(async () => {
       vi.advanceTimersByTime(300);

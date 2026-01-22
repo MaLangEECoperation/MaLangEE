@@ -27,6 +27,7 @@ Authorization: Bearer {access_token}
 모든 응답은 JSON 형식입니다.
 
 **성공 응답 예시:**
+
 ```json
 {
   "id": 1,
@@ -36,6 +37,7 @@ Authorization: Bearer {access_token}
 ```
 
 **에러 응답 예시:**
+
 ```json
 {
   "detail": "아이디 또는 비밀번호가 올바르지 않습니다."
@@ -53,6 +55,7 @@ POST /api/v1/auth/signup
 ```
 
 **Request Body:**
+
 ```json
 {
   "login_id": "user123",
@@ -62,6 +65,7 @@ POST /api/v1/auth/signup
 ```
 
 **Response (201):**
+
 ```json
 {
   "id": 1,
@@ -74,6 +78,7 @@ POST /api/v1/auth/signup
 ```
 
 **Error (400):**
+
 ```json
 {
   "detail": "이미 존재하는 아이디입니다."
@@ -81,6 +86,7 @@ POST /api/v1/auth/signup
 ```
 
 **유효성 검사:**
+
 - `login_id`, `nickname`, `password`: 빈 값 또는 공백만 입력 불가
 - 모든 필드 필수
 
@@ -94,6 +100,7 @@ Content-Type: application/x-www-form-urlencoded
 ```
 
 **Request Body (Form Data):**
+
 ```
 username=user123
 password=secure_password
@@ -102,6 +109,7 @@ password=secure_password
 **중요:** OAuth2 표준을 따라 `application/x-www-form-urlencoded` 형식을 사용합니다.
 
 **Response (200):**
+
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -110,6 +118,7 @@ password=secure_password
 ```
 
 **Error (401):**
+
 ```json
 {
   "detail": "아이디 또는 비밀번호가 올바르지 않습니다."
@@ -117,17 +126,18 @@ password=secure_password
 ```
 
 **사용 예시 (JavaScript):**
+
 ```javascript
 const formData = new URLSearchParams();
-formData.append('username', 'user123');
-formData.append('password', 'secure_password');
+formData.append("username", "user123");
+formData.append("password", "secure_password");
 
-const response = await fetch('http://localhost:8080/api/v1/auth/login', {
-  method: 'POST',
+const response = await fetch("http://localhost:8080/api/v1/auth/login", {
+  method: "POST",
   headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
+    "Content-Type": "application/x-www-form-urlencoded",
   },
-  body: formData
+  body: formData,
 });
 
 const data = await response.json();
@@ -143,6 +153,7 @@ POST /api/v1/auth/check-login-id
 ```
 
 **Request Body:**
+
 ```json
 {
   "login_id": "user123"
@@ -150,6 +161,7 @@ POST /api/v1/auth/check-login-id
 ```
 
 **Response (200):**
+
 ```json
 {
   "is_available": false
@@ -168,6 +180,7 @@ POST /api/v1/auth/check-nickname
 ```
 
 **Request Body:**
+
 ```json
 {
   "nickname": "말랭이"
@@ -175,6 +188,7 @@ POST /api/v1/auth/check-nickname
 ```
 
 **Response (200):**
+
 ```json
 {
   "is_available": true
@@ -195,6 +209,7 @@ Authorization: Bearer {access_token}
 ```
 
 **Response (200):**
+
 ```json
 {
   "id": 1,
@@ -216,6 +231,7 @@ Authorization: Bearer {access_token}
 ```
 
 **Request Body:**
+
 ```json
 {
   "nickname": "새로운닉네임",
@@ -227,6 +243,7 @@ Authorization: Bearer {access_token}
 - `nickname`만 변경하려면 `password` 필드 생략 가능
 
 **Response (200):**
+
 ```json
 {
   "id": 1,
@@ -248,6 +265,7 @@ Authorization: Bearer {access_token}
 ```
 
 **Response (200):**
+
 ```json
 {
   "id": 1,
@@ -260,6 +278,7 @@ Authorization: Bearer {access_token}
 ```
 
 **참고:**
+
 - 데이터는 실제로 삭제되지 않고 `is_active`가 `false`로 변경됩니다.
 - 탈퇴 후 해당 계정으로 로그인 불가
 
@@ -275,10 +294,12 @@ Authorization: Bearer {access_token}
 ```
 
 **Query Parameters:**
+
 - `skip` (optional, default: 0): 건너뛸 항목 수 (페이지네이션)
 - `limit` (optional, default: 20): 가져올 항목 수
 
 **Response (200):**
+
 ```json
 {
   "total": 45,
@@ -300,6 +321,7 @@ Authorization: Bearer {access_token}
 ```
 
 **필드 설명:**
+
 - `total`: 전체 세션 개수
 - `items`: 세션 요약 목록 (메시지 내용 미포함)
 - `has_next`: 다음 페이지 존재 여부
@@ -315,6 +337,7 @@ Authorization: Bearer {access_token}
 ```
 
 **Response (200):**
+
 ```json
 {
   "session_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -355,6 +378,7 @@ Authorization: Bearer {access_token}
 ```
 
 **Error (404):**
+
 ```json
 {
   "detail": "Session not found"
@@ -371,6 +395,7 @@ Authorization: Bearer {access_token}
 ```
 
 **Response (200):**
+
 ```json
 {
   "session_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -393,10 +418,12 @@ Authorization: Bearer {access_token}
 ```
 
 **설명:**
+
 - 로그인 없이 생성한 게스트 세션을 회원가입 후 계정에 연결합니다.
 - WebSocket 연결 종료 시 데이터는 자동 저장되므로, 이 엔드포인트는 사용자 ID 매핑 용도로만 사용됩니다.
 
 **Response (200):**
+
 ```json
 {
   "status": "success",
@@ -405,6 +432,7 @@ Authorization: Bearer {access_token}
 ```
 
 **Error (404):**
+
 ```json
 {
   "detail": "Session not found"
@@ -420,11 +448,13 @@ GET /api/v1/chat/hints/{session_id}
 ```
 
 **설명:**
+
 - 5초 이상 무응답 시 프론트엔드에서 호출
 - LLM을 통해 추천 답변 3개 생성
 - **인증 불필요** (게스트도 사용 가능)
 
 **Response (200):**
+
 ```json
 {
   "hints": [
@@ -437,6 +467,7 @@ GET /api/v1/chat/hints/{session_id}
 ```
 
 **힌트가 없는 경우:**
+
 ```json
 {
   "hints": [],
@@ -456,29 +487,26 @@ Authorization: Bearer {access_token}
 ```
 
 **설명:**
+
 - 세션 ID로 대화 내용을 조회하여 AI 피드백 생성
 - LangGraph 기반 AI Agent가 분석 수행
 
 **Response (200):**
+
 ```json
 {
   "session_id": "550e8400-e29b-41d4-a716-446655440000",
   "feedback": {
     "overall_score": 85,
-    "strengths": [
-      "Clear pronunciation",
-      "Good grammar usage"
-    ],
-    "improvements": [
-      "Try using more varied vocabulary",
-      "Speak a bit slower for better clarity"
-    ],
+    "strengths": ["Clear pronunciation", "Good grammar usage"],
+    "improvements": ["Try using more varied vocabulary", "Speak a bit slower for better clarity"],
     "detailed_analysis": "Your conversation showed good command of basic English..."
   }
 }
 ```
 
 **Error (404):**
+
 ```json
 {
   "detail": "Session not found"
@@ -496,11 +524,13 @@ ws://49.50.137.35:8080/api/v1/chat/ws/chat/{session_id}?token={access_token}&voi
 ```
 
 **Query Parameters:**
+
 - `token` (필수): JWT access token (쿼리 파라미터 또는 헤더로 전달 가능)
 - `voice` (선택): AI 음성 종류 (`alloy`, `echo`, `fable`, `onyx`, `nova`, `shimmer`)
 - `show_text` (선택): 자막 표시 여부 (`true` / `false`)
 
 **연결 과정:**
+
 1. WebSocket 연결 요청
 2. 서버가 토큰 검증
 3. 세션 ID 확인 및 소유권 검증
@@ -518,10 +548,12 @@ ws://49.50.137.35:8080/api/v1/chat/ws/guest-chat/{session_id}?voice=alloy&show_t
 ```
 
 **Query Parameters:**
+
 - `voice` (선택): AI 음성 종류
 - `show_text` (선택): 자막 표시 여부
 
 **특징:**
+
 - 인증 불필요
 - 세션 데이터는 자동 저장되며 이후 `/sessions/{session_id}/sync`로 계정 연동 가능
 
@@ -534,6 +566,7 @@ ws://49.50.137.35:8080/api/v1/scenarios/ws/scenario?token={access_token}
 ```
 
 **설명:**
+
 - 사용자 음성/텍스트 입력으로 대화 시나리오 자동 생성
 - Place, Partner, Goal 추출 후 시나리오 완성
 
@@ -548,6 +581,7 @@ ws://49.50.137.35:8080/api/v1/scenarios/ws/guest-scenario
 ```
 
 **특징:**
+
 - 인증 불필요
 - 시나리오 완성 후 세션 ID 반환
 
@@ -555,25 +589,25 @@ ws://49.50.137.35:8080/api/v1/scenarios/ws/guest-scenario
 
 ## 에러 코드
 
-| HTTP Status | 설명 |
-|------------|------|
-| 200 | 성공 |
-| 201 | 생성 성공 |
-| 204 | 성공 (응답 본문 없음) |
-| 400 | 잘못된 요청 (유효성 검증 실패) |
-| 401 | 인증 실패 |
-| 403 | 권한 없음 |
-| 404 | 리소스를 찾을 수 없음 |
-| 500 | 서버 내부 오류 |
+| HTTP Status | 설명                           |
+| ----------- | ------------------------------ |
+| 200         | 성공                           |
+| 201         | 생성 성공                      |
+| 204         | 성공 (응답 본문 없음)          |
+| 400         | 잘못된 요청 (유효성 검증 실패) |
+| 401         | 인증 실패                      |
+| 403         | 권한 없음                      |
+| 404         | 리소스를 찾을 수 없음          |
+| 500         | 서버 내부 오류                 |
 
 **WebSocket 종료 코드:**
 
-| Code | 설명 |
-|------|------|
+| Code | 설명                                 |
+| ---- | ------------------------------------ |
 | 1008 | 서버 설정 오류 (OPENAI_API_KEY 없음) |
-| 1011 | 서버 내부 오류 |
-| 4003 | 인증되지 않은 세션 접근 시도 |
-| 4004 | 세션을 찾을 수 없음 |
+| 1011 | 서버 내부 오류                       |
+| 4003 | 인증되지 않은 세션 접근 시도         |
+| 4004 | 세션을 찾을 수 없음                  |
 
 ---
 
@@ -584,23 +618,23 @@ ws://49.50.137.35:8080/api/v1/scenarios/ws/guest-scenario
 ```typescript
 async function login(loginId: string, password: string) {
   const formData = new URLSearchParams();
-  formData.append('username', loginId);
-  formData.append('password', password);
+  formData.append("username", loginId);
+  formData.append("password", password);
 
-  const response = await fetch('http://localhost:8080/api/v1/auth/login', {
-    method: 'POST',
+  const response = await fetch("http://localhost:8080/api/v1/auth/login", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      "Content-Type": "application/x-www-form-urlencoded",
     },
-    body: formData
+    body: formData,
   });
 
   if (!response.ok) {
-    throw new Error('Login failed');
+    throw new Error("Login failed");
   }
 
   const data = await response.json();
-  localStorage.setItem('access_token', data.access_token);
+  localStorage.setItem("access_token", data.access_token);
   return data.access_token;
 }
 ```
@@ -609,16 +643,16 @@ async function login(loginId: string, password: string) {
 
 ```typescript
 async function getCurrentUser() {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem("access_token");
 
-  const response = await fetch('http://localhost:8080/api/v1/users/me', {
+  const response = await fetch("http://localhost:8080/api/v1/users/me", {
     headers: {
-      'Authorization': `Bearer ${token}`
-    }
+      Authorization: `Bearer ${token}`,
+    },
   });
 
   if (!response.ok) {
-    throw new Error('Failed to fetch user');
+    throw new Error("Failed to fetch user");
   }
 
   return await response.json();
@@ -629,27 +663,27 @@ async function getCurrentUser() {
 
 ```typescript
 async function getChatSessions(page: number = 0, pageSize: number = 20) {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem("access_token");
   const skip = page * pageSize;
 
   const response = await fetch(
     `http://localhost:8080/api/v1/chat/sessions?skip=${skip}&limit=${pageSize}`,
     {
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     }
   );
 
   if (!response.ok) {
-    throw new Error('Failed to fetch sessions');
+    throw new Error("Failed to fetch sessions");
   }
 
   const data = await response.json();
   return {
     sessions: data.items,
     total: data.total,
-    hasNext: data.has_next
+    hasNext: data.has_next,
   };
 }
 ```

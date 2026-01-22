@@ -85,7 +85,9 @@
   justify-content: center;
   align-items: center;
   box-shadow: 0 8px 20px rgba(126, 108, 243, 0.3);
-  transition: transform 0.2s, background 0.3s;
+  transition:
+    transform 0.2s,
+    background 0.3s;
   color: white;
 }
 

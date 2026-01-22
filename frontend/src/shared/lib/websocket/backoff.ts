@@ -30,7 +30,10 @@ export const DEFAULT_BACKOFF_CONFIG: BackoffConfig = {
  * @param config - Backoff 설정
  * @returns 대기 시간 (ms)
  */
-export const calculateBackoffDelay = (attempt: number, config: BackoffConfig = DEFAULT_BACKOFF_CONFIG): number => {
+export const calculateBackoffDelay = (
+  attempt: number,
+  config: BackoffConfig = DEFAULT_BACKOFF_CONFIG
+): number => {
   const { initialDelay, maxDelay, multiplier, jitterFactor } = config;
 
   // Exponential delay 계산

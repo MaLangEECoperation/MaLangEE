@@ -23,43 +23,43 @@ Tailwind CSS v4는 CSS 기반 설정을 사용합니다. 모든 설정은 `src/a
 
 말랭이 프로젝트 전용 브랜드 색상입니다.
 
-| 변수 | oklch 값 | hex 값 | 용도 |
-|------|-----------|--------|------|
-| `brand` | `oklch(0.55 0.2 280)` | `#7B6CF6` | 기본 브랜드 색상 |
-| `brand-foreground` | `oklch(1 0 0)` | `#FFFFFF` | 브랜드 색상 위 텍스트 |
-| `brand-700` | `oklch(0.35 0.15 280)` | `#4b3f74` | 더 진한 브랜드 (헤더, 강조) |
-| `brand-200` | `oklch(0.85 0.08 280)` | `#cfc5ff` | 연한 브랜드 (배경, 보조) |
-| `brand-50` | `oklch(0.95 0.02 280)` | `#f0e8ff` | 매우 연한 브랜드 (배경) |
+| 변수               | oklch 값               | hex 값    | 용도                        |
+| ------------------ | ---------------------- | --------- | --------------------------- |
+| `brand`            | `oklch(0.55 0.2 280)`  | `#7B6CF6` | 기본 브랜드 색상            |
+| `brand-foreground` | `oklch(1 0 0)`         | `#FFFFFF` | 브랜드 색상 위 텍스트       |
+| `brand-700`        | `oklch(0.35 0.15 280)` | `#4b3f74` | 더 진한 브랜드 (헤더, 강조) |
+| `brand-200`        | `oklch(0.85 0.08 280)` | `#cfc5ff` | 연한 브랜드 (배경, 보조)    |
+| `brand-50`         | `oklch(0.95 0.02 280)` | `#f0e8ff` | 매우 연한 브랜드 (배경)     |
 
 ### Text Colors (Phase 2 추가)
 
 일관된 텍스트 색상을 위한 변수입니다.
 
-| 변수 | oklch 값 | hex 값 | 용도 |
-|------|-----------|--------|------|
-| `text-primary` | `oklch(0.15 0.01 280)` | `#1F1C2B` | 주요 텍스트 |
+| 변수             | oklch 값               | hex 값    | 용도                     |
+| ---------------- | ---------------------- | --------- | ------------------------ |
+| `text-primary`   | `oklch(0.15 0.01 280)` | `#1F1C2B` | 주요 텍스트              |
 | `text-secondary` | `oklch(0.45 0.03 280)` | `#625a75` | 보조 텍스트 (설명, 캡션) |
 
 ### Gradient Colors (Phase 2 추가)
 
 페이지 배경에 사용되는 그라디언트 색상입니다.
 
-| 변수 | oklch 값 | hex 값 | 용도 |
-|------|-----------|--------|------|
+| 변수              | oklch 값               | hex 값    | 용도                   |
+| ----------------- | ---------------------- | --------- | ---------------------- |
 | `gradient-purple` | `oklch(0.88 0.08 310)` | `#F6D7FF` | 그라디언트 시작 (보라) |
-| `gradient-blue` | `oklch(0.92 0.03 250)` | `#DCE9FF` | 그라디언트 끝 (파랑) |
+| `gradient-blue`   | `oklch(0.92 0.03 250)` | `#DCE9FF` | 그라디언트 끝 (파랑)   |
 
 ### Primary Scale (Purple)
 
 버튼, 포인트 컬러로 사용되는 보라색 계열입니다.
 
-| 변수 | 값 | 용도 |
-|------|-----|------|
-| `primary-900` | `#5F51D9` | 가장 진한 보라 |
-| `primary-800` | `#6F60EB` | 다크모드 액센트 |
+| 변수          | 값        | 용도              |
+| ------------- | --------- | ----------------- |
+| `primary-900` | `#5F51D9` | 가장 진한 보라    |
+| `primary-800` | `#6F60EB` | 다크모드 액센트   |
 | `primary-700` | `#7B6CF6` | 기본 primary 색상 |
-| `primary-600` | `#B6AEFF` | 라이트 포인트 |
-| `primary-500` | `#C9C5F3` | 가장 연한 보라 |
+| `primary-600` | `#B6AEFF` | 라이트 포인트     |
+| `primary-500` | `#C9C5F3` | 가장 연한 보라    |
 
 ```tsx
 // Brand 색상 사용 (Phase 2 권장)
@@ -77,33 +77,31 @@ Tailwind CSS v4는 CSS 기반 설정을 사용합니다. 모든 설정은 `src/a
 
 보라색 톤이 가미된 그레이 스케일입니다.
 
-| 변수 | 값 | 용도 |
-|------|-----|------|
-| `gray-900` | `#1F1C2B` | 타이틀, 다크모드 배경 |
-| `gray-800` | `#2B2F35` | 다크모드 카드 배경 |
-| `gray-700` | `#4A4658` | 다크모드 보더 |
-| `gray-600` | `#6A667A` | 라이트모드 muted 텍스트 |
-| `gray-500` | `#8B879B` | 비활성 텍스트 |
-| `gray-400` | `#A9A6B5` | 다크모드 muted 텍스트 |
-| `gray-300` | `#D5D2DE` | 구분선 |
-| `gray-200` | `#ECEAF2` | 라이트모드 보더 |
+| 변수       | 값        | 용도                      |
+| ---------- | --------- | ------------------------- |
+| `gray-900` | `#1F1C2B` | 타이틀, 다크모드 배경     |
+| `gray-800` | `#2B2F35` | 다크모드 카드 배경        |
+| `gray-700` | `#4A4658` | 다크모드 보더             |
+| `gray-600` | `#6A667A` | 라이트모드 muted 텍스트   |
+| `gray-500` | `#8B879B` | 비활성 텍스트             |
+| `gray-400` | `#A9A6B5` | 다크모드 muted 텍스트     |
+| `gray-300` | `#D5D2DE` | 구분선                    |
+| `gray-200` | `#ECEAF2` | 라이트모드 보더           |
 | `gray-100` | `#F5F4F9` | 라이트모드 secondary 배경 |
-| `gray-70` | `#FAF9FD` | 사이드바 배경 |
-| `gray-50` | `#FDFDFF` | 다크모드 텍스트 |
+| `gray-70`  | `#FAF9FD` | 사이드바 배경             |
+| `gray-50`  | `#FDFDFF` | 다크모드 텍스트           |
 
 ```tsx
-<p className="text-gray-900 dark:text-gray-50">
-  텍스트
-</p>
+<p className="text-gray-900 dark:text-gray-50">텍스트</p>
 ```
 
 ### Dim Colors
 
 오버레이에 사용되는 반투명 색상입니다.
 
-| 변수 | 값 | 용도 |
-|------|-----|------|
-| `dim` | `rgba(0, 0, 0, 0.7)` | 강한 오버레이 |
+| 변수        | 값                   | 용도          |
+| ----------- | -------------------- | ------------- |
+| `dim`       | `rgba(0, 0, 0, 0.7)` | 강한 오버레이 |
 | `dim-light` | `rgba(0, 0, 0, 0.4)` | 약한 오버레이 |
 
 ```tsx
@@ -116,25 +114,23 @@ Tailwind CSS v4는 CSS 기반 설정을 사용합니다. 모든 설정은 `src/a
 
 shadcn/ui와 호환되는 시맨틱 색상 변수입니다.
 
-| 변수 | 라이트모드 | 다크모드 | 용도 |
-|------|-----------|---------|------|
-| `background` | `#FFFFFF` | `#1F1C2B` | 페이지 배경 |
-| `foreground` | `#1F1C2B` | `#FDFDFF` | 기본 텍스트 |
-| `primary` | `#7B6CF6` | `#7B6CF6` | 주요 액션 |
-| `secondary` | `#F5F4F9` | `#4A4658` | 보조 배경 |
-| `muted` | `#F5F4F9` | `#4A4658` | 비활성 배경 |
-| `muted-foreground` | `#6A667A` | `#A9A6B5` | 비활성 텍스트 |
-| `accent` | `#B6AEFF` | `#6F60EB` | 강조 |
-| `destructive` | oklch 기반 | oklch 기반 | 삭제/위험 |
-| `border` | `#ECEAF2` | `#4A4658` | 테두리 |
-| `input` | `#ECEAF2` | `#4A4658` | 입력 필드 테두리 |
-| `ring` | `#7B6CF6` | `#7B6CF6` | 포커스 링 |
+| 변수               | 라이트모드 | 다크모드   | 용도             |
+| ------------------ | ---------- | ---------- | ---------------- |
+| `background`       | `#FFFFFF`  | `#1F1C2B`  | 페이지 배경      |
+| `foreground`       | `#1F1C2B`  | `#FDFDFF`  | 기본 텍스트      |
+| `primary`          | `#7B6CF6`  | `#7B6CF6`  | 주요 액션        |
+| `secondary`        | `#F5F4F9`  | `#4A4658`  | 보조 배경        |
+| `muted`            | `#F5F4F9`  | `#4A4658`  | 비활성 배경      |
+| `muted-foreground` | `#6A667A`  | `#A9A6B5`  | 비활성 텍스트    |
+| `accent`           | `#B6AEFF`  | `#6F60EB`  | 강조             |
+| `destructive`      | oklch 기반 | oklch 기반 | 삭제/위험        |
+| `border`           | `#ECEAF2`  | `#4A4658`  | 테두리           |
+| `input`            | `#ECEAF2`  | `#4A4658`  | 입력 필드 테두리 |
+| `ring`             | `#7B6CF6`  | `#7B6CF6`  | 포커스 링        |
 
 ```tsx
 <div className="bg-background text-foreground">
-  <button className="bg-primary text-primary-foreground">
-    버튼
-  </button>
+  <button className="bg-primary text-primary-foreground">버튼</button>
 </div>
 ```
 
@@ -167,29 +163,29 @@ shadcn/ui와 호환되는 시맨틱 색상 변수입니다.
 
 ### 그라디언트 색상값
 
-| 클래스 | 색상값 |
-|--------|--------|
-| `gradient-primary` | `#F6D7FF → #DCE9FF` |
+| 클래스                      | 색상값                        |
+| --------------------------- | ----------------------------- |
+| `gradient-primary`          | `#F6D7FF → #DCE9FF`           |
 | `gradient-primary-extended` | `#F6D7FF → #DCE9FF → #FFFDE2` |
-| `gradient-warm` | `#FFFCDC → #FFD8FC` |
-| `gradient-cool` | `#F6D7FF → #DCE9FF` |
-| `gradient-vibrant` | `#A770EF → #CF8BF3 → #FDB99B` |
-| `gradient-soft` | `#F3EFFF → #EAD7F8` |
-| `gradient-blush` | `#FADADD → #E6D9FF` |
+| `gradient-warm`             | `#FFFCDC → #FFD8FC`           |
+| `gradient-cool`             | `#F6D7FF → #DCE9FF`           |
+| `gradient-vibrant`          | `#A770EF → #CF8BF3 → #FDB99B` |
+| `gradient-soft`             | `#F3EFFF → #EAD7F8`           |
+| `gradient-blush`            | `#FADADD → #E6D9FF`           |
 
 ## Border Radius
 
 CSS 변수 `--radius`를 기준으로 상대적인 크기가 정의됩니다. 기본값은 `0.625rem` (10px)입니다.
 
-| 변수 | 계산식 | 기본값 |
-|------|--------|--------|
-| `radius-sm` | `--radius - 4px` | 6px |
-| `radius-md` | `--radius - 2px` | 8px |
-| `radius-lg` | `--radius` | 10px |
-| `radius-xl` | `--radius + 4px` | 14px |
-| `radius-2xl` | `--radius + 8px` | 18px |
-| `radius-3xl` | `--radius + 12px` | 22px |
-| `radius-4xl` | `--radius + 16px` | 26px |
+| 변수         | 계산식            | 기본값 |
+| ------------ | ----------------- | ------ |
+| `radius-sm`  | `--radius - 4px`  | 6px    |
+| `radius-md`  | `--radius - 2px`  | 8px    |
+| `radius-lg`  | `--radius`        | 10px   |
+| `radius-xl`  | `--radius + 4px`  | 14px   |
+| `radius-2xl` | `--radius + 8px`  | 18px   |
+| `radius-3xl` | `--radius + 12px` | 22px   |
+| `radius-4xl` | `--radius + 16px` | 26px   |
 
 ```tsx
 <div className="rounded-lg">기본 라운드</div>
@@ -225,13 +221,9 @@ const toggleDarkMode = () => {
 ### 카드 컴포넌트
 
 ```tsx
-<div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-  <h3 className="text-lg font-semibold text-card-foreground">
-    카드 타이틀
-  </h3>
-  <p className="mt-2 text-muted-foreground">
-    카드 설명 텍스트
-  </p>
+<div className="border-border bg-card rounded-xl border p-6 shadow-sm">
+  <h3 className="text-card-foreground text-lg font-semibold">카드 타이틀</h3>
+  <p className="text-muted-foreground mt-2">카드 설명 텍스트</p>
 </div>
 ```
 
@@ -259,7 +251,7 @@ const toggleDarkMode = () => {
 ```tsx
 <input
   type="text"
-  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+  className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:ring-ring w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2"
   placeholder="입력하세요"
 />
 ```
@@ -268,8 +260,8 @@ const toggleDarkMode = () => {
 
 차트 라이브러리(Recharts)에서 사용할 수 있는 색상 변수입니다.
 
-| 변수 | 라이트 | 다크 |
-|------|--------|------|
+| 변수      | 라이트    | 다크      |
+| --------- | --------- | --------- |
 | `chart-1` | `#7B6CF6` | `#7B6CF6` |
 | `chart-2` | `#B6AEFF` | `#B6AEFF` |
 | `chart-3` | `#F6D7FF` | `#6F60EB` |
@@ -278,11 +270,7 @@ const toggleDarkMode = () => {
 
 ```tsx
 <AreaChart data={data}>
-  <Area
-    dataKey="value"
-    fill="var(--chart-1)"
-    stroke="var(--chart-1)"
-  />
+  <Area dataKey="value" fill="var(--chart-1)" stroke="var(--chart-1)" />
 </AreaChart>
 ```
 
@@ -290,16 +278,16 @@ const toggleDarkMode = () => {
 
 사이드바 전용 색상 변수입니다.
 
-| 변수 | 라이트 | 다크 |
-|------|--------|------|
-| `sidebar` | `#FAF9FD` | `#2B2F35` |
+| 변수                 | 라이트    | 다크      |
+| -------------------- | --------- | --------- |
+| `sidebar`            | `#FAF9FD` | `#2B2F35` |
 | `sidebar-foreground` | `#1F1C2B` | `#FDFDFF` |
-| `sidebar-primary` | `#7B6CF6` | `#7B6CF6` |
-| `sidebar-accent` | `#F5F4F9` | `#4A4658` |
-| `sidebar-border` | `#ECEAF2` | `#4A4658` |
+| `sidebar-primary`    | `#7B6CF6` | `#7B6CF6` |
+| `sidebar-accent`     | `#F5F4F9` | `#4A4658` |
+| `sidebar-border`     | `#ECEAF2` | `#4A4658` |
 
 ```tsx
-<aside className="bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
+<aside className="bg-sidebar text-sidebar-foreground border-sidebar-border border-r">
   <nav>
     <a className="hover:bg-sidebar-accent">메뉴 1</a>
   </nav>

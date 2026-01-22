@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+
 import { createMockJWT, MOCK_USER, setAuthStorage } from "./helpers/auth";
 
 /**
@@ -110,9 +111,7 @@ test.describe("대시보드 페이지", () => {
     await expect(page.getByText("대화 내역")).toBeVisible();
 
     // 새 대화 시작 버튼 확인
-    await expect(
-      page.getByText("말랭이랑 새로운 대화를 해볼까요?")
-    ).toBeVisible();
+    await expect(page.getByText("말랭이랑 새로운 대화를 해볼까요?")).toBeVisible();
   });
 
   test("사용자 통계 정보가 표시되어야 함", async ({ page }) => {
@@ -154,9 +153,7 @@ test.describe("대화 내역 목록", () => {
     await page.waitForTimeout(500);
   });
 
-  test("대화 내역이 없을 때 빈 상태 메시지가 표시되어야 함", async ({
-    page,
-  }) => {
+  test("대화 내역이 없을 때 빈 상태 메시지가 표시되어야 함", async ({ page }) => {
     // 새로운 페이지에서 빈 세션으로 테스트
     await page.route("**/api/v1/chat/sessions*", async (route) => {
       await route.fulfill({
@@ -176,9 +173,7 @@ test.describe("대화 내역 목록", () => {
     await page.waitForLoadState("networkidle");
 
     // 빈 상태 메시지 확인
-    await expect(
-      page.getByText("말랭이와 대화한 이력이 없어요.")
-    ).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("말랭이와 대화한 이력이 없어요.")).toBeVisible({ timeout: 10000 });
   });
 });
 
@@ -229,9 +224,7 @@ test.describe("로그아웃 기능", () => {
     await expect(page.getByText("정말 로그아웃 하실건가요?")).toBeVisible();
   });
 
-  test("로그아웃 확인 팝업에서 닫기 클릭 시 팝업이 닫혀야 함", async ({
-    page,
-  }) => {
+  test("로그아웃 확인 팝업에서 닫기 클릭 시 팝업이 닫혀야 함", async ({ page }) => {
     await page.getByRole("button", { name: "로그아웃" }).click();
     await page.getByRole("button", { name: "닫기" }).click();
 
@@ -488,16 +481,12 @@ test.describe("localStorage 상태 관리", () => {
     await performLogin(page);
   });
 
-  test("새 대화 시작 시 entryType이 member로 설정되어야 함", async ({
-    page,
-  }) => {
+  test("새 대화 시작 시 entryType이 member로 설정되어야 함", async ({ page }) => {
     // 새 대화 시작 버튼 클릭
     await page.getByText("말랭이랑 새로운 대화를 해볼까요?").click();
 
     // localStorage 확인
-    const entryType = await page.evaluate(() =>
-      localStorage.getItem("entryType")
-    );
+    const entryType = await page.evaluate(() => localStorage.getItem("entryType"));
     expect(entryType).toBe("member");
   });
 

@@ -3,12 +3,14 @@
 이 문서는 `/ai-engine/scenario` 모듈을 FastAPI WebSocket으로 노출한 엔드포인트에 React 프런트엔드를 연결하는 방법을 정리한다. 목표는 음성 입력 → STT → 시나리오 구성 → TTS 응답 → `scenario.completed`까지의 흐름을 UI에서 안정적으로 다루는 것이다.
 
 ## 1) 모듈 역할 요약
+
 - 시나리오 구성 조건: 장소(place), 대화 상대(partner), 대화 목적(goal) 3가지 확보.
 - 최대 3회까지 보완 질문 후, 부족하면 fallback 추정으로 완료.
 - 완료 시 `scenario.completed` 이벤트를 1회 전송하고 이후 입력 무시.
 - 음성 입력은 OpenAI Realtime STT로 처리, 응답은 TTS(PCM16)로 스트리밍.
 
 관련 코드:
+
 - 시나리오 로직: `ai-engine/scenario/scenario_builder.py`
 - 이벤트 파이프라인: `ai-engine/scenario/realtime_pipeline.py`
 - WS 핸들러: `ai-engine/scenario/realtime_bridge.py`
@@ -16,15 +18,17 @@
 - 테스트 참고: `tests/index.html`
 
 ## 2) 프런트엔드 데이터 흐름
-1) 브라우저 마이크 → PCM16 base64 → WS(`/api/v1/ws/scenario` 또는 `/api/v1/ws/guest-scenario`, `input_audio_chunk`)
-2) 서버가 Realtime STT로 사용자 발화를 텍스트로 추출
-3) 시나리오 로직이 질문/완료 문장 생성
-4) 서버가 TTS(PCM16) 스트리밍 전송(`response.audio.delta`)
-5) 완료 시 `scenario.completed` 전송
+
+1. 브라우저 마이크 → PCM16 base64 → WS(`/api/v1/ws/scenario` 또는 `/api/v1/ws/guest-scenario`, `input_audio_chunk`)
+2. 서버가 Realtime STT로 사용자 발화를 텍스트로 추출
+3. 시나리오 로직이 질문/완료 문장 생성
+4. 서버가 TTS(PCM16) 스트리밍 전송(`response.audio.delta`)
+5. 완료 시 `scenario.completed` 전송
 
 ## 3) WebSocket 메시지 스펙
 
 ### 3.1 Client → Server
+
 - `input_audio_chunk`
   - `{ type: "input_audio_chunk", audio: "<base64 pcm16>", sample_rate: 16000 }`
   - `sample_rate`는 마이크 입력 샘플레이트(예: 16000).
@@ -39,6 +43,7 @@
   - 마이크 없이 텍스트 테스트용.
 
 ### 3.2 Server → Client
+
 - `ready`
   - `{ type: "ready" }`
   - 연결 준비 완료 시 수신. 이후 오디오 전송 권장.
@@ -66,21 +71,25 @@
 ## 4) React 구현 포인트
 
 ### 4.1 오디오 캡처 및 전송
+
 - 브라우저 오디오는 Float32 → PCM16 변환 필요.
 - 입력 샘플레이트는 16k 권장. 필요 시 다운샘플링.
 - 서버가 모델 발화 중일 때 입력을 무시하므로, 프런트엔드는 응답 재생 중 마이크를 자동 중지하거나 감쇠하는 UX가 좋다.
 
 ### 4.2 PCM16 재생
+
 - `response.audio.delta` 수신 시 base64 → PCM16 → Float32 변환 후 Web Audio API로 큐잉.
 - `response.audio.done`에서 재생 스케줄을 초기화하거나 다음 입력을 허용하는 UX 상태 전환.
 
 ### 4.3 시나리오 완료 처리
+
 - `scenario.completed` 수신 시:
   - 마이크 중지
   - UI에 완료 카드/요약 표시
   - 추가 입력 비활성화
 
 ## 5) React 예시 코드 (핵심 로직)
+
 아래는 최소 동작 구조이다. 실제 앱에서는 에러 처리, 재연결, 상태 관리 보강을 권장한다.
 
 ```tsx
@@ -205,7 +214,7 @@ export function ScenarioClient({ wsUrl }: { wsUrl: string }) {
         type: "input_audio_chunk",
         audio: bytesToBase64(pcm16),
         sample_rate: sampleRate,
-      }),
+      })
     );
   };
 
@@ -221,11 +230,13 @@ export function ScenarioClient({ wsUrl }: { wsUrl: string }) {
 ```
 
 ## 6) UX 권장 사항
+
 - “모델 응답 중 마이크 입력 차단” UX 표시 (서버가 입력을 무시함).
 - `scenario.completed` 수신 시 대화 종료 안내 및 다음 단계 버튼 제공.
 - STT 텍스트(`input_audio.transcript`)를 실시간 캡션으로 표시하면 대화 흐름이 안정적.
 
 ## 7) 로컬 테스트 방법
+
 - 서버 실행:
   - `cd backend`
   - `uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
@@ -234,6 +245,7 @@ export function ScenarioClient({ wsUrl }: { wsUrl: string }) {
 - `tests/index.html` 기본 URL은 게스트 엔드포인트를 사용.
 
 ## 8) 주의사항
+
 - 입력 오디오 포맷은 PCM16(LE), 모노 채널 기준.
 - 응답 오디오 샘플레이트는 기본 24kHz.
 - 완료 후 서버는 OpenAI WS를 닫으므로, 프런트에서는 마이크/스트림을 정리해야 한다.

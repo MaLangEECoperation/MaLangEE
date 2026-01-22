@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+
 import { PopupLayout } from "./PopupLayout";
 
 describe("PopupLayout", () => {
@@ -78,10 +79,7 @@ describe("PopupLayout", () => {
 
   it("renders headerContent when provided", () => {
     render(
-      <PopupLayout
-        onClose={() => {}}
-        headerContent={<div>Custom Header</div>}
-      >
+      <PopupLayout onClose={() => {}} headerContent={<div>Custom Header</div>}>
         <div>Content</div>
       </PopupLayout>
     );
@@ -90,11 +88,7 @@ describe("PopupLayout", () => {
 
   it("prefers headerContent over title", () => {
     render(
-      <PopupLayout
-        onClose={() => {}}
-        title="Title"
-        headerContent={<div>Custom Header</div>}
-      >
+      <PopupLayout onClose={() => {}} title="Title" headerContent={<div>Custom Header</div>}>
         <div>Content</div>
       </PopupLayout>
     );

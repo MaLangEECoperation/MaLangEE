@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+
 import { authApi } from "../api";
 import { nicknameValidation, registerSchema } from "../model/schema";
 
@@ -288,4 +289,3 @@ export function usePasswordValidation(
 
   return { error, isChecking, isValid };
 }
-

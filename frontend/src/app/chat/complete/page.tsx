@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
-import { Button, MalangEE } from "@/shared/ui";
+
 import { useGetChatSession } from "@/features/chat/api/use-chat-sessions";
+import { Button, MalangEE } from "@/shared/ui";
 
 // 초기 sessionId를 가져오는 함수 (클라이언트 전용)
 function getInitialSessionId(): string | null {
@@ -86,19 +87,16 @@ export default function ChatCompletePage() {
           </div>
           <div className="flex items-center justify-between px-4">
             <span className="text-sm font-medium text-gray-600">내가 말한 시간</span>
-            <span className="text-sm font-semibold text-gray-900">{formatTime(userSpeakDuration)}</span>
+            <span className="text-sm font-semibold text-gray-900">
+              {formatTime(userSpeakDuration)}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Button */}
       <div className="mt-4 w-full max-w-sm">
-        <Button
-          onClick={handleGoHome}
-          variant="primary"
-          size="lg"
-          fullWidth
-        >
+        <Button onClick={handleGoHome} variant="primary" size="lg" fullWidth>
           처음으로 돌아가기
         </Button>
       </div>

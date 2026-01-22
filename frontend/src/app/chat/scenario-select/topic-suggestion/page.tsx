@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Button, Toggle, MalangEE } from "@/shared/ui";
 import { ChevronLeft, ChevronRight, Mic, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
 import { type Scenario, useScenarios } from "@/features/chat/api/scenarios";
 import { useCreateChatSession } from "@/features/chat/api/use-chat-sessions";
+import { Button, Toggle, MalangEE } from "@/shared/ui";
 import { PopupLayout } from "@/shared/ui/PopupLayout";
 
 interface VoiceOption {

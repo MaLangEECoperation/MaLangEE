@@ -4,7 +4,6 @@
  */
 
 export const config = {
-
   // 백엔드 API 기본 URL (서버 사이드용)
   apiBaseUrl: process.env.NEXT_PUBLIC_API_URL || "http://49.50.137.35:8080",
 
@@ -18,10 +17,10 @@ export const config = {
    */
   get apiUrl(): string {
     // 브라우저 환경(클라이언트)에서는 상대 경로 사용
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       return this.apiBasePath;
     }
-    
+
     // 서버 사이드(SSR/SSG) 환경에서는 전체 URL 사용
     return `${this.apiBaseUrl}${this.apiBasePath}`;
   },

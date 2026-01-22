@@ -1,9 +1,10 @@
 "use client";
 
-import type { FC } from "react";
 import { MapPin, Users, Target } from "lucide-react";
-import { PopupLayout } from "./PopupLayout";
+import type { FC } from "react";
+
 import { Button } from "./Button";
+import { PopupLayout } from "./PopupLayout";
 
 export interface ScenarioResult {
   /** 대화 장소 */
@@ -41,17 +42,11 @@ export const ScenarioResultPopup: FC<ScenarioResultPopupProps> = ({
   subtitle = "연습할 시나리오 정보를 확인해주세요.",
 }) => {
   return (
-    <PopupLayout
-      onClose={onCancel}
-      maxWidth="md"
-      showCloseButton={false}
-    >
+    <PopupLayout onClose={onCancel} maxWidth="md" showCloseButton={false}>
       <div className="flex flex-col items-center gap-8 py-6">
         <div className="w-full space-y-6">
           <div className="text-center">
-            <h2 className="text-text-primary text-2xl font-bold tracking-tight">
-              {title}
-            </h2>
+            <h2 className="text-text-primary text-2xl font-bold tracking-tight">{title}</h2>
             <p className="text-text-secondary mt-2 text-sm">{subtitle}</p>
           </div>
           <div className="grid gap-3">
@@ -64,9 +59,7 @@ export const ScenarioResultPopup: FC<ScenarioResultPopupProps> = ({
                 <span className="text-[11px] font-bold uppercase tracking-tight text-gray-400">
                   연습 장소
                 </span>
-                <p className="text-text-primary font-bold">
-                  {scenarioResult.place || "알수없음"}
-                </p>
+                <p className="text-text-primary font-bold">{scenarioResult.place || "알수없음"}</p>
               </div>
             </div>
 
@@ -104,20 +97,10 @@ export const ScenarioResultPopup: FC<ScenarioResultPopupProps> = ({
 
         {/* 버튼 영역 */}
         <div className="mt-2 flex w-full gap-3">
-          <Button
-            onClick={onCancel}
-            variant="outline-purple"
-            className="flex-1"
-            size="lg"
-          >
+          <Button onClick={onCancel} variant="outline-purple" className="flex-1" size="lg">
             {cancelText}
           </Button>
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={onConfirm}
-            className="flex-1"
-          >
+          <Button variant="primary" size="lg" onClick={onConfirm} className="flex-1">
             {confirmText}
           </Button>
         </div>

@@ -14,10 +14,10 @@
 
 ## 서버 정보
 
-| 환경 | Frontend | Backend API | WebSocket |
-|------|----------|-------------|-----------|
+| 환경 | Frontend                 | Backend API                  | WebSocket                        |
+| ---- | ------------------------ | ---------------------------- | -------------------------------- |
 | 개발 | http://49.50.137.35:3000 | http://49.50.137.35:8080/api | ws://49.50.137.35:8080/api/v1/ws |
-| 로컬 | http://localhost:3000 | http://localhost:8080 | ws://localhost:8080/api/v1/ws |
+| 로컬 | http://localhost:3000    | http://localhost:8080        | ws://localhost:8080/api/v1/ws    |
 
 ## 필수 명령어
 

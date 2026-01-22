@@ -1,6 +1,7 @@
 # Conversation Page 로직 문서
 
 ## 목차
+
 1. [개요](#개요)
 2. [전체 아키텍처](#전체-아키텍처)
 3. [상태 관리](#상태-관리)
@@ -21,6 +22,7 @@
 **목적**: 실시간 AI 영어 회화 학습 페이지
 
 **주요 기능**:
+
 - WebSocket 자동 연결
 - 오디오 초기화
 - 마이크 자동 시작
@@ -74,11 +76,20 @@
 ### 1. Hook 상태 (useConversationChatNew)
 
 ```typescript
-const { state, connect, disconnect, initAudio, requestResponse,
-        startMicrophone, stopMicrophone, toggleMute } = useConversationChatNew(sessionId, selectedVoice);
+const {
+  state,
+  connect,
+  disconnect,
+  initAudio,
+  requestResponse,
+  startMicrophone,
+  stopMicrophone,
+  toggleMute,
+} = useConversationChatNew(sessionId, selectedVoice);
 ```
 
 **state 객체**:
+
 ```typescript
 {
   isConnected: boolean;      // WebSocket 연결 상태
@@ -97,14 +108,14 @@ const { state, connect, disconnect, initAudio, requestResponse,
 ### 2. 로컬 상태 (page.tsx)
 
 ```typescript
-const [isMounted, setIsMounted] = useState(false);           // 클라이언트 마운트 여부
-const [sessionId, setSessionId] = useState<string>("");      // 세션 ID
+const [isMounted, setIsMounted] = useState(false); // 클라이언트 마운트 여부
+const [sessionId, setSessionId] = useState<string>(""); // 세션 ID
 const [selectedVoice, setSelectedVoice] = useState("shimmer"); // AI 목소리
-const [showSubtitle, setShowSubtitle] = useState(true);      // 자막 표시 여부
-const [isMuted, setIsMuted] = useState(false);               // 음소거 상태
-const [isMicEnabled, setIsMicEnabled] = useState(false);     // 마이크 UI 상태 (즉시 반영용)
+const [showSubtitle, setShowSubtitle] = useState(true); // 자막 표시 여부
+const [isMuted, setIsMuted] = useState(false); // 음소거 상태
+const [isMicEnabled, setIsMicEnabled] = useState(false); // 마이크 UI 상태 (즉시 반영용)
 const [showSessionErrorPopup, setShowSessionErrorPopup] = useState(false); // 세션 에러 팝업
-const [textOpacity, setTextOpacity] = useState(1);           // 텍스트 opacity 애니메이션
+const [textOpacity, setTextOpacity] = useState(1); // 텍스트 opacity 애니메이션
 ```
 
 ### 3. Ref 상태
@@ -229,38 +240,38 @@ const messageStates = [
     // 1순위: 연결 끊김 에러
     condition: () => !state.isConnected && wasConnectedRef.current,
     title: "연결에 문제가 있어요",
-    desc: "잠시 후 다시 시도해주세요"
+    desc: "잠시 후 다시 시도해주세요",
   },
   {
     // 2순위: 비활성 상태 (사용자 응답 없음)
     condition: () => showInactivityMessage,
     title: "말랭이가 대답을 기다리고 있어요",
-    desc: "Cheer up!"
+    desc: "Cheer up!",
   },
   {
     // 3순위: AI 발화 중
     condition: () => state.isAiSpeaking,
     title: state.aiMessage || "말랭이가 말하고 있어요",
-    desc: showSubtitle ? state.aiMessageKR || "잘 들어보세요" : "말랭이가 말하고 있어요"
+    desc: showSubtitle ? state.aiMessageKR || "잘 들어보세요" : "말랭이가 말하고 있어요",
   },
   {
     // 4순위: 사용자 발화 중 (AI 발화 끝남)
     condition: () => state.isConnected && state.isReady && !state.isAiSpeaking,
     title: "편하게 말해보세요",
-    desc: "말랭이가 듣고 있어요"
+    desc: "말랭이가 듣고 있어요",
   },
   {
     // 5순위: 연결 중
     condition: () => !state.isConnected && !wasConnectedRef.current,
     title: "말랭이와 연결하고 있어요",
-    desc: "잠시만 기다려주세요"
+    desc: "잠시만 기다려주세요",
   },
   {
     // 6순위: 기본값
     condition: () => true,
     title: "잠시만 기다려주세요",
-    desc: ""
-  }
+    desc: "",
+  },
 ];
 ```
 
@@ -301,30 +312,30 @@ const messageStates = [
 
 ### 수신 메시지 (Backend → Frontend)
 
-| 메시지 타입 | 처리 내용 | 상태 변화 |
-|------------|----------|----------|
-| `audio.delta` | AI 음성 청크 재생 + isReady 설정 | `isReady = true` (첫 수신 시) |
-| `audio.done` | AI 음성 스트림 완료 로그 | - |
-| `transcript.done` | AI 메시지 저장 + 한글 번역 | `aiMessage`, `aiMessageKR` |
-| `speech.started` | 사용자 발화 시작 (VAD) | `isUserSpeaking = true`, 오디오 중지 |
-| `speech.stopped` | 사용자 발화 종료 (VAD) | `isUserSpeaking = false` |
-| `user.transcript` | 사용자 발화 텍스트 | `userTranscript` |
-| `disconnected` | 세션 종료 | `sessionReport` 저장 |
-| `error` | 에러 메시지 | 로그 출력 |
-| `session.update` | 세션 설정 업데이트 | `isReady = true` |
-| `session.created` | 세션 생성 완료 | `isReady = true` |
-| `ready` | 세션 준비 완료 | `isReady = true` |
+| 메시지 타입       | 처리 내용                        | 상태 변화                            |
+| ----------------- | -------------------------------- | ------------------------------------ |
+| `audio.delta`     | AI 음성 청크 재생 + isReady 설정 | `isReady = true` (첫 수신 시)        |
+| `audio.done`      | AI 음성 스트림 완료 로그         | -                                    |
+| `transcript.done` | AI 메시지 저장 + 한글 번역       | `aiMessage`, `aiMessageKR`           |
+| `speech.started`  | 사용자 발화 시작 (VAD)           | `isUserSpeaking = true`, 오디오 중지 |
+| `speech.stopped`  | 사용자 발화 종료 (VAD)           | `isUserSpeaking = false`             |
+| `user.transcript` | 사용자 발화 텍스트               | `userTranscript`                     |
+| `disconnected`    | 세션 종료                        | `sessionReport` 저장                 |
+| `error`           | 에러 메시지                      | 로그 출력                            |
+| `session.update`  | 세션 설정 업데이트               | `isReady = true`                     |
+| `session.created` | 세션 생성 완료                   | `isReady = true`                     |
+| `ready`           | 세션 준비 완료                   | `isReady = true`                     |
 
 ### 송신 메시지 (Frontend → Backend)
 
-| 메시지 타입 | 전송 조건 | 데이터 |
-|------------|---------|--------|
-| `input_audio_buffer.append` | 마이크 녹음 중 (4096샘플마다) | `{ type, audio: base64 }` |
-| `session.update` | session.update 수신 후 | `{ type, config: { voice } }` |
-| `response.create` | 마이크 시작 후 (500ms) | `{ type }` |
-| `text` | sendText() 호출 시 | `{ type, text }` |
-| `input_audio_buffer.commit` | commitAudio() 호출 시 | `{ type }` |
-| `disconnect` | 페이지 이탈 시 | `{ type }` |
+| 메시지 타입                 | 전송 조건                     | 데이터                        |
+| --------------------------- | ----------------------------- | ----------------------------- |
+| `input_audio_buffer.append` | 마이크 녹음 중 (4096샘플마다) | `{ type, audio: base64 }`     |
+| `session.update`            | session.update 수신 후        | `{ type, config: { voice } }` |
+| `response.create`           | 마이크 시작 후 (500ms)        | `{ type }`                    |
+| `text`                      | sendText() 호출 시            | `{ type, text }`              |
+| `input_audio_buffer.commit` | commitAudio() 호출 시         | `{ type }`                    |
+| `disconnect`                | 페이지 이탈 시                | `{ type }`                    |
 
 ### WebSocket 이벤트 흐름
 
@@ -366,9 +377,9 @@ const messageStates = [
 
 ```typescript
 // 모든 조건이 true여야 마이크 시작
-state.isConnected === true   // WebSocket 연결됨
-state.isReady === true       // 세션 준비됨 (audio.delta 수신)
-isMicEnabled === false       // 아직 마이크 시작 안 함 (중복 방지)
+state.isConnected === true; // WebSocket 연결됨
+state.isReady === true; // 세션 준비됨 (audio.delta 수신)
+isMicEnabled === false; // 아직 마이크 시작 안 함 (중복 방지)
 ```
 
 ### 마이크 시작 프로세스
@@ -432,12 +443,12 @@ const showWaves = isListening && !isMuted;
 
 ### 음소거 vs 마이크 중지 차이
 
-| 기능 | 음소거 (Mute) | 마이크 중지 (Stop) |
-|------|--------------|-------------------|
-| 마이크 녹음 | ✅ 계속 녹음 | ❌ 중지 |
-| 서버 전송 | ✅ 계속 전송 | ❌ 중지 |
-| AI 음성 듣기 | ❌ 들리지 않음 | ✅ 들림 (마이크와 무관) |
-| 구현 방법 | GainNode 볼륨 조절 | MediaStream 중지 |
+| 기능         | 음소거 (Mute)      | 마이크 중지 (Stop)      |
+| ------------ | ------------------ | ----------------------- |
+| 마이크 녹음  | ✅ 계속 녹음       | ❌ 중지                 |
+| 서버 전송    | ✅ 계속 전송       | ❌ 중지                 |
+| AI 음성 듣기 | ❌ 들리지 않음     | ✅ 들림 (마이크와 무관) |
+| 구현 방법    | GainNode 볼륨 조절 | MediaStream 중지        |
 
 ### 음소거 구현
 
@@ -472,6 +483,7 @@ const handleMuteToggle = () => {
 **조건**: URL과 localStorage 모두에 sessionId가 없음
 
 **처리**:
+
 ```typescript
 // sessionId 초기화 useEffect
 if (!urlSessionId && !storedSessionId) {
@@ -480,6 +492,7 @@ if (!urlSessionId && !storedSessionId) {
 ```
 
 **UI**:
+
 - 팝업 표시: "세션을 찾을 수 없어요"
 - 버튼: "주제 선택하기" → `/scenario-select`로 이동
 
@@ -488,6 +501,7 @@ if (!urlSessionId && !storedSessionId) {
 **조건**: `navigator.mediaDevices.getUserMedia()` 실패
 
 **처리**:
+
 ```typescript
 catch (error) {
   setIsMicEnabled(false); // UI 상태 되돌림
@@ -500,6 +514,7 @@ catch (error) {
 **조건**: WebSocket 연결 안 됨 또는 끊김
 
 **UI**: messageStates에 따라 자동 표시
+
 - 연결 시도 중: "말랭이와 연결하고 있어요"
 - 연결 끊김: "연결에 문제가 있어요"
 
@@ -510,6 +525,7 @@ catch (error) {
 **조건**: `{ type: "error", message: "..." }` 수신
 
 **처리**:
+
 ```typescript
 case "error":
   console.error("[WebSocket] ❌ Error received:", data.message);
@@ -524,6 +540,7 @@ case "error":
 ### 1. DebugStatus 컴포넌트 (화면 우측 상단)
 
 **표시 정보**:
+
 - **isConnected**: WebSocket 연결 상태
 - **isReady**: 세션 준비 상태
 - **isAiSpeaking**: AI 음성 재생 중
@@ -536,6 +553,7 @@ case "error":
 ### 2. Console 로그
 
 **주요 로그 태그**:
+
 - `[Auto-Connect]`: 자동 연결 로직
 - `[Connection Ready]`: 마이크 시작 조건 확인
 - `[StartMic]`: 마이크 시작 프로세스
@@ -545,6 +563,7 @@ case "error":
 - `[Mute Toggle]`: 음소거 토글
 
 **디버그 시퀀스 예시**:
+
 ```
 [Auto-Connect] useEffect triggered - isMounted: true, sessionId: abc123
 [Auto-Connect] Starting connection sequence for session: abc123
@@ -567,6 +586,7 @@ case "error":
 ### 3. 문제 해결 체크리스트
 
 **마이크가 시작되지 않는 경우**:
+
 - [ ] DebugStatus에서 isConnected = true 확인
 - [ ] DebugStatus에서 isReady = true 확인
 - [ ] Console에서 `[WebSocket] Received message type: audio.delta` 확인
@@ -575,11 +595,13 @@ case "error":
 - [ ] Console에서 에러 메시지 확인
 
 **음소거 버튼이 비활성화된 경우**:
+
 - [ ] DebugStatus에서 isRecording = "Mic On" 확인
 - [ ] Console에서 `[StartMic] Microphone started successfully` 확인
 - [ ] Console에서 `state.isRecording changed: true` 확인
 
 **AI 음성이 들리지 않는 경우**:
+
 - [ ] DebugStatus에서 isAiSpeaking = true 확인
 - [ ] Console에서 `audio.delta` 메시지 수신 확인
 - [ ] 음소거 버튼이 "음소거" 상태인지 확인 (음소거 해제 아님)
@@ -587,6 +609,7 @@ case "error":
 - [ ] OS 볼륨 확인
 
 **자막이 표시되지 않는 경우**:
+
 - [ ] 자막 버튼이 "자막 끄기" 상태인지 확인
 - [ ] Console에서 `transcript.done` 메시지 수신 확인
 - [ ] aiMessage 또는 userTranscript 값 확인
@@ -596,6 +619,7 @@ case "error":
 ## 부록: 코드 위치 참조
 
 ### 주요 파일
+
 - **페이지**: `src/app/chat/conversation/page.tsx`
 - **Hook**: `src/features/chat/hook/useConversationChatNew.ts`
 - **Base Hook**: `src/features/chat/hook/useWebSocketBase.ts`
@@ -604,22 +628,22 @@ case "error":
 
 ### 주요 함수 위치
 
-| 함수 | 파일 | Line |
-|-----|------|------|
-| messageStates | page.tsx | ~199-236 |
-| 자동 연결 useEffect | page.tsx | ~98-120 |
-| 마이크 시작 useEffect | page.tsx | ~123-157 |
-| audio.delta 처리 | useConversationChatNew.ts | ~107-114 |
-| startMicrophone | useWebSocketBase.ts | ~159-200 |
-| toggleMute | useWebSocketBase.ts | ~148-156 |
+| 함수                  | 파일                      | Line     |
+| --------------------- | ------------------------- | -------- |
+| messageStates         | page.tsx                  | ~199-236 |
+| 자동 연결 useEffect   | page.tsx                  | ~98-120  |
+| 마이크 시작 useEffect | page.tsx                  | ~123-157 |
+| audio.delta 처리      | useConversationChatNew.ts | ~107-114 |
+| startMicrophone       | useWebSocketBase.ts       | ~159-200 |
+| toggleMute            | useWebSocketBase.ts       | ~148-156 |
 
 ---
 
 ## 변경 이력
 
-| 날짜 | 변경 내용 |
-|-----|---------|
-| 2026-01-19 | 초기 문서 작성 |
+| 날짜       | 변경 내용                                       |
+| ---------- | ----------------------------------------------- |
+| 2026-01-19 | 초기 문서 작성                                  |
 | 2026-01-19 | audio.delta 수신 시 isReady 자동 설정 로직 추가 |
-| 2026-01-19 | 마이크 시작 에러 핸들링 추가 |
-| 2026-01-19 | 음소거 버튼 분리 (마이크 클릭과 분리) |
+| 2026-01-19 | 마이크 시작 에러 핸들링 추가                    |
+| 2026-01-19 | 음소거 버튼 분리 (마이크 클릭과 분리)           |

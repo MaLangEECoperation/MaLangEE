@@ -1,4 +1,5 @@
 import { type FC, type ReactNode } from "react";
+
 import { cn } from "@/shared/lib/utils";
 
 interface GlassmorphicCardProps {
@@ -36,7 +37,7 @@ export const GlassmorphicCard: FC<GlassmorphicCardProps> = ({
       className={cn(
         "relative w-full overflow-hidden",
         "rounded-[32px] border border-white/60",
-        "bg-gradient-to-br from-white/80 via-white/70 to-brand-50/80",
+        "to-brand-50/80 bg-gradient-to-br from-white/80 via-white/70",
         "shadow-[0_20px_80px_rgba(125,106,246,0.25)]",
         "backdrop-blur-2xl",
         className
@@ -46,7 +47,7 @@ export const GlassmorphicCard: FC<GlassmorphicCardProps> = ({
       {showDecorations && (
         <>
           <div
-            className="absolute -left-12 top-12 h-28 w-28 rounded-full bg-brand-50 blur-3xl"
+            className="bg-brand-50 absolute -left-12 top-12 h-28 w-28 rounded-full blur-3xl"
             aria-hidden="true"
           />
           <div
@@ -57,9 +58,7 @@ export const GlassmorphicCard: FC<GlassmorphicCardProps> = ({
       )}
 
       {/* 콘텐츠 */}
-      <div className={cn("relative", variantClasses[variant])}>
-        {children}
-      </div>
+      <div className={cn("relative", variantClasses[variant])}>{children}</div>
     </div>
   );
 };

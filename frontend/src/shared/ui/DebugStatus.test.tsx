@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
 import { DebugStatus } from "./DebugStatus";
 
 // Mock isDev
@@ -32,42 +33,26 @@ describe("DebugStatus", () => {
   });
 
   it("should show CONNECTED when connected", () => {
-    render(
-      <DebugStatus isConnected={true} lastEvent={null} isAiSpeaking={false} />
-    );
+    render(<DebugStatus isConnected={true} lastEvent={null} isAiSpeaking={false} />);
 
     expect(screen.getByText("CONNECTED")).toBeInTheDocument();
   });
 
   it("should show DISCONNECTED when not connected", () => {
-    render(
-      <DebugStatus isConnected={false} lastEvent={null} isAiSpeaking={false} />
-    );
+    render(<DebugStatus isConnected={false} lastEvent={null} isAiSpeaking={false} />);
 
     expect(screen.getByText("DISCONNECTED")).toBeInTheDocument();
   });
 
   it("should show READY when isReady is true", () => {
-    render(
-      <DebugStatus
-        isConnected={true}
-        isReady={true}
-        lastEvent={null}
-        isAiSpeaking={false}
-      />
-    );
+    render(<DebugStatus isConnected={true} isReady={true} lastEvent={null} isAiSpeaking={false} />);
 
     expect(screen.getByText("READY")).toBeInTheDocument();
   });
 
   it("should show NOT READY when isReady is false", () => {
     render(
-      <DebugStatus
-        isConnected={true}
-        isReady={false}
-        lastEvent={null}
-        isAiSpeaking={false}
-      />
+      <DebugStatus isConnected={true} isReady={false} lastEvent={null} isAiSpeaking={false} />
     );
 
     expect(screen.getByText("NOT READY")).toBeInTheDocument();
@@ -75,12 +60,7 @@ describe("DebugStatus", () => {
 
   it("should show MIC ON when recording", () => {
     render(
-      <DebugStatus
-        isConnected={true}
-        isRecording={true}
-        lastEvent={null}
-        isAiSpeaking={false}
-      />
+      <DebugStatus isConnected={true} isRecording={true} lastEvent={null} isAiSpeaking={false} />
     );
 
     expect(screen.getByText("MIC ON")).toBeInTheDocument();
@@ -88,58 +68,33 @@ describe("DebugStatus", () => {
 
   it("should show MIC OFF when not recording", () => {
     render(
-      <DebugStatus
-        isConnected={true}
-        isRecording={false}
-        lastEvent={null}
-        isAiSpeaking={false}
-      />
+      <DebugStatus isConnected={true} isRecording={false} lastEvent={null} isAiSpeaking={false} />
     );
 
     expect(screen.getByText("MIC OFF")).toBeInTheDocument();
   });
 
   it("should show MUTED when muted", () => {
-    render(
-      <DebugStatus
-        isConnected={true}
-        isMuted={true}
-        lastEvent={null}
-        isAiSpeaking={false}
-      />
-    );
+    render(<DebugStatus isConnected={true} isMuted={true} lastEvent={null} isAiSpeaking={false} />);
 
     expect(screen.getByText("🔇 MUTED")).toBeInTheDocument();
   });
 
   it("should show last event", () => {
-    render(
-      <DebugStatus
-        isConnected={true}
-        lastEvent="session.created"
-        isAiSpeaking={false}
-      />
-    );
+    render(<DebugStatus isConnected={true} lastEvent="session.created" isAiSpeaking={false} />);
 
     expect(screen.getByText("SESSION.CREATED")).toBeInTheDocument();
   });
 
   it("should show AI SPEAKING when AI is speaking", () => {
-    render(
-      <DebugStatus isConnected={true} lastEvent={null} isAiSpeaking={true} />
-    );
+    render(<DebugStatus isConnected={true} lastEvent={null} isAiSpeaking={true} />);
 
     expect(screen.getByText("🔊 AI SPEAKING")).toBeInTheDocument();
   });
 
   it("should show USER SPEAKING when user is speaking", () => {
     render(
-      <DebugStatus
-        isConnected={true}
-        lastEvent={null}
-        isAiSpeaking={false}
-        isUserSpeaking={true}
-      />
+      <DebugStatus isConnected={true} lastEvent={null} isAiSpeaking={false} isUserSpeaking={true} />
     );
 
     expect(screen.getByText("🎤 USER SPEAKING")).toBeInTheDocument();
@@ -161,12 +116,7 @@ describe("DebugStatus", () => {
 
   it("should not show user transcript when empty", () => {
     render(
-      <DebugStatus
-        isConnected={true}
-        lastEvent={null}
-        isAiSpeaking={false}
-        userTranscript=""
-      />
+      <DebugStatus isConnected={true} lastEvent={null} isAiSpeaking={false} userTranscript="" />
     );
 
     expect(screen.queryByText("YOU:")).not.toBeInTheDocument();

@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
 import { useAudioRecorder } from "./useAudioRecorder";
 
 // Mock AudioContext
@@ -125,8 +126,9 @@ describe("useAudioRecorder", () => {
 
     act(() => {
       if (mockProcessor.onaudioprocess) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mockProcessor.onaudioprocess({ inputBuffer: mockInputBuffer } as unknown as AudioProcessingEvent);
+        mockProcessor.onaudioprocess({
+          inputBuffer: mockInputBuffer,
+        } as unknown as AudioProcessingEvent);
       }
     });
 
@@ -136,9 +138,7 @@ describe("useAudioRecorder", () => {
   it("should call onVolumeChange when provided", async () => {
     const onAudioData = vi.fn();
     const onVolumeChange = vi.fn();
-    const { result } = renderHook(() =>
-      useAudioRecorder({ onAudioData, onVolumeChange })
-    );
+    const { result } = renderHook(() => useAudioRecorder({ onAudioData, onVolumeChange }));
 
     await act(async () => {
       await result.current.startRecording();
@@ -151,8 +151,9 @@ describe("useAudioRecorder", () => {
 
     act(() => {
       if (mockProcessor.onaudioprocess) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mockProcessor.onaudioprocess({ inputBuffer: mockInputBuffer } as unknown as AudioProcessingEvent);
+        mockProcessor.onaudioprocess({
+          inputBuffer: mockInputBuffer,
+        } as unknown as AudioProcessingEvent);
       }
     });
 

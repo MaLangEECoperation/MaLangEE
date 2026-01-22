@@ -1,5 +1,6 @@
-import { apiClient } from "@/shared/lib/api-client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { apiClient } from "@/shared/lib/api-client";
 
 // 시나리오 타입 정의
 export interface Scenario {

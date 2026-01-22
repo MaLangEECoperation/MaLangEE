@@ -1,6 +1,7 @@
 # Scenario Select Page 로직 문서
 
 ## 목차
+
 1. [개요](#개요)
 2. [전체 아키텍처](#전체-아키텍처)
 3. [상태 관리](#상태-관리)
@@ -24,6 +25,7 @@
 **목적**: 사용자가 AI와 대화하며 영어 회화 시나리오를 정하는 페이지
 
 **주요 기능**:
+
 - AI와 대화하며 시나리오 주제 선택 (음성/텍스트)
 - 20개 추천 주제 중 랜덤 5개 제시 (TopicSuggestion)
 - AI가 장소/상대/목표 파악
@@ -112,6 +114,7 @@ const {
 ```
 
 **state 객체**:
+
 ```typescript
 {
   isConnected: boolean;         // WebSocket 연결 상태
@@ -139,9 +142,9 @@ const [phase, setPhase] = useState<"topic" | "conversation">("topic");
 const [stepIndex, setStepIndex] = useState<1 | 2 | 3 | 4>(1);
 
 // 대화 상태
-const [isListening, setIsListening] = useState(false);      // 마이크 켜짐 상태
-const [hasStarted, setHasStarted] = useState(false);        // 대화 시작 여부
-const [isMuted, setIsMuted] = useState(false);              // 음소거 상태
+const [isListening, setIsListening] = useState(false); // 마이크 켜짐 상태
+const [hasStarted, setHasStarted] = useState(false); // 대화 시작 여부
+const [isMuted, setIsMuted] = useState(false); // 음소거 상태
 
 // 팝업 상태
 const [showLoginPopup, setShowLoginPopup] = useState(false);
@@ -150,29 +153,29 @@ const [showEndChatPopup, setShowEndChatPopup] = useState(false);
 const [showScenarioResultPopup, setShowScenarioResultPopup] = useState(false);
 
 // UI 상태
-const [textOpacity, setTextOpacity] = useState(1);          // 텍스트 opacity 애니메이션
+const [textOpacity, setTextOpacity] = useState(1); // 텍스트 opacity 애니메이션
 const [showTopicSuggestion, setShowTopicSuggestion] = useState(false); // 주제 제안 표시 여부
 ```
 
 ### 3. Ref 상태
 
 ```typescript
-const loginTimerRef = useRef<NodeJS.Timeout | null>(null);       // 10분 로그인 타이머
+const loginTimerRef = useRef<NodeJS.Timeout | null>(null); // 10분 로그인 타이머
 const notUnderstoodTimerRef = useRef<NodeJS.Timeout | null>(null); // 5초 이해 못함 타이머
-const initialPromptSentRef = useRef(false);                      // 초기 프롬프트 전송 여부
-const aiSpeakingRef = useRef(false);                             // AI 발화 상태 ref
-const prevAiSpeakingRef = useRef(false);                         // 이전 AI 발화 상태
+const initialPromptSentRef = useRef(false); // 초기 프롬프트 전송 여부
+const aiSpeakingRef = useRef(false); // AI 발화 상태 ref
+const prevAiSpeakingRef = useRef(false); // 이전 AI 발화 상태
 ```
 
 ### 4. 커스텀 훅 (useInactivityTimer)
 
 ```typescript
 const {
-  showInactivityMessage,   // 비활동 메시지 표시 여부
-  showWaitPopup,          // 비활동 팝업 표시 여부
-  startInactivityTimer,   // 타이머 시작
-  resetTimers,            // 타이머 초기화
-  setShowWaitPopup
+  showInactivityMessage, // 비활동 메시지 표시 여부
+  showWaitPopup, // 비활동 팝업 표시 여부
+  startInactivityTimer, // 타이머 시작
+  resetTimers, // 타이머 초기화
+  setShowWaitPopup,
 } = useInactivityTimer();
 ```
 
@@ -257,6 +260,7 @@ Step4 (자동 전환)
 ## TopicSuggestion 컴포넌트
 
 ### 파일 위치
+
 `src/app/scenario-select/steps/TopicSuggestion.tsx`
 
 ### 기능
@@ -270,9 +274,9 @@ Step4 (자동 전환)
 
 ```typescript
 interface Topic {
-  mission: string;    // "체크인하기", "예약 확인하기" 등
-  location: string;   // "공항", "호텔 프론트" 등
-  partner: string;    // "직원", "웨이터" 등
+  mission: string; // "체크인하기", "예약 확인하기" 등
+  location: string; // "공항", "호텔 프론트" 등
+  partner: string; // "직원", "웨이터" 등
 }
 
 const suggestedTopics: Topic[] = [
@@ -288,8 +292,8 @@ const suggestedTopics: Topic[] = [
 ```typescript
 const getRandomTopics = (): Topic[] => {
   return [...suggestedTopics]
-    .sort(() => Math.random() - 0.5)  // Fisher-Yates shuffle
-    .slice(0, 5);                     // 처음 5개 선택
+    .sort(() => Math.random() - 0.5) // Fisher-Yates shuffle
+    .slice(0, 5); // 처음 5개 선택
 };
 
 const [displayedTopics, setDisplayedTopics] = useState<Topic[]>(() => getRandomTopics());
@@ -346,13 +350,14 @@ const handleTopicSelect = useCallback((topic: string) => {
 ```
 
 **구현 코드**:
+
 ```typescript
 // ready 상태일 때 pendingTopic 확인하여 전송
 useEffect(() => {
   if (chatState.isReady && stepIndex === 1 && phase === "topic") {
-    const pendingTopic = sessionStorage.getItem('pendingTopic');
+    const pendingTopic = sessionStorage.getItem("pendingTopic");
     if (pendingTopic) {
-      sessionStorage.removeItem('pendingTopic');
+      sessionStorage.removeItem("pendingTopic");
       sendText(pendingTopic);
     }
   }
@@ -364,6 +369,7 @@ useEffect(() => {
 ## Step1 - 주제 선택
 
 ### 파일 위치
+
 `src/app/scenario-select/steps/Step1.tsx`
 
 ### UI 구성
@@ -455,15 +461,27 @@ useEffect(() => {
   }
 
   // AI가 말을 끝낸 직후에만 자동으로 마이크 시작
-  if (prevAiSpeakingRef.current && !chatState.isAiSpeaking &&
-      chatState.isReady && initialPromptSentRef.current && !chatState.isRecording) {
+  if (
+    prevAiSpeakingRef.current &&
+    !chatState.isAiSpeaking &&
+    chatState.isReady &&
+    initialPromptSentRef.current &&
+    !chatState.isRecording
+  ) {
     startMicrophone();
     setIsListening(true);
   }
 
   // 현재 상태를 저장
   prevAiSpeakingRef.current = chatState.isAiSpeaking;
-}, [chatState.isAiSpeaking, chatState.isReady, chatState.isRecording, stepIndex, startMicrophone, stopMicrophone]);
+}, [
+  chatState.isAiSpeaking,
+  chatState.isReady,
+  chatState.isRecording,
+  stepIndex,
+  startMicrophone,
+  stopMicrophone,
+]);
 ```
 
 ---
@@ -471,6 +489,7 @@ useEffect(() => {
 ## Step2 - 자막 설정
 
 ### 파일 위치
+
 `src/app/scenario-select/steps/Step2.tsx`
 
 ### UI 구성
@@ -500,6 +519,7 @@ const handleSubtitleChoice = (enabled: boolean) => {
 ## Step3 - 음성 선택
 
 ### 파일 위치
+
 `src/app/scenario-select/steps/Step3.tsx`
 
 ### UI 구성
@@ -572,24 +592,38 @@ useEffect(() => {
 ### 팝업 UI
 
 ```tsx
-{showScenarioResultPopup && chatState.scenarioResult && (
-  <PopupLayout onClose={() => setShowScenarioResultPopup(false)}>
-    <div className="flex flex-col items-center gap-6 py-6">
-      <div className="space-y-4 text-center">
-        <p className="text-xl font-bold">좋아요! 상황을 파악했어요.</p>
-        <div className="space-y-2 rounded-2xl border p-4">
-          <p><span className="font-bold">미션:</span> {scenarioResult.conversationGoal}</p>
-          <p><span className="font-bold">상대:</span> {scenarioResult.conversationPartner}</p>
-          <p><span className="font-bold">장소:</span> {scenarioResult.place}</p>
+{
+  showScenarioResultPopup && chatState.scenarioResult && (
+    <PopupLayout onClose={() => setShowScenarioResultPopup(false)}>
+      <div className="flex flex-col items-center gap-6 py-6">
+        <div className="space-y-4 text-center">
+          <p className="text-xl font-bold">좋아요! 상황을 파악했어요.</p>
+          <div className="space-y-2 rounded-2xl border p-4">
+            <p>
+              <span className="font-bold">미션:</span> {scenarioResult.conversationGoal}
+            </p>
+            <p>
+              <span className="font-bold">상대:</span> {scenarioResult.conversationPartner}
+            </p>
+            <p>
+              <span className="font-bold">장소:</span> {scenarioResult.place}
+            </p>
+          </div>
+        </div>
+        <div className="flex w-full gap-3">
+          <Button onClick={handleResetTopic}>주제 다시 정하기</Button>
+          <Button
+            onClick={() => {
+              setStepIndex(2);
+            }}
+          >
+            다음단계
+          </Button>
         </div>
       </div>
-      <div className="flex w-full gap-3">
-        <Button onClick={handleResetTopic}>주제 다시 정하기</Button>
-        <Button onClick={() => { setStepIndex(2); }}>다음단계</Button>
-      </div>
-    </div>
-  </PopupLayout>
-)}
+    </PopupLayout>
+  );
+}
 ```
 
 ### 주제 다시 정하기 로직
@@ -597,10 +631,10 @@ useEffect(() => {
 ```typescript
 const handleResetTopic = () => {
   setShowScenarioResultPopup(false);
-  disconnect();              // 기존 연결 해제
+  disconnect(); // 기존 연결 해제
   setIsListening(false);
-  setHasStarted(false);      // 대화 시작 상태 초기화
-  setStepIndex(1);           // 주제 다시 정하기
+  setHasStarted(false); // 대화 시작 상태 초기화
+  setStepIndex(1); // 주제 다시 정하기
   initialPromptSentRef.current = false; // 재시작을 위해 리셋
 };
 ```
@@ -611,26 +645,26 @@ const handleResetTopic = () => {
 
 ### 수신 메시지 (AI Engine → Frontend)
 
-| 메시지 타입 | 처리 내용 | 상태 변화 |
-|------------|----------|----------|
-| `ready` | 세션 준비 완료 | `isReady = true`, `startScenarioSession()` 호출 |
-| `audio.delta` | AI 음성 청크 재생 | `isAiSpeaking = true` |
-| `audio.done` | AI 음성 스트림 완료 | `isAiSpeaking = false` |
-| `transcript.done` | AI 메시지 저장 + 한글 번역 | `aiMessage`, `aiMessageKR` |
-| `speech.started` | 사용자 발화 시작 (VAD) | `isUserSpeaking = true` |
-| `speech.stopped` | 사용자 발화 종료 (VAD) | `isUserSpeaking = false` |
-| `user.transcript` | 사용자 발화 텍스트 | `userTranscript` |
-| `scenario.completed` | 시나리오 파악 완료 | `scenarioResult` 저장 |
-| `error` | 에러 메시지 | 로그 출력 |
+| 메시지 타입          | 처리 내용                  | 상태 변화                                       |
+| -------------------- | -------------------------- | ----------------------------------------------- |
+| `ready`              | 세션 준비 완료             | `isReady = true`, `startScenarioSession()` 호출 |
+| `audio.delta`        | AI 음성 청크 재생          | `isAiSpeaking = true`                           |
+| `audio.done`         | AI 음성 스트림 완료        | `isAiSpeaking = false`                          |
+| `transcript.done`    | AI 메시지 저장 + 한글 번역 | `aiMessage`, `aiMessageKR`                      |
+| `speech.started`     | 사용자 발화 시작 (VAD)     | `isUserSpeaking = true`                         |
+| `speech.stopped`     | 사용자 발화 종료 (VAD)     | `isUserSpeaking = false`                        |
+| `user.transcript`    | 사용자 발화 텍스트         | `userTranscript`                                |
+| `scenario.completed` | 시나리오 파악 완료         | `scenarioResult` 저장                           |
+| `error`              | 에러 메시지                | 로그 출력                                       |
 
 ### 송신 메시지 (Frontend → AI Engine)
 
-| 메시지 타입 | 전송 조건 | 데이터 |
-|------------|---------|--------|
-| `start_scenario` | WebSocket 연결 후 (ready 이벤트) | `{ type: "start_scenario" }` |
-| `input_audio_buffer.append` | 마이크 녹음 중 (4096샘플마다) | `{ type, audio: base64 }` |
-| `text` | 주제 선택 시 또는 sendText() 호출 | `{ type, text }` |
-| `disconnect` | 페이지 이탈 시 | `{ type }` |
+| 메시지 타입                 | 전송 조건                         | 데이터                       |
+| --------------------------- | --------------------------------- | ---------------------------- |
+| `start_scenario`            | WebSocket 연결 후 (ready 이벤트)  | `{ type: "start_scenario" }` |
+| `input_audio_buffer.append` | 마이크 녹음 중 (4096샘플마다)     | `{ type, audio: base64 }`    |
+| `text`                      | 주제 선택 시 또는 sendText() 호출 | `{ type, text }`             |
+| `disconnect`                | 페이지 이탈 시                    | `{ type }`                   |
 
 ### WebSocket 이벤트 흐름
 
@@ -677,12 +711,12 @@ useEffect(() => {
 
 ### 음소거 vs 마이크 중지 차이
 
-| 기능 | 음소거 (Mute) | 마이크 중지 (Stop) |
-|------|--------------|-------------------|
-| 마이크 녹음 | ✅ 계속 녹음 | ❌ 중지 |
-| 서버 전송 | ✅ 계속 전송 | ❌ 중지 |
-| AI 음성 듣기 | ❌ 들리지 않음 | ✅ 들림 (마이크와 무관) |
-| 구현 방법 | GainNode 볼륨 조절 | MediaStream 중지 |
+| 기능          | 음소거 (Mute)               | 마이크 중지 (Stop)           |
+| ------------- | --------------------------- | ---------------------------- |
+| 마이크 녹음   | ✅ 계속 녹음                | ❌ 중지                      |
+| 서버 전송     | ✅ 계속 전송                | ❌ 중지                      |
+| AI 음성 듣기  | ❌ 들리지 않음              | ✅ 들림 (마이크와 무관)      |
+| 구현 방법     | GainNode 볼륨 조절          | MediaStream 중지             |
 | 사용 시나리오 | AI 응답을 듣고 싶지 않을 때 | 대화를 완전히 멈추고 싶을 때 |
 
 ### 음소거 버튼 (Step1.tsx)
@@ -738,6 +772,7 @@ const toggleMute = useCallback((isMuted: boolean) => {
 **조건**: WebSocket 연결 안 됨
 
 **UI**:
+
 - Step1 messageStates에 따라 자동 표시
 - "연결 중" → "연결에 문제가 있어요" (wasConnected 여부로 구분)
 
@@ -748,6 +783,7 @@ const toggleMute = useCallback((isMuted: boolean) => {
 **조건**: `navigator.mediaDevices.getUserMedia()` 실패
 
 **처리**:
+
 ```typescript
 catch (error) {
   setIsListening(false);
@@ -770,6 +806,7 @@ catch (error) {
 **UI**: "말랭이가 대답을 기다리고 있어요"
 
 **처리**:
+
 - Step1, Step4에서만 타이머 작동
 - `hasStarted = true`일 때만 작동 (대화 시작 전에는 X)
 - AI 발화 중 또는 마이크 녹음 중에는 타이머 리셋
@@ -781,6 +818,7 @@ catch (error) {
 ### 1. DebugStatus 컴포넌트 (화면 우측 상단)
 
 **표시 정보**:
+
 - **isConnected**: WebSocket 연결 상태
 - **isReady**: 세션 준비 상태
 - **isAiSpeaking**: AI 음성 재생 중
@@ -792,6 +830,7 @@ catch (error) {
 ### 2. Console 로그
 
 **주요 로그 태그**:
+
 - `[ScenarioChat]`: WebSocket 메시지 수신
 - `[Start Scenario]`: startScenarioSession 호출
 - `[Pending Topic]`: pendingTopic 처리
@@ -799,6 +838,7 @@ catch (error) {
 - `[Mute Toggle]`: 음소거 토글
 
 **디버그 시퀀스 예시**:
+
 ```
 [WebSocket] Connection opened
 [WebSocket] Received message type: ready
@@ -817,17 +857,20 @@ catch (error) {
 ### 3. 문제 해결 체크리스트
 
 **주제 선택이 전송되지 않는 경우**:
+
 - [ ] 연결 상태 확인 (isConnected)
 - [ ] ready 이벤트 수신 확인 (isReady)
 - [ ] pendingTopic이 sessionStorage에 저장되었는지 확인
 - [ ] useEffect에서 pendingTopic을 읽어오는지 확인
 
 **시나리오 결과 팝업이 표시되지 않는 경우**:
+
 - [ ] Console에서 `scenario.completed` 메시지 수신 확인
 - [ ] scenarioResult 상태 값 확인
 - [ ] showScenarioResultPopup 상태 값 확인
 
 **음소거 버튼이 비활성화된 경우**:
+
 - [ ] isConnected = true 확인
 - [ ] isRecording = true 확인
 - [ ] 마이크가 실제로 시작되었는지 확인
@@ -849,13 +892,13 @@ catch (error) {
 
 ### 주요 함수 위치
 
-| 함수 | 파일 | 설명 |
-|-----|------|-----|
-| `handleTopicSelect` | page.tsx | 주제 선택 처리 (pendingTopic 로직) |
-| `handleMicClick` | Step1.tsx | 마이크 버튼 클릭 (연결/토글) |
-| `startScenarioSession` | useScenarioChatNew.ts | 시나리오 세션 시작 메시지 전송 |
-| `getRandomTopics` | TopicSuggestion.tsx | 랜덤 5개 주제 선택 |
-| `messageStates` | Step1.tsx | 9가지 UI 상태 정의 |
+| 함수                   | 파일                  | 설명                               |
+| ---------------------- | --------------------- | ---------------------------------- |
+| `handleTopicSelect`    | page.tsx              | 주제 선택 처리 (pendingTopic 로직) |
+| `handleMicClick`       | Step1.tsx             | 마이크 버튼 클릭 (연결/토글)       |
+| `startScenarioSession` | useScenarioChatNew.ts | 시나리오 세션 시작 메시지 전송     |
+| `getRandomTopics`      | TopicSuggestion.tsx   | 랜덤 5개 주제 선택                 |
+| `messageStates`        | Step1.tsx             | 9가지 UI 상태 정의                 |
 
 ---
 
@@ -869,9 +912,9 @@ catch (error) {
 
 ## 변경 이력
 
-| 날짜 | 변경 내용 |
-|-----|---------|
-| 2026-01-19 | 초기 문서 작성 |
+| 날짜       | 변경 내용                                                |
+| ---------- | -------------------------------------------------------- |
+| 2026-01-19 | 초기 문서 작성                                           |
 | 2026-01-19 | TopicSuggestion 컴포넌트 추가 (20개 주제, 랜덤 5개 선택) |
-| 2026-01-19 | pendingTopic 흐름 추가 (sessionStorage → ready → 전송) |
-| 2026-01-19 | 음소거 기능 설명 추가 |
+| 2026-01-19 | pendingTopic 흐름 추가 (sessionStorage → ready → 전송)   |
+| 2026-01-19 | 음소거 기능 설명 추가                                    |

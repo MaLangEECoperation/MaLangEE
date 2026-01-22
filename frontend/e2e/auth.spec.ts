@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+
 import { setAuthStorage, MOCK_USER } from "./helpers/auth";
 
 /**
@@ -27,12 +28,7 @@ async function fillLoginForm(page: Page, email: string, password: string) {
 }
 
 // 헬퍼 함수: 회원가입 폼 채우기
-async function fillSignupForm(
-  page: Page,
-  email: string,
-  password: string,
-  nickname: string
-) {
+async function fillSignupForm(page: Page, email: string, password: string, nickname: string) {
   await page.fill('input[id="login_id"]', email);
   await page.fill('input[id="password"]', password);
   await page.fill('input[id="nickname"]', nickname);
@@ -64,16 +60,12 @@ test.describe("로그인 페이지", () => {
     await expect(page.getByText("올바른 이메일 형식이 아닙니다")).toBeVisible();
   });
 
-  test("잘못된 이메일 형식 입력 시 유효성 검증 에러가 표시되어야 함", async ({
-    page,
-  }) => {
+  test("잘못된 이메일 형식 입력 시 유효성 검증 에러가 표시되어야 함", async ({ page }) => {
     await fillLoginForm(page, "invalid-email", "password123");
     await page.getByRole("button", { name: "로그인" }).click();
 
     // 이메일 형식 에러 메시지 확인
-    await expect(
-      page.getByText(/이메일|올바른|유효/i).first()
-    ).toBeVisible();
+    await expect(page.getByText(/이메일|올바른|유효/i).first()).toBeVisible();
   });
 
   test("로그인 실패 시 에러 메시지가 표시되어야 함", async ({ page }) => {
@@ -88,17 +80,11 @@ test.describe("로그인 페이지", () => {
       });
     });
 
-    await fillLoginForm(
-      page,
-      INVALID_CREDENTIALS.email,
-      INVALID_CREDENTIALS.password
-    );
+    await fillLoginForm(page, INVALID_CREDENTIALS.email, INVALID_CREDENTIALS.password);
     await page.getByRole("button", { name: "로그인" }).click();
 
     // 로그인 실패 에러 메시지 확인
-    await expect(
-      page.getByText(/실패|올바르지 않|오류/i).first()
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/실패|올바르지 않|오류/i).first()).toBeVisible({ timeout: 5000 });
   });
 
   test("로그인 성공 시 대시보드로 이동해야 함", async ({ page }) => {
@@ -153,31 +139,23 @@ test.describe("로그인 페이지", () => {
     await expect(page).toHaveURL(/dashboard/i, { timeout: 10000 });
   });
 
-  test("회원가입 링크 클릭 시 회원가입 페이지로 이동해야 함", async ({
-    page,
-  }) => {
+  test("회원가입 링크 클릭 시 회원가입 페이지로 이동해야 함", async ({ page }) => {
     await page.getByRole("link", { name: "회원가입" }).click();
     await expect(page).toHaveURL(/\/auth\/signup/);
   });
 
-  test("바로 체험해보기 버튼 클릭 시 시나리오 선택 페이지로 이동해야 함", async ({
-    page,
-  }) => {
+  test("바로 체험해보기 버튼 클릭 시 시나리오 선택 페이지로 이동해야 함", async ({ page }) => {
     // Button asChild를 사용하므로 실제로는 링크로 렌더링됨
     await page.getByRole("link", { name: "바로 체험해보기" }).click();
     await expect(page).toHaveURL(/\/chat\/scenario-select/);
   });
 
-  test("이메일/비밀번호 찾기 클릭 시 준비중 모달이 표시되어야 함", async ({
-    page,
-  }) => {
+  test("이메일/비밀번호 찾기 클릭 시 준비중 모달이 표시되어야 함", async ({ page }) => {
     await page.getByText("이메일/비밀번호 찾기").click();
 
     // 준비중 모달 확인
     await expect(page.getByText("준비중입니다", { exact: true })).toBeVisible();
-    await expect(
-      page.getByText("해당 기능은 현재 준비중입니다.")
-    ).toBeVisible();
+    await expect(page.getByText("해당 기능은 현재 준비중입니다.")).toBeVisible();
 
     // 확인 버튼 클릭하여 모달 닫기
     await page.getByRole("button", { name: "확인" }).click();
@@ -229,9 +207,7 @@ test.describe("회원가입 페이지", () => {
     await page.locator('input[id="login_id"]').blur();
 
     // 사용 가능 메시지 확인 (디바운스 시간 고려)
-    await expect(
-      page.getByText("사용 가능한 이메일입니다")
-    ).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("사용 가능한 이메일입니다")).toBeVisible({ timeout: 10000 });
   });
 
   test("이메일 중복 시 에러 메시지가 표시되어야 함", async ({ page }) => {
@@ -248,9 +224,7 @@ test.describe("회원가입 페이지", () => {
     await page.locator('input[id="login_id"]').blur();
 
     // 중복 에러 메시지 확인 (디바운스 시간 고려)
-    await expect(
-      page.getByText(/이미 사용중인 이메일/i).first()
-    ).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/이미 사용중인 이메일/i).first()).toBeVisible({ timeout: 10000 });
   });
 
   test("닉네임 중복 확인이 작동해야 함", async ({ page }) => {
@@ -267,9 +241,7 @@ test.describe("회원가입 페이지", () => {
     await page.locator('input[id="nickname"]').blur();
 
     // 사용 가능 메시지 확인 (디바운스 시간 고려)
-    await expect(
-      page.getByText("사용 가능한 닉네임입니다")
-    ).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("사용 가능한 닉네임입니다")).toBeVisible({ timeout: 10000 });
   });
 
   test("비밀번호 유효성 검증이 작동해야 함", async ({ page }) => {
@@ -278,9 +250,7 @@ test.describe("회원가입 페이지", () => {
     await page.locator('input[id="password"]').blur();
 
     // 비밀번호 검증 에러 확인 (영문+숫자 10자리 이상)
-    await expect(
-      page.getByText(/자리|문자|영문|숫자/i).first()
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/자리|문자|영문|숫자/i).first()).toBeVisible({ timeout: 5000 });
   });
 
   // SKIP: 회원가입 API 호출 타이밍 이슈로 인해 스킵
@@ -343,7 +313,10 @@ test.describe("회원가입 페이지", () => {
     await page.waitForTimeout(2000); // API 응답 대기
 
     // 축하 모달 또는 로그인 페이지 확인
-    const hasModal = await page.getByText(/축하|가입.*완료|회원이 된/i).isVisible().catch(() => false);
+    const hasModal = await page
+      .getByText(/축하|가입.*완료|회원이 된/i)
+      .isVisible()
+      .catch(() => false);
     const hasLoginPage = await page.url().includes("/auth/login");
 
     expect(hasModal || hasLoginPage).toBeTruthy();
@@ -366,9 +339,7 @@ test.describe("게스트 접근", () => {
     await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });
   });
 
-  test("비로그인 상태에서 시나리오 선택 페이지는 접근 가능해야 함", async ({
-    page,
-  }) => {
+  test("비로그인 상태에서 시나리오 선택 페이지는 접근 가능해야 함", async ({ page }) => {
     // 시나리오 선택 페이지는 게스트도 접근 가능
     await page.goto("/chat/scenario-select");
 
@@ -376,9 +347,7 @@ test.describe("게스트 접근", () => {
     await expect(page).toHaveURL(/\/chat\/scenario-select/);
   });
 
-  test("홈페이지 접근 시 로그인 페이지로 리다이렉트되어야 함", async ({
-    page,
-  }) => {
+  test("홈페이지 접근 시 로그인 페이지로 리다이렉트되어야 함", async ({ page }) => {
     await page.goto("/");
 
     // 로그인 페이지로 리다이렉트 확인
@@ -402,12 +371,8 @@ test.describe("로그아웃", () => {
     await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });
 
     // 토큰 및 사용자 정보 삭제 확인
-    const accessToken = await page.evaluate(() =>
-      localStorage.getItem("access_token")
-    );
-    const user = await page.evaluate(() =>
-      localStorage.getItem("user")
-    );
+    const accessToken = await page.evaluate(() => localStorage.getItem("access_token"));
+    const user = await page.evaluate(() => localStorage.getItem("user"));
     expect(accessToken).toBeNull();
     expect(user).toBeNull();
   });

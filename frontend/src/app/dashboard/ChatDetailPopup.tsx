@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import type { ChatHistoryItem } from "@/shared/types/chat";
-import { ChatTranscriptPopup } from "./ChatTranscriptPopup";
-import { PopupLayout } from "@/shared/ui/PopupLayout";
-import { Button, Tooltip } from "@/shared/ui";
+import React, { useState, useMemo } from "react";
+
 import { useGetChatSession } from "@/features/chat";
+import type { ChatHistoryItem } from "@/shared/types/chat";
+import { Button, Tooltip } from "@/shared/ui";
+import { PopupLayout } from "@/shared/ui/PopupLayout";
+
+import { ChatTranscriptPopup } from "./ChatTranscriptPopup";
 
 interface ChatDetailPopupProps {
   session: ChatHistoryItem;
@@ -51,7 +53,8 @@ export const ChatDetailPopup: React.FC<ChatDetailPopupProps> = ({ session, onClo
     </div>
   );
 
-  const hasScenarioInfo = sessionDetail?.scenario_partner ||
+  const hasScenarioInfo =
+    sessionDetail?.scenario_partner ||
     sessionDetail?.scenario_place ||
     sessionDetail?.scenario_goal;
 

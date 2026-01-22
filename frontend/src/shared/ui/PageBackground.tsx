@@ -1,5 +1,7 @@
 import { type FC, type ReactNode } from "react";
+
 import { cn } from "@/shared/lib/utils";
+
 import { DecorativeCircle } from "./DecorativeCircle";
 
 interface PageBackgroundProps {
@@ -33,11 +35,7 @@ export const PageBackground: FC<PageBackgroundProps> = ({
 
   return (
     <div
-      className={cn(
-        "relative min-h-screen overflow-hidden",
-        backgroundClasses[variant],
-        className
-      )}
+      className={cn("relative min-h-screen overflow-hidden", backgroundClasses[variant], className)}
     >
       {/* 배경 장식 원형들 */}
       {showDecorations && (

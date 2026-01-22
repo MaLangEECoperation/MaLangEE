@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
 import { ConfirmPopup } from "./ConfirmPopup";
 
 describe("ConfirmPopup", () => {
@@ -17,13 +18,7 @@ describe("ConfirmPopup", () => {
   });
 
   it("should render with default button texts", () => {
-    render(
-      <ConfirmPopup
-        message="테스트 메시지"
-        onConfirm={() => {}}
-        onCancel={() => {}}
-      />
-    );
+    render(<ConfirmPopup message="테스트 메시지" onConfirm={() => {}} onCancel={() => {}} />);
 
     expect(screen.getByText("테스트 메시지")).toBeInTheDocument();
     expect(screen.getByText("확인")).toBeInTheDocument();
@@ -60,11 +55,7 @@ describe("ConfirmPopup", () => {
   it("should call onConfirm when confirm button is clicked", () => {
     const handleConfirm = vi.fn();
     render(
-      <ConfirmPopup
-        message="확인하시겠습니까?"
-        onConfirm={handleConfirm}
-        onCancel={() => {}}
-      />
+      <ConfirmPopup message="확인하시겠습니까?" onConfirm={handleConfirm} onCancel={() => {}} />
     );
 
     fireEvent.click(screen.getByText("확인"));
@@ -75,11 +66,7 @@ describe("ConfirmPopup", () => {
   it("should call onCancel when cancel button is clicked", () => {
     const handleCancel = vi.fn();
     render(
-      <ConfirmPopup
-        message="취소하시겠습니까?"
-        onConfirm={() => {}}
-        onCancel={handleCancel}
-      />
+      <ConfirmPopup message="취소하시겠습니까?" onConfirm={() => {}} onCancel={handleCancel} />
     );
 
     fireEvent.click(screen.getByText("취소"));
@@ -89,12 +76,7 @@ describe("ConfirmPopup", () => {
 
   it("should render MalangEE when showMalangEE is true", () => {
     render(
-      <ConfirmPopup
-        message="테스트"
-        onConfirm={() => {}}
-        onCancel={() => {}}
-        showMalangEE={true}
-      />
+      <ConfirmPopup message="테스트" onConfirm={() => {}} onCancel={() => {}} showMalangEE={true} />
     );
 
     // Just verify the component renders without error when showMalangEE is true

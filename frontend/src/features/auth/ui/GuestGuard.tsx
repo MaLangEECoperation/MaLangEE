@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, type FC, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { tokenStorage } from "../model";
+import { useEffect, useRef, type FC, type ReactNode } from "react";
+
 import { useAuth } from "../hook";
+import { tokenStorage } from "../model";
 
 interface GuestGuardProps {
   children: ReactNode;
@@ -22,10 +23,7 @@ interface GuestGuardProps {
  * </GuestGuard>
  * ```
  */
-export const GuestGuard: FC<GuestGuardProps> = ({
-  children,
-  redirectTo = "/dashboard",
-}) => {
+export const GuestGuard: FC<GuestGuardProps> = ({ children, redirectTo = "/dashboard" }) => {
   const router = useRouter();
   const hasToken = tokenStorage.exists();
   const { isAuthenticated, isLoading } = useAuth();

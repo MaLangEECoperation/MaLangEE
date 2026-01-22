@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+
 import { Button, MalangEE } from "@/shared/ui";
 
 export default function SubtitleSettingsPage() {

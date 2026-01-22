@@ -1,8 +1,8 @@
 "use client";
 
+import { X } from "lucide-react";
 import React, { type ReactNode, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
 
 interface PopupLayoutProps {
   children: ReactNode;
@@ -59,7 +59,7 @@ export const PopupLayout: React.FC<PopupLayoutProps> = ({
         {showCloseButton && (
           <button
             onClick={onClose}
-            className="absolute right-6 top-6 text-gray-400 transition-colors hover:text-gray-600 z-10"
+            className="absolute right-6 top-6 z-10 text-gray-400 transition-colors hover:text-gray-600"
             aria-label="닫기"
           >
             <X size={24} />

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
 import { ApiClient } from "./api-client";
 
 describe("ApiClient", () => {
@@ -192,9 +193,7 @@ describe("ApiClient", () => {
           }),
       });
 
-      await expect(apiClient.get("/users")).rejects.toThrow(
-        "Field required, Invalid email"
-      );
+      await expect(apiClient.get("/users")).rejects.toThrow("Field required, Invalid email");
     });
 
     it("should throw generic error for other status codes", async () => {

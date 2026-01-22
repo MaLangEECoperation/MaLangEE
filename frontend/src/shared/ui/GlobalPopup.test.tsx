@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
 import { GlobalPopup } from "./GlobalPopup";
 
 // Mock stores and hooks
@@ -37,7 +38,14 @@ vi.mock("./PopupLayout", () => ({
 
 // Mock Button
 vi.mock("./Button", () => ({
-  Button: ({ children, onClick, ...props }: { children: React.ReactNode; onClick?: () => void }) => (
+  Button: ({
+    children,
+    onClick,
+    ...props
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+  }) => (
     <button onClick={onClick} {...props}>
       {children}
     </button>
@@ -47,7 +55,9 @@ vi.mock("./Button", () => ({
 // Mock MalangEE
 vi.mock("./MalangEE", () => ({
   MalangEE: ({ status }: { status: string }) => (
-    <div data-testid="malangee" data-status={status}>MalangEE</div>
+    <div data-testid="malangee" data-status={status}>
+      MalangEE
+    </div>
   ),
 }));
 

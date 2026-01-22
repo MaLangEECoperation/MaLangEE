@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+
 import { MOCK_USER, setAuthStorage } from "./helpers/auth";
 
 /**
@@ -93,7 +94,9 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
     await page.waitForLoadState("networkidle");
 
     // 최소 하나의 시나리오 버튼이 표시되어야 함
-    const scenarioButtons = page.locator('button:has-text("공항에서"), button:has-text("카페에서"), button:has-text("호텔")');
+    const scenarioButtons = page.locator(
+      'button:has-text("공항에서"), button:has-text("카페에서"), button:has-text("호텔")'
+    );
     await expect(scenarioButtons.first()).toBeVisible({ timeout: 10000 });
   });
 
@@ -121,7 +124,9 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
     await page.goto("/chat/scenario-select/topic-suggestion");
 
     // 첫 번째 시나리오 버튼 클릭
-    const scenarioButton = page.locator('button:has-text("공항에서"), button:has-text("카페에서"), button:has-text("호텔")').first();
+    const scenarioButton = page
+      .locator('button:has-text("공항에서"), button:has-text("카페에서"), button:has-text("호텔")')
+      .first();
     await scenarioButton.click();
 
     // 상세 팝업 표시 확인
@@ -139,7 +144,9 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
     await page.goto("/chat/scenario-select/topic-suggestion");
 
     // 시나리오 버튼 클릭
-    const scenarioButton = page.locator('button:has-text("공항에서"), button:has-text("카페에서"), button:has-text("호텔")').first();
+    const scenarioButton = page
+      .locator('button:has-text("공항에서"), button:has-text("카페에서"), button:has-text("호텔")')
+      .first();
     await scenarioButton.click();
 
     // 팝업 닫기
@@ -153,7 +160,9 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
     await page.goto("/chat/scenario-select/topic-suggestion");
 
     // 시나리오 버튼 클릭
-    const scenarioButton = page.locator('button:has-text("공항에서"), button:has-text("카페에서"), button:has-text("호텔")').first();
+    const scenarioButton = page
+      .locator('button:has-text("공항에서"), button:has-text("카페에서"), button:has-text("호텔")')
+      .first();
     await scenarioButton.click();
 
     // 자막 토글 확인
@@ -168,14 +177,18 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
     await page.goto("/chat/scenario-select/topic-suggestion");
 
     // 시나리오 버튼 클릭
-    const scenarioButton = page.locator('button:has-text("공항에서"), button:has-text("카페에서"), button:has-text("호텔")').first();
+    const scenarioButton = page
+      .locator('button:has-text("공항에서"), button:has-text("카페에서"), button:has-text("호텔")')
+      .first();
     await scenarioButton.click();
 
     // 목소리 이름 확인
     await expect(page.getByText("Shimmer")).toBeVisible();
 
     // 다음 목소리 버튼 클릭
-    const nextButton = page.locator('button:has([class*="ChevronRight"]), button:has-text("›")').last();
+    const nextButton = page
+      .locator('button:has([class*="ChevronRight"]), button:has-text("›")')
+      .last();
     if (await nextButton.isVisible()) {
       await nextButton.click();
     }
@@ -204,7 +217,7 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
   test("로딩 중 상태가 표시되어야 함", async ({ page }) => {
     // 느린 응답 시뮬레이션
     await page.route("**/api/v1/scenarios*", async (route) => {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -359,7 +372,9 @@ test.describe("시나리오 선택 - 직접 말하기 페이지", () => {
 });
 
 test.describe("시나리오 선택 플로우 - 리다이렉트", () => {
-  test("/chat/scenario-select 접속 시 topic-suggestion으로 리다이렉트되어야 함", async ({ page }) => {
+  test("/chat/scenario-select 접속 시 topic-suggestion으로 리다이렉트되어야 함", async ({
+    page,
+  }) => {
     await page.goto("/chat/scenario-select");
 
     // topic-suggestion으로 리다이렉트 확인
@@ -411,7 +426,9 @@ test.describe("시나리오 선택 - 세션 생성 통합 테스트", () => {
     await page.goto("/chat/scenario-select/topic-suggestion");
 
     // 시나리오 버튼 클릭
-    const scenarioButton = page.locator('button:has-text("공항에서"), button:has-text("카페에서"), button:has-text("호텔")').first();
+    const scenarioButton = page
+      .locator('button:has-text("공항에서"), button:has-text("카페에서"), button:has-text("호텔")')
+      .first();
     await scenarioButton.click();
 
     // 이 주제로 시작하기 버튼 클릭

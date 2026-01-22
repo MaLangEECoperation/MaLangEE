@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
 import { useInactivityTimer } from "./useInactivityTimer";
 
 describe("useInactivityTimer", () => {
@@ -19,9 +20,7 @@ describe("useInactivityTimer", () => {
   });
 
   it("should show inactivity message after inactivityTime", () => {
-    const { result } = renderHook(() =>
-      useInactivityTimer({ inactivityTime: 1000 })
-    );
+    const { result } = renderHook(() => useInactivityTimer({ inactivityTime: 1000 }));
 
     act(() => {
       result.current.startInactivityTimer();
@@ -84,9 +83,7 @@ describe("useInactivityTimer", () => {
   });
 
   it("should clear timers", () => {
-    const { result } = renderHook(() =>
-      useInactivityTimer({ inactivityTime: 1000 })
-    );
+    const { result } = renderHook(() => useInactivityTimer({ inactivityTime: 1000 }));
 
     act(() => {
       result.current.startInactivityTimer();
@@ -156,9 +153,7 @@ describe("useInactivityTimer", () => {
   it("should clear timers on unmount", () => {
     const clearTimeoutSpy = vi.spyOn(global, "clearTimeout");
 
-    const { result, unmount } = renderHook(() =>
-      useInactivityTimer({ inactivityTime: 1000 })
-    );
+    const { result, unmount } = renderHook(() => useInactivityTimer({ inactivityTime: 1000 }));
 
     act(() => {
       result.current.startInactivityTimer();
@@ -171,9 +166,7 @@ describe("useInactivityTimer", () => {
   });
 
   it("should restart timer when startInactivityTimer is called again", () => {
-    const { result } = renderHook(() =>
-      useInactivityTimer({ inactivityTime: 1000 })
-    );
+    const { result } = renderHook(() => useInactivityTimer({ inactivityTime: 1000 }));
 
     act(() => {
       result.current.startInactivityTimer();

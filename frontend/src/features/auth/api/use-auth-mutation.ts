@@ -1,9 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { authApi } from "./auth-api";
+
+import { useSyncGuestSession } from "@/features/chat/api/use-chat-sessions";
+
 import { tokenStorage, userStorage } from "../model";
 import type { LoginFormData, RegisterFormData, NicknameUpdateFormData } from "../model";
-import { useSyncGuestSession } from "@/features/chat/api/use-chat-sessions";
+
+import { authApi } from "./auth-api";
 
 const AUTH_QUERY_KEY = ["auth", "user"];
 
@@ -44,7 +47,7 @@ export function useLogin() {
             },
             onError: (err) => {
               console.error("[useLogin] 세션 동기화 실패:", err);
-            }
+            },
           });
         }
       }

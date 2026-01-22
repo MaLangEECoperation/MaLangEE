@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, type FC, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, type FC, type ReactNode } from "react";
+
 import { tokenStorage, userStorage } from "../model";
 
 interface AuthGuardProps {
@@ -29,7 +30,9 @@ export const AuthGuard: FC<AuthGuardProps> = ({
   fallback,
 }) => {
   const router = useRouter();
-  const [authState, setAuthState] = useState<"loading" | "authenticated" | "unauthenticated">("loading");
+  const [authState, setAuthState] = useState<"loading" | "authenticated" | "unauthenticated">(
+    "loading"
+  );
   const hasRedirected = useRef(false);
 
   // 클라이언트에서만 인증 상태 확인
@@ -42,7 +45,6 @@ export const AuthGuard: FC<AuthGuardProps> = ({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setAuthState("authenticated");
     } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAuthState("unauthenticated");
     }
   }, []);
@@ -75,7 +77,7 @@ function AuthGuardLoadingFallback() {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-700 border-t-transparent" />
+        <div className="border-primary-700 h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
         <p className="text-sm text-gray-500">로딩 중...</p>
       </div>
     </div>

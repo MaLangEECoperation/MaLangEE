@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
 import {
   isDev,
   debugLog,
@@ -61,10 +62,7 @@ describe("debug utilities", () => {
     it("should log error in development environment", () => {
       vi.stubEnv("NODE_ENV", "development");
       debugError("error message", new Error("test"));
-      expect(console.error).toHaveBeenCalledWith(
-        "error message",
-        expect.any(Error)
-      );
+      expect(console.error).toHaveBeenCalledWith("error message", expect.any(Error));
     });
 
     it("should not log error in production environment", () => {

@@ -1,4 +1,5 @@
 import { tokenStorage } from "@/features/auth";
+
 import { config } from "./config";
 
 export type WebSocketMessageType =
@@ -47,7 +48,7 @@ export class WebSocketClient {
 
   private getWebSocketUrl(): string {
     // 개발 환경인지 확인
-    const isDevelopment = process.env.NODE_ENV === 'development';
+    const isDevelopment = process.env.NODE_ENV === "development";
 
     // WebSocket URL 구성
     let wsUrl: string;
@@ -56,13 +57,13 @@ export class WebSocketClient {
       // 개발 환경: HTTP/HTTPS URL을 WebSocket URL로 변환
       const httpUrl = config.apiBaseUrl;
       // https:// -> wss://, http:// -> ws://
-      wsUrl = httpUrl.replace(/^https/, 'wss').replace(/^http/, 'ws');
-    } else if (typeof window !== 'undefined') {
+      wsUrl = httpUrl.replace(/^https/, "wss").replace(/^http/, "ws");
+    } else if (typeof window !== "undefined") {
       // 프로덕션 또는 브라우저 환경: 현재 호스트 기반
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       wsUrl = `${protocol}//${window.location.host}`;
     } else {
-      throw new Error('Cannot determine WebSocket URL');
+      throw new Error("Cannot determine WebSocket URL");
     }
 
     // 엔드포인트 추가
@@ -94,7 +95,7 @@ export class WebSocketClient {
           const message: WebSocketMessage = JSON.parse(event.data);
           this.config.onMessage(message);
         } catch (error) {
-          console.error('Failed to parse WebSocket message:', error);
+          console.error("Failed to parse WebSocket message:", error);
         }
       };
 
@@ -104,11 +105,11 @@ export class WebSocketClient {
       };
 
       this.ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        console.error("WebSocket error:", error);
         this.config.onError?.(error);
       };
     } catch (error) {
-      console.error('Failed to create WebSocket connection:', error);
+      console.error("Failed to create WebSocket connection:", error);
       this.config.onError?.(error as Event);
     }
   }
@@ -126,7 +127,7 @@ export class WebSocketClient {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(data));
     } else {
-      console.error('WebSocket is not connected');
+      console.error("WebSocket is not connected");
     }
   }
 

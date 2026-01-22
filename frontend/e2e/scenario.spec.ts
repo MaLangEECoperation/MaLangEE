@@ -42,7 +42,15 @@ test.describe("시나리오 선택 페이지 (새 URL 구조)", () => {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify([
-          { id: 1, title: "공항에서 체크인하기", description: "테스트", level: 1, place: "Airport", partner: "Staff", goal: "Check-in" },
+          {
+            id: 1,
+            title: "공항에서 체크인하기",
+            description: "테스트",
+            level: 1,
+            place: "Airport",
+            partner: "Staff",
+            goal: "Check-in",
+          },
         ]),
       });
     });
@@ -90,9 +98,7 @@ test.describe("시나리오 선택 - 직접 말하기 페이지", () => {
 });
 
 test.describe("시나리오 결과 localStorage 저장", () => {
-  test("시나리오 결과가 localStorage에 저장되어야 함", async ({
-    page,
-  }) => {
+  test("시나리오 결과가 localStorage에 저장되어야 함", async ({ page }) => {
     await page.goto("/chat/scenario-select/topic-suggestion");
 
     // JavaScript를 통해 시나리오 결과 상태를 시뮬레이션
@@ -129,9 +135,7 @@ test.describe("목소리 선택 페이지", () => {
 });
 
 test.describe("게스트 모드 시나리오 플로우", () => {
-  test("게스트 사용자가 시나리오 선택 페이지에 접근할 수 있어야 함", async ({
-    page,
-  }) => {
+  test("게스트 사용자가 시나리오 선택 페이지에 접근할 수 있어야 함", async ({ page }) => {
     // 로그인하지 않은 상태로 시나리오 선택 페이지 접근
     await page.goto("/chat/scenario-select");
     await expect(page).toHaveURL(/\/chat\/scenario-select/);
@@ -158,10 +162,7 @@ test.describe("마이크 권한 및 오디오", () => {
     await expect(page).toHaveURL(/\/chat\/scenario-select\/direct-speech/);
   });
 
-  test("마이크 권한이 거부된 경우에도 페이지가 로드되어야 함", async ({
-    page,
-    context,
-  }) => {
+  test("마이크 권한이 거부된 경우에도 페이지가 로드되어야 함", async ({ page, context }) => {
     // 마이크 권한 거부 시뮬레이션
     await context.clearPermissions();
 
@@ -186,9 +187,7 @@ test.describe("시나리오 페이지 반응형 디자인", () => {
   test.describe("모바일 뷰포트", () => {
     test.use({ viewport: { width: 375, height: 667 } });
 
-    test("모바일에서 직접 말하기 페이지가 정상적으로 표시되어야 함", async ({
-      page,
-    }) => {
+    test("모바일에서 직접 말하기 페이지가 정상적으로 표시되어야 함", async ({ page }) => {
       await page.goto("/chat/scenario-select/direct-speech");
 
       // 페이지가 로드되어야 함
@@ -202,9 +201,7 @@ test.describe("시나리오 페이지 반응형 디자인", () => {
   test.describe("태블릿 뷰포트", () => {
     test.use({ viewport: { width: 768, height: 1024 } });
 
-    test("태블릿에서 직접 말하기 페이지가 정상적으로 표시되어야 함", async ({
-      page,
-    }) => {
+    test("태블릿에서 직접 말하기 페이지가 정상적으로 표시되어야 함", async ({ page }) => {
       await page.goto("/chat/scenario-select/direct-speech");
 
       await expect(page).toHaveURL(/\/chat\/scenario-select\/direct-speech/);
@@ -245,12 +242,8 @@ test.describe("LocalStorage 상태 관리", () => {
 
     // 저장 확인
     const place = await page.evaluate(() => localStorage.getItem("place"));
-    const partner = await page.evaluate(() =>
-      localStorage.getItem("conversationPartner")
-    );
-    const goal = await page.evaluate(() =>
-      localStorage.getItem("conversationGoal")
-    );
+    const partner = await page.evaluate(() => localStorage.getItem("conversationPartner"));
+    const goal = await page.evaluate(() => localStorage.getItem("conversationGoal"));
 
     expect(place).toBe(MOCK_SCENARIO_RESULT.place);
     expect(partner).toBe(MOCK_SCENARIO_RESULT.conversationPartner);
@@ -265,9 +258,7 @@ test.describe("LocalStorage 상태 관리", () => {
       localStorage.setItem("entryType", "guest");
     });
 
-    const entryType = await page.evaluate(() =>
-      localStorage.getItem("entryType")
-    );
+    const entryType = await page.evaluate(() => localStorage.getItem("entryType"));
     expect(entryType).toBe("guest");
   });
 });
@@ -282,9 +273,7 @@ test.describe("접근성", () => {
     // 포커스가 이동되어야 함 (구체적인 요소는 앱 구현에 따라 다름)
   });
 
-  test("목소리 선택 페이지에 적절한 ARIA 레이블이 있어야 함", async ({
-    page,
-  }) => {
+  test("목소리 선택 페이지에 적절한 ARIA 레이블이 있어야 함", async ({ page }) => {
     await page.goto("/chat/scenario-select/voice-selection");
 
     // 이전/다음 목소리 버튼에 접근 가능해야 함
@@ -294,9 +283,7 @@ test.describe("접근성", () => {
 });
 
 test.describe("10분 로그인 유도", () => {
-  test("비로그인 상태에서 페이지 로드 확인", async ({
-    page,
-  }) => {
+  test("비로그인 상태에서 페이지 로드 확인", async ({ page }) => {
     // 이 테스트는 실제로 10분을 기다릴 수 없으므로
     // 페이지가 정상적으로 로드되는지만 확인합니다.
     await page.goto("/chat/scenario-select/direct-speech");

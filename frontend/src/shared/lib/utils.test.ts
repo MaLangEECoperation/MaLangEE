@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+
 import { cn } from "./utils";
 
 describe("cn (className utility)", () => {
@@ -10,9 +11,7 @@ describe("cn (className utility)", () => {
     const isActive = true;
     const isDisabled = false;
 
-    expect(cn("base", isActive && "active", isDisabled && "disabled")).toBe(
-      "base active"
-    );
+    expect(cn("base", isActive && "active", isDisabled && "disabled")).toBe("base active");
   });
 
   it("handles undefined and null values", () => {
@@ -53,9 +52,7 @@ describe("cn (className utility)", () => {
   });
 
   it("handles responsive modifiers", () => {
-    expect(cn("text-sm", "md:text-base", "lg:text-lg")).toBe(
-      "text-sm md:text-base lg:text-lg"
-    );
+    expect(cn("text-sm", "md:text-base", "lg:text-lg")).toBe("text-sm md:text-base lg:text-lg");
   });
 
   it("handles state modifiers", () => {
@@ -69,14 +66,8 @@ describe("cn (className utility)", () => {
   });
 
   it("handles mixed input types", () => {
-    expect(
-      cn(
-        "base",
-        ["arr1", "arr2"],
-        { active: true },
-        undefined,
-        "end"
-      )
-    ).toBe("base arr1 arr2 active end");
+    expect(cn("base", ["arr1", "arr2"], { active: true }, undefined, "end")).toBe(
+      "base arr1 arr2 active end"
+    );
   });
 });

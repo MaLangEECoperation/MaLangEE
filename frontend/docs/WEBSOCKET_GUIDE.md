@@ -8,10 +8,10 @@
 
 MaLangEE는 **두 가지 독립적인 WebSocket 기능**을 제공하며, 각각 **다른 이벤트 타입**을 사용합니다:
 
-| 기능 | WebSocket 타입 | 이벤트 네이밍 |
-|------|---------------|--------------|
+| 기능            | WebSocket 타입     | 이벤트 네이밍                                  |
+| --------------- | ------------------ | ---------------------------------------------- |
 | **주제 정하기** | Scenario WebSocket | `input_audio_chunk`, `response.audio.delta` 등 |
-| **대화하기** | Chat WebSocket | `input_audio_buffer.append`, `audio.delta` 등 |
+| **대화하기**    | Chat WebSocket     | `input_audio_buffer.append`, `audio.delta` 등  |
 
 **절대 혼용하지 마세요!** 각 WebSocket은 자신만의 이벤트 타입을 사용합니다.
 
@@ -33,6 +33,7 @@ MaLangEE는 **두 가지 독립적인 WebSocket 기능**을 제공하며, 각각
 ### 1.1 주제 정하기 (Scenario WebSocket)
 
 **엔드포인트:**
+
 ```
 회원: /api/v1/scenarios/ws/scenario?token={access_token}
 게스트: /api/v1/scenarios/ws/guest-scenario
@@ -41,6 +42,7 @@ MaLangEE는 **두 가지 독립적인 WebSocket 기능**을 제공하며, 각각
 **백엔드 구현**: `backend/app/api/v1/scenario.py:108, 123`
 
 **용도:**
+
 - 대화 주제(시나리오) 자동 생성
 - 사용자 음성/텍스트에서 Place, Partner, Goal 추출
 - AI가 후속 질문을 통해 정보 수집
@@ -48,6 +50,7 @@ MaLangEE는 **두 가지 독립적인 WebSocket 기능**을 제공하며, 각각
 - 연결 시 AI가 자동으로 첫 인사 시작
 
 **주요 이벤트:**
+
 - 클라이언트 → 서버: `input_audio_chunk`, `text`
 - 서버 → 클라이언트: `response.audio.delta`, `scenario.completed`
 
@@ -58,6 +61,7 @@ MaLangEE는 **두 가지 독립적인 WebSocket 기능**을 제공하며, 각각
 ### 1.2 대화하기 (Chat WebSocket)
 
 **엔드포인트:**
+
 ```
 회원: /api/v1/chat/ws/chat/{session_id}?token={access_token}&voice=alloy&show_text=true
 게스트: /api/v1/chat/ws/guest-chat/{session_id}?voice=alloy&show_text=true
@@ -66,6 +70,7 @@ MaLangEE는 **두 가지 독립적인 WebSocket 기능**을 제공하며, 각각
 **백엔드 구현**: `backend/app/api/v1/chat.py:108, 124`
 
 **용도:**
+
 - 실시간 영어 회화 연습
 - OpenAI GPT-4o와 실시간 음성 대화
 - 사용자 발화 자동 분석 (WPM, 발화 시간)
@@ -74,12 +79,14 @@ MaLangEE는 **두 가지 독립적인 WebSocket 기능**을 제공하며, 각각
 - 연결 시 AI가 자동으로 첫 인사 시작
 
 **주요 이벤트:**
+
 - 클라이언트 → 서버: `input_audio_buffer.append`
 - 서버 → 클라이언트: `audio.delta`, `user.transcript`
 
 **AI Engine 구현**: `ai-engine/realtime_conversation/connection_handler.py:16`
 
 **Query Parameters:**
+
 - `voice` (선택): AI 음성 (`alloy`, `echo`, `fable`, `onyx`, `nova`, `shimmer`)
 - `show_text` (선택): 자막 표시 여부 (`true`/`false`)
 
@@ -135,6 +142,7 @@ sequenceDiagram
 사용자 음성을 서버로 전송합니다.
 
 **전송:**
+
 ```json
 {
   "type": "input_audio_chunk",
@@ -144,10 +152,12 @@ sequenceDiagram
 ```
 
 **필드:**
+
 - `audio`: Base64 인코딩된 PCM16 오디오 데이터
 - `sample_rate`: 샘플링 레이트 (기본: 24000)
 
 **발생 시점:**
+
 - 마이크 녹음 중 실시간으로 전송 (100ms 간격 권장)
 
 ---
@@ -157,6 +167,7 @@ sequenceDiagram
 현재까지 전송된 오디오를 하나의 발화로 확정합니다.
 
 **전송:**
+
 ```json
 {
   "type": "input_audio_commit"
@@ -164,6 +175,7 @@ sequenceDiagram
 ```
 
 **발생 시점:**
+
 - 사용자가 말하기를 멈췄을 때 (VAD 미사용 모드)
 - 현재 Scenario WebSocket은 **Server VAD 모드**를 사용하므로 일반적으로 **전송 불필요**
 
@@ -174,6 +186,7 @@ sequenceDiagram
 입력 오디오 버퍼를 비웁니다.
 
 **전송:**
+
 ```json
 {
   "type": "input_audio_clear"
@@ -181,6 +194,7 @@ sequenceDiagram
 ```
 
 **발생 시점:**
+
 - 사용자가 녹음을 취소하거나 재시작할 때
 
 ---
@@ -190,6 +204,7 @@ sequenceDiagram
 음성 대신 텍스트로 시나리오 정보를 입력합니다.
 
 **전송:**
+
 ```json
 {
   "type": "text",
@@ -198,6 +213,7 @@ sequenceDiagram
 ```
 
 **발생 시점:**
+
 - 사용자가 음성 대신 텍스트로 시나리오 입력
 - 빠른 테스트 또는 접근성 기능 사용 시
 
@@ -210,6 +226,7 @@ sequenceDiagram
 WebSocket 연결이 준비되었습니다.
 
 **수신:**
+
 ```json
 {
   "type": "ready"
@@ -217,13 +234,16 @@ WebSocket 연결이 준비되었습니다.
 ```
 
 **발생 시점:**
+
 - OpenAI Realtime API 연결 완료 및 세션 초기화 후 (연결 후 약 1-2초)
 
 **처리 방법:**
+
 - UI 업데이트 (예: "연결 중..." → "주제를 말씀해주세요")
 - 오디오 녹음 시작 허용
 
 **중요 사항:**
+
 - `ready` 이벤트 직후, 서버가 자동으로 "Let's start" 메시지를 OpenAI에 전송하여 AI의 첫 인사를 트리거합니다 (`ai-engine/scenario/realtime_bridge.py:235-255`)
 - 따라서 클라이언트는 `ready` 수신 직후 `response.audio.delta` 이벤트를 통해 AI의 첫 인사 오디오를 수신하게 됩니다
 
@@ -234,6 +254,7 @@ WebSocket 연결이 준비되었습니다.
 사용자가 말한 내용의 전사 결과입니다.
 
 **수신:**
+
 ```json
 {
   "type": "input_audio.transcript",
@@ -242,12 +263,15 @@ WebSocket 연결이 준비되었습니다.
 ```
 
 **필드:**
+
 - `transcript`: Whisper 전사 결과
 
 **발생 시점:**
+
 - 사용자 발화 종료 후 (Server VAD 감지 또는 커밋 후)
 
 **처리 방법:**
+
 - 자막 UI에 표시
 - 사용자 입력 내용 확인용
 
@@ -258,6 +282,7 @@ WebSocket 연결이 준비되었습니다.
 AI의 음성 응답 청크입니다.
 
 **수신:**
+
 ```json
 {
   "type": "response.audio.delta",
@@ -267,13 +292,16 @@ AI의 음성 응답 청크입니다.
 ```
 
 **필드:**
+
 - `delta`: Base64 인코딩된 PCM16 오디오 청크
 - `sample_rate`: 샘플링 레이트 (보통 24000)
 
 **발생 빈도:**
+
 - AI 응답 중 연속적으로 수신 (약 100ms 간격)
 
 **처리 방법:**
+
 1. Base64 디코딩
 2. AudioContext를 사용하여 재생
 3. 버퍼링하여 끊김 없이 재생
@@ -285,6 +313,7 @@ AI의 음성 응답 청크입니다.
 AI 음성 응답이 끝났음을 알립니다.
 
 **수신:**
+
 ```json
 {
   "type": "response.audio.done"
@@ -292,9 +321,11 @@ AI 음성 응답이 끝났음을 알립니다.
 ```
 
 **발생 시점:**
+
 - AI가 한 턴의 응답을 완료했을 때
 
 **처리 방법:**
+
 - 오디오 재생 완료 처리
 - UI 상태 업데이트
 
@@ -305,6 +336,7 @@ AI 음성 응답이 끝났음을 알립니다.
 AI가 말한 내용의 텍스트입니다.
 
 **수신:**
+
 ```json
 {
   "type": "response.audio_transcript.done",
@@ -313,12 +345,15 @@ AI가 말한 내용의 텍스트입니다.
 ```
 
 **필드:**
+
 - `transcript`: AI 발화 내용
 
 **발생 시점:**
+
 - `response.audio.done` 직후
 
 **처리 방법:**
+
 - 자막 UI에 표시
 - 후속 질문 확인
 
@@ -329,6 +364,7 @@ AI가 말한 내용의 텍스트입니다.
 시나리오 빌딩이 완료되었습니다.
 
 **수신:**
+
 ```json
 {
   "type": "scenario.completed",
@@ -343,21 +379,25 @@ AI가 말한 내용의 텍스트입니다.
 ```
 
 **필드:**
+
 - `place`: 대화 장소
 - `conversation_partner`: 대화 상대
 - `conversation_goal`: 대화 목적
 - `sessionId`: 저장된 세션 ID (대화하기에서 사용)
 
 **발생 시점:**
+
 - Place, Partner, Goal이 모두 추출되었을 때
 - 또는 최대 시도 횟수 초과 시 (폴백)
 
 **서버 동작:**
+
 - 시나리오 완료 시 서버가 자동으로 DB에 저장 (`ai-engine/scenario/realtime_bridge.py:124-173`)
 - LLM을 통해 대화 내용 기반 세션 제목 자동 생성
 - `backend/app/repositories/chat_repository.py`를 통해 PostgreSQL에 저장
 
 **처리 방법:**
+
 1. 시나리오 정보 저장 (클라이언트 로컬 또는 상태 관리)
 2. **중요:** `sessionId`를 저장 (다음 단계에서 사용)
 3. "대화하기" 화면으로 이동
@@ -370,6 +410,7 @@ AI가 말한 내용의 텍스트입니다.
 에러가 발생했습니다.
 
 **수신:**
+
 ```json
 {
   "type": "error",
@@ -378,6 +419,7 @@ AI가 말한 내용의 텍스트입니다.
 ```
 
 **처리 방법:**
+
 - 에러 메시지 표시
 - 재시도 또는 종료
 
@@ -479,6 +521,7 @@ sequenceDiagram
 사용자 마이크 입력을 서버로 전송합니다.
 
 **전송:**
+
 ```json
 {
   "type": "input_audio_buffer.append",
@@ -487,12 +530,15 @@ sequenceDiagram
 ```
 
 **필드:**
+
 - `audio`: Base64 인코딩된 PCM16 오디오 데이터
 
 **발생 시점:**
+
 - 마이크 녹음 중 실시간으로 전송 (100ms 간격 권장)
 
 **주의사항:**
+
 - AudioWorklet 또는 MediaRecorder를 사용하여 PCM16 포맷으로 변환 필요
 - 샘플링 레이트: 24000 Hz
 - 채널: 모노 (1채널)
@@ -505,6 +551,7 @@ sequenceDiagram
 현재까지 전송된 오디오를 하나의 발화로 확정합니다.
 
 **전송:**
+
 ```json
 {
   "type": "input_audio_buffer.commit"
@@ -512,10 +559,12 @@ sequenceDiagram
 ```
 
 **발생 시점:**
+
 - 사용자가 말하기를 멈췄을 때 (VAD 미사용 모드)
 - 현재 Chat WebSocket은 **Server VAD 모드**를 사용하므로 일반적으로 **전송 불필요**
 
 **Server VAD 모드:**
+
 - 서버가 자동으로 발화 시작/종료를 감지
 - `speech.started`, `speech.stopped` 이벤트 자동 수신
 
@@ -526,6 +575,7 @@ sequenceDiagram
 AI의 응답을 강제로 요청합니다.
 
 **전송:**
+
 ```json
 {
   "type": "response.create"
@@ -533,6 +583,7 @@ AI의 응답을 강제로 요청합니다.
 ```
 
 **발생 시점:**
+
 - 사용자가 응답을 기다리는 상황 (일반적으로 자동 처리되므로 드물게 사용)
 
 ---
@@ -542,6 +593,7 @@ AI의 응답을 강제로 요청합니다.
 AI 음성이나 기타 설정을 실시간으로 변경합니다.
 
 **전송:**
+
 ```json
 {
   "type": "session.update",
@@ -552,12 +604,15 @@ AI 음성이나 기타 설정을 실시간으로 변경합니다.
 ```
 
 **가능한 설정:**
+
 - `voice`: `alloy`, `echo`, `fable`, `onyx`, `nova`, `shimmer`
 
 **발생 시점:**
+
 - 사용자가 UI에서 음성 설정을 변경했을 때
 
 **주의사항:**
+
 - 음성 변경 시 서버가 OpenAI 세션을 재연결하므로 1-2초 지연 발생 가능
 
 ---
@@ -567,6 +622,7 @@ AI 음성이나 기타 설정을 실시간으로 변경합니다.
 대화를 종료하고 세션을 저장합니다.
 
 **전송:**
+
 ```json
 {
   "type": "disconnect"
@@ -574,6 +630,7 @@ AI 음성이나 기타 설정을 실시간으로 변경합니다.
 ```
 
 **발생 시점:**
+
 - 사용자가 대화 종료 버튼 클릭
 - 페이지 이탈 전
 
@@ -586,6 +643,7 @@ AI 음성이나 기타 설정을 실시간으로 변경합니다.
 AI가 말하는 음성 데이터를 실시간으로 수신합니다.
 
 **수신:**
+
 ```json
 {
   "type": "audio.delta",
@@ -594,12 +652,15 @@ AI가 말하는 음성 데이터를 실시간으로 수신합니다.
 ```
 
 **필드:**
+
 - `delta`: Base64 인코딩된 PCM16 오디오 청크
 
 **발생 빈도:**
+
 - AI 응답 중 연속적으로 수신 (약 100ms 간격)
 
 **처리 방법:**
+
 1. Base64 디코딩
 2. AudioContext를 사용하여 재생
 3. 버퍼링하여 끊김 없이 재생
@@ -611,6 +672,7 @@ AI가 말하는 음성 데이터를 실시간으로 수신합니다.
 AI 음성 응답이 끝났음을 알립니다.
 
 **수신:**
+
 ```json
 {
   "type": "audio.done"
@@ -618,9 +680,11 @@ AI 음성 응답이 끝났음을 알립니다.
 ```
 
 **발생 시점:**
+
 - AI가 한 턴의 응답을 완료했을 때
 
 **처리 방법:**
+
 - 오디오 재생 완료 처리
 - UI 상태 업데이트 (예: "AI 말하는 중..." → "듣는 중...")
 
@@ -631,6 +695,7 @@ AI 음성 응답이 끝났음을 알립니다.
 AI가 말한 내용의 텍스트 자막입니다.
 
 **수신:**
+
 ```json
 {
   "type": "transcript.done",
@@ -639,12 +704,15 @@ AI가 말한 내용의 텍스트 자막입니다.
 ```
 
 **필드:**
+
 - `transcript`: AI 발화 내용 (영어)
 
 **발생 시점:**
+
 - `audio.done` 직후
 
 **처리 방법:**
+
 - 자막 UI에 표시
 - 대화 히스토리에 추가 (`role: "assistant"`)
 
@@ -655,6 +723,7 @@ AI가 말한 내용의 텍스트 자막입니다.
 사용자가 말한 내용의 텍스트 자막입니다.
 
 **수신:**
+
 ```json
 {
   "type": "user.transcript",
@@ -663,12 +732,15 @@ AI가 말한 내용의 텍스트 자막입니다.
 ```
 
 **필드:**
+
 - `transcript`: 사용자 발화 내용 (Whisper 전사 결과)
 
 **발생 시점:**
+
 - 사용자 발화 종료 후 (VAD 감지 또는 커밋 후)
 
 **처리 방법:**
+
 - 자막 UI에 표시
 - 대화 히스토리에 추가 (`role: "user"`)
 
@@ -679,6 +751,7 @@ AI가 말한 내용의 텍스트 자막입니다.
 서버 VAD가 사용자의 발화 시작을 감지했습니다.
 
 **수신:**
+
 ```json
 {
   "type": "speech.started"
@@ -686,9 +759,11 @@ AI가 말한 내용의 텍스트 자막입니다.
 ```
 
 **발생 시점:**
+
 - 사용자가 말하기 시작했을 때 (Server VAD 자동 감지)
 
 **처리 방법:**
+
 - UI 업데이트 (예: 마이크 아이콘 활성화, 애니메이션)
 - AI 응답 중이었다면 재생 중단 (Interruption)
 
@@ -699,6 +774,7 @@ AI가 말한 내용의 텍스트 자막입니다.
 서버 VAD가 사용자의 발화 종료를 감지했습니다.
 
 **수신:**
+
 ```json
 {
   "type": "speech.stopped"
@@ -706,9 +782,11 @@ AI가 말한 내용의 텍스트 자막입니다.
 ```
 
 **발생 시점:**
+
 - 사용자가 말하기를 멈췄을 때 (Server VAD 자동 감지)
 
 **처리 방법:**
+
 - UI 업데이트 (예: 마이크 아이콘 비활성화)
 - 자동으로 AI 응답 대기 상태로 전환
 
@@ -719,6 +797,7 @@ AI가 말한 내용의 텍스트 자막입니다.
 WebSocket 연결이 종료되고 세션 분석 리포트를 수신합니다.
 
 **수신:**
+
 ```json
 {
   "type": "disconnected",
@@ -751,6 +830,7 @@ WebSocket 연결이 종료되고 세션 분석 리포트를 수신합니다.
 ```
 
 **필드:**
+
 - `reason`: 종료 사유
 - `report`: 세션 분석 결과
   - `session_id`: 세션 고유 ID
@@ -761,14 +841,17 @@ WebSocket 연결이 종료되고 세션 분석 리포트를 수신합니다.
   - `scenario_summary`: 대화 시나리오 요약 (메시지 10개 초과 시 생성, 한국어)
 
 **발생 시점:**
+
 - WebSocket 연결 종료 시 (정상 종료 또는 에러)
 - 서버가 자동으로 세션 리포트를 생성하고 DB에 저장 (`ai-engine/realtime_conversation/connection_handler.py:299-347`)
 
 **피드백 생성 조건:**
+
 - 전체 메시지 수(히스토리 포함) > 10개: 피드백 및 요약 생성 (`conversation_feedback/feedback_service.py`)
 - 메시지 수 ≤ 10개: "대화가 충분하지 않아 분석을 진행할수 없어요."
 
 **처리 방법:**
+
 1. 세션 결과 화면으로 이동
 2. 리포트 데이터를 로컬 저장 또는 분석 화면 표시
 3. `feedback` 및 `scenario_summary` 표시 (존재하는 경우)
@@ -781,6 +864,7 @@ WebSocket 연결이 종료되고 세션 분석 리포트를 수신합니다.
 서버에서 에러가 발생했습니다.
 
 **수신:**
+
 ```json
 {
   "type": "error",
@@ -790,10 +874,12 @@ WebSocket 연결이 종료되고 세션 분석 리포트를 수신합니다.
 ```
 
 **에러 코드:**
+
 - `server_error`: 서버 내부 오류
 - `openai_disconnected`: OpenAI 연결 끊김
 
 **처리 방법:**
+
 - 사용자에게 에러 메시지 표시
 - 재연결 시도 또는 세션 종료
 
@@ -838,12 +924,14 @@ WebSocket 연결이 종료되고 세션 분석 리포트를 수신합니다.
 ### 4.1 오디오 사양
 
 **입력 (클라이언트 → 서버):**
+
 - 포맷: PCM16 (16-bit Linear PCM)
 - 샘플링 레이트: 24000 Hz
 - 채널: 모노 (1채널)
 - 인코딩: Base64
 
 **출력 (서버 → 클라이언트):**
+
 - 포맷: PCM16
 - 샘플링 레이트: 24000 Hz
 - 채널: 모노
@@ -858,6 +946,7 @@ WebSocket 연결이 종료되고 세션 분석 리포트를 수신합니다.
 #### Step 1: AudioWorklet Processor 등록
 
 **audio-processor.js:**
+
 ```javascript
 class AudioProcessor extends AudioWorkletProcessor {
   process(inputs, outputs, parameters) {
@@ -868,7 +957,7 @@ class AudioProcessor extends AudioWorkletProcessor {
     const pcm16 = this.float32ToPCM16(samples);
 
     this.port.postMessage({
-      audio: this.arrayBufferToBase64(pcm16)
+      audio: this.arrayBufferToBase64(pcm16),
     });
 
     return true;
@@ -878,14 +967,14 @@ class AudioProcessor extends AudioWorkletProcessor {
     const pcm16 = new Int16Array(float32Array.length);
     for (let i = 0; i < float32Array.length; i++) {
       const s = Math.max(-1, Math.min(1, float32Array[i]));
-      pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+      pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
     }
     return pcm16.buffer;
   }
 
   arrayBufferToBase64(buffer) {
     const bytes = new Uint8Array(buffer);
-    let binary = '';
+    let binary = "";
     for (let i = 0; i < bytes.byteLength; i++) {
       binary += String.fromCharCode(bytes[i]);
     }
@@ -893,7 +982,7 @@ class AudioProcessor extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor('audio-processor', AudioProcessor);
+registerProcessor("audio-processor", AudioProcessor);
 ```
 
 #### Step 2: 주제 정하기에서 사용
@@ -905,23 +994,25 @@ async function startAudioCaptureForScenario(websocket) {
       sampleRate: 24000,
       channelCount: 1,
       echoCancellation: true,
-      noiseSuppression: true
-    }
+      noiseSuppression: true,
+    },
   });
 
   const audioContext = new AudioContext({ sampleRate: 24000 });
   const source = audioContext.createMediaStreamSource(stream);
 
-  await audioContext.audioWorklet.addModule('audio-processor.js');
-  const workletNode = new AudioWorkletNode(audioContext, 'audio-processor');
+  await audioContext.audioWorklet.addModule("audio-processor.js");
+  const workletNode = new AudioWorkletNode(audioContext, "audio-processor");
 
   workletNode.port.onmessage = (event) => {
     // Scenario WebSocket 이벤트 사용
-    websocket.send(JSON.stringify({
-      type: 'input_audio_chunk',  // 주의: Scenario는 input_audio_chunk
-      audio: event.data.audio,
-      sample_rate: 24000
-    }));
+    websocket.send(
+      JSON.stringify({
+        type: "input_audio_chunk", // 주의: Scenario는 input_audio_chunk
+        audio: event.data.audio,
+        sample_rate: 24000,
+      })
+    );
   };
 
   source.connect(workletNode);
@@ -938,22 +1029,24 @@ async function startAudioCaptureForChat(websocket) {
       sampleRate: 24000,
       channelCount: 1,
       echoCancellation: true,
-      noiseSuppression: true
-    }
+      noiseSuppression: true,
+    },
   });
 
   const audioContext = new AudioContext({ sampleRate: 24000 });
   const source = audioContext.createMediaStreamSource(stream);
 
-  await audioContext.audioWorklet.addModule('audio-processor.js');
-  const workletNode = new AudioWorkletNode(audioContext, 'audio-processor');
+  await audioContext.audioWorklet.addModule("audio-processor.js");
+  const workletNode = new AudioWorkletNode(audioContext, "audio-processor");
 
   workletNode.port.onmessage = (event) => {
     // Chat WebSocket 이벤트 사용
-    websocket.send(JSON.stringify({
-      type: 'input_audio_buffer.append',  // 주의: Chat은 input_audio_buffer.append
-      audio: event.data.audio
-    }));
+    websocket.send(
+      JSON.stringify({
+        type: "input_audio_buffer.append", // 주의: Chat은 input_audio_buffer.append
+        audio: event.data.audio,
+      })
+    );
   };
 
   source.connect(workletNode);
@@ -1026,7 +1119,8 @@ class AudioPlayer {
 const scenarioPlayer = new AudioPlayer();
 scenarioWs.onmessage = (event) => {
   const data = JSON.parse(event.data);
-  if (data.type === 'response.audio.delta') {  // Scenario 이벤트
+  if (data.type === "response.audio.delta") {
+    // Scenario 이벤트
     scenarioPlayer.addChunk(data.delta);
   }
 };
@@ -1035,7 +1129,8 @@ scenarioWs.onmessage = (event) => {
 const chatPlayer = new AudioPlayer();
 chatWs.onmessage = (event) => {
   const data = JSON.parse(event.data);
-  if (data.type === 'audio.delta') {  // Chat 이벤트
+  if (data.type === "audio.delta") {
+    // Chat 이벤트
     chatPlayer.addChunk(data.delta);
   }
 };
@@ -1049,21 +1144,21 @@ chatWs.onmessage = (event) => {
 
 ```javascript
 websocket.onerror = (error) => {
-  console.error('WebSocket error:', error);
+  console.error("WebSocket error:", error);
   // 에러 UI 표시
 };
 
 websocket.onclose = (event) => {
-  console.log('WebSocket closed:', event.code, event.reason);
+  console.log("WebSocket closed:", event.code, event.reason);
 
   if (event.code === 4003) {
-    alert('인증되지 않은 세션 접근입니다.');
+    alert("인증되지 않은 세션 접근입니다.");
   } else if (event.code === 4004) {
-    alert('세션을 찾을 수 없습니다.');
+    alert("세션을 찾을 수 없습니다.");
   } else if (event.code === 1008) {
-    alert('서버 설정 오류가 발생했습니다.');
+    alert("서버 설정 오류가 발생했습니다.");
   } else if (event.code === 1011) {
-    alert('서버 구성 오류가 발생했습니다.');
+    alert("서버 구성 오류가 발생했습니다.");
   }
 };
 ```
@@ -1076,8 +1171,8 @@ websocket.onclose = (event) => {
 websocket.onmessage = (event) => {
   const data = JSON.parse(event.data);
 
-  if (data.type === 'error') {
-    console.error('Server error:', data.code || data.message);
+  if (data.type === "error") {
+    console.error("Server error:", data.code || data.message);
 
     // Scenario WebSocket (code 없음, message만 있음)
     if (data.message) {
@@ -1085,8 +1180,8 @@ websocket.onmessage = (event) => {
     }
 
     // Chat WebSocket (code와 message 모두 있음)
-    if (data.code === 'openai_disconnected') {
-      alert('AI 연결이 끊어졌습니다. 재시도합니다.');
+    if (data.code === "openai_disconnected") {
+      alert("AI 연결이 끊어졌습니다. 재시도합니다.");
       // 재연결 로직
     }
   }
@@ -1100,7 +1195,7 @@ websocket.onmessage = (event) => {
 ### 6.1 주제 정하기 (Scenario) 전체 예시 (React)
 
 ```typescript
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
 interface ScenarioResult {
   place: string;
@@ -1113,68 +1208,66 @@ export function useScenarioWebSocket(token: string) {
   const wsRef = useRef<WebSocket | null>(null);
   const audioPlayerRef = useRef<AudioPlayer | null>(null);
   const [isReady, setIsReady] = useState(false);
-  const [userTranscript, setUserTranscript] = useState('');
-  const [aiResponse, setAiResponse] = useState('');
+  const [userTranscript, setUserTranscript] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
   const [result, setResult] = useState<ScenarioResult | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket(
-      `ws://localhost:8080/api/v1/scenarios/ws/scenario?token=${token}`
-    );
+    const ws = new WebSocket(`ws://localhost:8080/api/v1/scenarios/ws/scenario?token=${token}`);
 
     audioPlayerRef.current = new AudioPlayer();
 
     ws.onopen = () => {
-      console.log('Scenario WebSocket connected');
+      console.log("Scenario WebSocket connected");
     };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
       switch (data.type) {
-        case 'ready':
+        case "ready":
           setIsReady(true);
           startAudioCaptureForScenario(ws);
           break;
 
-        case 'input_audio.transcript':
+        case "input_audio.transcript":
           setUserTranscript(data.transcript);
           break;
 
-        case 'response.audio.delta':  // Scenario 이벤트
+        case "response.audio.delta": // Scenario 이벤트
           audioPlayerRef.current?.addChunk(data.delta);
           break;
 
-        case 'response.audio.done':
+        case "response.audio.done":
           // 오디오 재생 완료
           break;
 
-        case 'response.audio_transcript.done':
+        case "response.audio_transcript.done":
           setAiResponse(data.transcript);
           break;
 
-        case 'scenario.completed':
+        case "scenario.completed":
           setResult({
             place: data.json.place,
             partner: data.json.conversation_partner,
             goal: data.json.conversation_goal,
-            sessionId: data.json.sessionId
+            sessionId: data.json.sessionId,
           });
           break;
 
-        case 'error':
-          console.error('Error:', data.message);
+        case "error":
+          console.error("Error:", data.message);
           alert(`에러 발생: ${data.message}`);
           break;
       }
     };
 
     ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
+      console.error("WebSocket error:", error);
     };
 
     ws.onclose = (event) => {
-      console.log('Scenario WebSocket closed');
+      console.log("Scenario WebSocket closed");
     };
 
     wsRef.current = ws;
@@ -1188,7 +1281,7 @@ export function useScenarioWebSocket(token: string) {
     isReady,
     userTranscript,
     aiResponse,
-    result
+    result,
   };
 }
 ```
@@ -1198,10 +1291,10 @@ export function useScenarioWebSocket(token: string) {
 ### 6.2 대화하기 (Chat) 전체 예시 (React)
 
 ```typescript
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
 interface ChatMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   timestamp: string;
 }
@@ -1221,7 +1314,7 @@ export function useChatWebSocket(sessionId: string, token: string) {
     audioPlayerRef.current = new AudioPlayer();
 
     ws.onopen = () => {
-      console.log('Chat WebSocket connected');
+      console.log("Chat WebSocket connected");
       setIsConnected(true);
       startAudioCaptureForChat(ws);
     };
@@ -1230,62 +1323,62 @@ export function useChatWebSocket(sessionId: string, token: string) {
       const data = JSON.parse(event.data);
 
       switch (data.type) {
-        case 'audio.delta':  // Chat 이벤트
+        case "audio.delta": // Chat 이벤트
           audioPlayerRef.current?.addChunk(data.delta);
           break;
 
-        case 'audio.done':
+        case "audio.done":
           setIsSpeaking(false);
           break;
 
-        case 'transcript.done':
+        case "transcript.done":
           setMessages((prev) => [
             ...prev,
             {
-              role: 'assistant',
+              role: "assistant",
               content: data.transcript,
-              timestamp: new Date().toISOString()
-            }
+              timestamp: new Date().toISOString(),
+            },
           ]);
           break;
 
-        case 'user.transcript':
+        case "user.transcript":
           setMessages((prev) => [
             ...prev,
             {
-              role: 'user',
+              role: "user",
               content: data.transcript,
-              timestamp: new Date().toISOString()
-            }
+              timestamp: new Date().toISOString(),
+            },
           ]);
           break;
 
-        case 'speech.started':
+        case "speech.started":
           setIsSpeaking(true);
           break;
 
-        case 'speech.stopped':
+        case "speech.stopped":
           setIsSpeaking(false);
           break;
 
-        case 'disconnected':
-          console.log('Session report:', data.report);
+        case "disconnected":
+          console.log("Session report:", data.report);
           // 결과 화면으로 이동
           break;
 
-        case 'error':
-          console.error('Error:', data.code, data.message);
+        case "error":
+          console.error("Error:", data.code, data.message);
           alert(`에러 발생: ${data.message}`);
           break;
       }
     };
 
     ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
+      console.error("WebSocket error:", error);
     };
 
     ws.onclose = (event) => {
-      console.log('WebSocket closed:', event.code, event.reason);
+      console.log("WebSocket closed:", event.code, event.reason);
       setIsConnected(false);
     };
 
@@ -1297,14 +1390,16 @@ export function useChatWebSocket(sessionId: string, token: string) {
   }, [sessionId, token]);
 
   const disconnect = () => {
-    wsRef.current?.send(JSON.stringify({ type: 'disconnect' }));
+    wsRef.current?.send(JSON.stringify({ type: "disconnect" }));
   };
 
   const changeVoice = (voice: string) => {
-    wsRef.current?.send(JSON.stringify({
-      type: 'session.update',
-      config: { voice }
-    }));
+    wsRef.current?.send(
+      JSON.stringify({
+        type: "session.update",
+        config: { voice },
+      })
+    );
   };
 
   return {
@@ -1312,7 +1407,7 @@ export function useChatWebSocket(sessionId: string, token: string) {
     isConnected,
     isSpeaking,
     disconnect,
-    changeVoice
+    changeVoice,
   };
 }
 ```
@@ -1323,31 +1418,31 @@ export function useChatWebSocket(sessionId: string, token: string) {
 
 ### 7.1 오디오 전송 이벤트 비교
 
-| 기능 | 주제 정하기 (Scenario) | 대화하기 (Chat) |
-|------|----------------------|----------------|
-| **오디오 전송** | `input_audio_chunk` | `input_audio_buffer.append` |
-| **오디오 커밋** | `input_audio_commit` | `input_audio_buffer.commit` |
-| **오디오 클리어** | `input_audio_clear` | (없음) |
-| **텍스트 입력** | `text` | (없음) |
+| 기능              | 주제 정하기 (Scenario) | 대화하기 (Chat)             |
+| ----------------- | ---------------------- | --------------------------- |
+| **오디오 전송**   | `input_audio_chunk`    | `input_audio_buffer.append` |
+| **오디오 커밋**   | `input_audio_commit`   | `input_audio_buffer.commit` |
+| **오디오 클리어** | `input_audio_clear`    | (없음)                      |
+| **텍스트 입력**   | `text`                 | (없음)                      |
 
 ### 7.2 오디오 수신 이벤트 비교
 
-| 기능 | 주제 정하기 (Scenario) | 대화하기 (Chat) |
-|------|----------------------|----------------|
-| **AI 오디오** | `response.audio.delta` | `audio.delta` |
-| **오디오 완료** | `response.audio.done` | `audio.done` |
-| **AI 텍스트** | `response.audio_transcript.done` | `transcript.done` |
-| **사용자 텍스트** | `input_audio.transcript` | `user.transcript` |
+| 기능              | 주제 정하기 (Scenario)           | 대화하기 (Chat)   |
+| ----------------- | -------------------------------- | ----------------- |
+| **AI 오디오**     | `response.audio.delta`           | `audio.delta`     |
+| **오디오 완료**   | `response.audio.done`            | `audio.done`      |
+| **AI 텍스트**     | `response.audio_transcript.done` | `transcript.done` |
+| **사용자 텍스트** | `input_audio.transcript`         | `user.transcript` |
 
 ### 7.3 상태 이벤트 비교
 
-| 기능 | 주제 정하기 (Scenario) | 대화하기 (Chat) |
-|------|----------------------|----------------|
-| **연결 준비** | `ready` | (없음, 바로 AI 인사) |
-| **발화 시작** | (없음) | `speech.started` |
-| **발화 종료** | (없음) | `speech.stopped` |
-| **완료** | `scenario.completed` | `disconnected` |
-| **에러** | `error` (message만) | `error` (code + message) |
+| 기능          | 주제 정하기 (Scenario) | 대화하기 (Chat)          |
+| ------------- | ---------------------- | ------------------------ |
+| **연결 준비** | `ready`                | (없음, 바로 AI 인사)     |
+| **발화 시작** | (없음)                 | `speech.started`         |
+| **발화 종료** | (없음)                 | `speech.stopped`         |
+| **완료**      | `scenario.completed`   | `disconnected`           |
+| **에러**      | `error` (message만)    | `error` (code + message) |
 
 ---
 
@@ -1389,12 +1484,14 @@ export function useChatWebSocket(sessionId: string, token: string) {
 ## 참고 문서 및 파일 경로
 
 ### 백엔드 API 엔드포인트
+
 - **Chat WebSocket**: `backend/app/api/v1/chat.py:90` (회원용), `:112` (게스트용)
 - **Scenario WebSocket**: `backend/app/api/v1/scenario.py:45` (회원용), `:61` (게스트용)
 - **Chat Service**: `backend/app/services/chat_service.py:95` (AI 세션 시작)
 - **Chat Repository**: `backend/app/repositories/chat_repository.py` (DB 저장)
 
 ### AI Engine 구현
+
 - **주제 정하기 (Scenario)**:
   - 메인 핸들러: `ai-engine/scenario/realtime_bridge.py:52` (`handle_client`)
   - 파이프라인: `ai-engine/scenario/realtime_pipeline.py` (이벤트 기반 오케스트레이션)
@@ -1411,5 +1508,6 @@ export function useChatWebSocket(sessionId: string, token: string) {
   - 피드백 서비스: `ai-engine/conversation_feedback/feedback_service.py` (LangGraph 기반 에이전트)
 
 ### 데이터베이스 모델
+
 - **세션 모델**: `backend/app/db/models.py` (`ConversationSession`, `Message`)
 - **스키마**: `backend/app/schemas/chat.py` (Pydantic 모델)
