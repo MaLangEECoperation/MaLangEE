@@ -1,7 +1,6 @@
-import type { User } from "./schema";
+import { STORAGE_KEYS } from "@/shared/config";
 
-const TOKEN_KEY = "access_token";
-const USER_KEY = "user";
+import type { User } from "./schema";
 
 /**
  * 토큰 관리 유틸리티
@@ -10,17 +9,17 @@ const USER_KEY = "user";
 export const tokenStorage = {
   get: (): string | null => {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem(TOKEN_KEY);
+    return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
   },
 
   set: (token: string): void => {
     if (typeof window === "undefined") return;
-    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, token);
   },
 
   remove: (): void => {
     if (typeof window === "undefined") return;
-    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
   },
 
   exists: (): boolean => {
@@ -35,7 +34,7 @@ export const tokenStorage = {
 export const userStorage = {
   get: (): User | null => {
     if (typeof window === "undefined") return null;
-    const userJson = localStorage.getItem(USER_KEY);
+    const userJson = localStorage.getItem(STORAGE_KEYS.USER);
     if (!userJson) return null;
     try {
       return JSON.parse(userJson) as User;
@@ -46,12 +45,12 @@ export const userStorage = {
 
   set: (user: User): void => {
     if (typeof window === "undefined") return;
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
   },
 
   remove: (): void => {
     if (typeof window === "undefined") return;
-    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(STORAGE_KEYS.USER);
   },
 
   exists: (): boolean => {

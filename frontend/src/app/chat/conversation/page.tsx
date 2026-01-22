@@ -6,6 +6,7 @@ import { Suspense, useEffect, useState, useRef, useCallback } from "react";
 import { useAuth } from "@/features/auth";
 import { useGetHints } from "@/features/chat/api/use-chat-sessions";
 import { useConversationChatNew } from "@/features/chat/hook/useConversationChatNew";
+import { STORAGE_KEYS } from "@/shared/config";
 import { debugLog, debugError } from "@/shared/lib";
 import {
   Button,
@@ -56,13 +57,13 @@ function ConversationContent() {
     if (sessionId) return;
 
     const urlSessionId = searchParams.get("sessionId");
-    const storedSessionId = localStorage.getItem("chatSessionId");
+    const storedSessionId = localStorage.getItem(STORAGE_KEYS.CHAT_SESSION_ID);
 
     if (urlSessionId) {
       debugLog("[SessionId] Using URL sessionId:", urlSessionId);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setSessionId(urlSessionId);
-      localStorage.setItem("chatSessionId", urlSessionId);
+      localStorage.setItem(STORAGE_KEYS.CHAT_SESSION_ID, urlSessionId);
     } else if (storedSessionId) {
       debugLog("[SessionId] Using stored sessionId:", storedSessionId);
 
@@ -82,8 +83,8 @@ function ConversationContent() {
   const [wasConnected, setWasConnected] = useState(false);
 
   useEffect(() => {
-    const voice = localStorage.getItem("selectedVoice");
-    const subtitle = localStorage.getItem("subtitleEnabled");
+    const voice = localStorage.getItem(STORAGE_KEYS.SELECTED_VOICE);
+    const subtitle = localStorage.getItem(STORAGE_KEYS.SUBTITLE_ENABLED);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (voice !== null) setSelectedVoice(voice);
 
@@ -357,12 +358,12 @@ function ConversationContent() {
 
   const handleSubtitleChange = (enabled: boolean) => {
     setShowSubtitle(enabled);
-    localStorage.setItem("subtitleEnabled", enabled.toString());
+    localStorage.setItem(STORAGE_KEYS.SUBTITLE_ENABLED, enabled.toString());
   };
 
   const handleVoiceChange = (voiceId: string) => {
     setSelectedVoice(voiceId);
-    localStorage.setItem("selectedVoice", voiceId);
+    localStorage.setItem(STORAGE_KEYS.SELECTED_VOICE, voiceId);
   };
 
   return (

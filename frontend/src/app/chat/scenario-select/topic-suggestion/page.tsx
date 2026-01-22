@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 
 import { type Scenario, useScenarios } from "@/features/chat/api/scenarios";
 import { useCreateChatSession } from "@/features/chat/api/use-chat-sessions";
+import { STORAGE_KEYS } from "@/shared/config";
 import { Button, Toggle, MalangEE } from "@/shared/ui";
 import { PopupLayout } from "@/shared/ui/PopupLayout";
 
@@ -42,12 +43,12 @@ export default function TopicSuggestionPage() {
 
   useEffect(() => {
     // 페이지 로드 시 이전 세션 정보 초기화
-    localStorage.removeItem("chatSessionId");
-    localStorage.removeItem("conversationGoal");
-    localStorage.removeItem("conversationPartner");
-    localStorage.removeItem("place");
-    localStorage.removeItem("selectedVoice");
-    localStorage.removeItem("subtitleEnabled");
+    localStorage.removeItem(STORAGE_KEYS.CHAT_SESSION_ID);
+    localStorage.removeItem(STORAGE_KEYS.CONVERSATION_GOAL);
+    localStorage.removeItem(STORAGE_KEYS.CONVERSATION_PARTNER);
+    localStorage.removeItem(STORAGE_KEYS.PLACE);
+    localStorage.removeItem(STORAGE_KEYS.SELECTED_VOICE);
+    localStorage.removeItem(STORAGE_KEYS.SUBTITLE_ENABLED);
   }, []);
 
   useEffect(() => {
@@ -97,9 +98,9 @@ export default function TopicSuggestionPage() {
 
       const sessionResult = await createSessionMutation.mutateAsync(sessionData);
 
-      localStorage.setItem("selectedVoice", voice);
-      localStorage.setItem("subtitleEnabled", showText.toString());
-      localStorage.setItem("chatSessionId", sessionResult.session_id);
+      localStorage.setItem(STORAGE_KEYS.SELECTED_VOICE, voice);
+      localStorage.setItem(STORAGE_KEYS.SUBTITLE_ENABLED, showText.toString());
+      localStorage.setItem(STORAGE_KEYS.CHAT_SESSION_ID, sessionResult.session_id);
 
       router.push(`/chat/conversation?sessionId=${sessionResult.session_id}`);
     } catch (error) {

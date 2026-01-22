@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { useSyncGuestSession } from "@/features/chat/api/use-chat-sessions";
+import { STORAGE_KEYS } from "@/shared/config";
 
 import { tokenStorage, userStorage } from "../model";
 import type { LoginFormData, RegisterFormData, NicknameUpdateFormData } from "../model";
@@ -35,15 +36,15 @@ export function useLogin() {
 
       // 게스트 세션 동기화 로직 추가
       if (typeof window !== "undefined") {
-        const sessionId = localStorage.getItem("chatSessionId");
-        const entryType = localStorage.getItem("entryType");
+        const sessionId = localStorage.getItem(STORAGE_KEYS.CHAT_SESSION_ID);
+        const entryType = localStorage.getItem(STORAGE_KEYS.ENTRY_TYPE);
 
         if (sessionId && entryType === "guest") {
           console.log("[useLogin] 게스트 세션 발견, 동기화 시도:", sessionId);
           syncGuestSession.mutate(sessionId, {
             onSuccess: () => {
               console.log("[useLogin] 세션 동기화 성공");
-              localStorage.setItem("entryType", "member"); // 타입 업데이트
+              localStorage.setItem(STORAGE_KEYS.ENTRY_TYPE, "member"); // 타입 업데이트
             },
             onError: (err) => {
               console.error("[useLogin] 세션 동기화 실패:", err);

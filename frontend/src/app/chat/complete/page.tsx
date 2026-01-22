@@ -4,12 +4,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 
 import { useGetChatSession } from "@/features/chat/api/use-chat-sessions";
+import { STORAGE_KEYS } from "@/shared/config";
 import { Button, MalangEE } from "@/shared/ui";
 
 // 초기 sessionId를 가져오는 함수 (클라이언트 전용)
 function getInitialSessionId(): string | null {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("chatSessionId");
+  return localStorage.getItem(STORAGE_KEYS.CHAT_SESSION_ID);
 }
 
 export default function ChatCompletePage() {
@@ -39,7 +40,7 @@ export default function ChatCompletePage() {
     // 리포트 데이터 정리 (필요하다면)
     localStorage.removeItem("chatReport");
     // 세션 ID 정리
-    localStorage.removeItem("chatSessionId");
+    localStorage.removeItem(STORAGE_KEYS.CHAT_SESSION_ID);
 
     // 대시보드로 이동
     router.push("/dashboard");

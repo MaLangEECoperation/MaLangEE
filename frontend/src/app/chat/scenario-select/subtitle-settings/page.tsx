@@ -2,13 +2,14 @@
 
 import { useRouter } from "next/navigation";
 
+import { STORAGE_KEYS } from "@/shared/config";
 import { Button, MalangEE } from "@/shared/ui";
 
 export default function SubtitleSettingsPage() {
   const router = useRouter();
 
   const handleChoice = (enabled: boolean) => {
-    localStorage.setItem("subtitleEnabled", enabled.toString());
+    localStorage.setItem(STORAGE_KEYS.SUBTITLE_ENABLED, enabled.toString());
     router.push("/chat/scenario-select/voice-selection");
   };
 

@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Volume2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, useRef, useEffect } from "react";
 
+import { STORAGE_KEYS } from "@/shared/config";
 import { debugError } from "@/shared/lib/debug";
 import { Button, MalangEE } from "@/shared/ui";
 
@@ -105,7 +106,7 @@ function VoiceSelectionContent() {
   const handleNextStep = () => {
     stopSample();
     const selectedVoice = currentVoice?.id || "alloy";
-    localStorage.setItem("selectedVoice", selectedVoice);
+    localStorage.setItem(STORAGE_KEYS.SELECTED_VOICE, selectedVoice);
 
     if (sessionId) {
       router.push(`/chat/conversation?sessionId=${sessionId}`);

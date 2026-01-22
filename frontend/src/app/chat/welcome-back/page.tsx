@@ -8,6 +8,7 @@ import { Suspense, useEffect } from "react";
 
 import { AuthGuard, useCurrentUser } from "@/features/auth";
 import { useGetChatSession } from "@/features/chat/api/use-chat-sessions";
+import { STORAGE_KEYS } from "@/shared/config";
 import { Button, MalangEE } from "@/shared/ui";
 
 function WelcomeBackPage() {
@@ -24,20 +25,20 @@ function WelcomeBackPage() {
     if (typeof window !== "undefined") {
       // entryType 설정
       if (currentUser) {
-        localStorage.setItem("entryType", "member");
+        localStorage.setItem(STORAGE_KEYS.ENTRY_TYPE, "member");
         if (currentUser.login_id) {
-          localStorage.setItem("loginId", currentUser.login_id);
+          localStorage.setItem(STORAGE_KEYS.LOGIN_ID, currentUser.login_id);
         }
       } else {
-        localStorage.setItem("entryType", "guest");
+        localStorage.setItem(STORAGE_KEYS.ENTRY_TYPE, "guest");
       }
     }
   }, [currentUser]);
 
   if (sessionId == null) {
-    sessionId = localStorage.getItem("chatSessionId");
+    sessionId = localStorage.getItem(STORAGE_KEYS.CHAT_SESSION_ID);
   } else {
-    localStorage.setItem("chatSessionId", sessionId);
+    localStorage.setItem(STORAGE_KEYS.CHAT_SESSION_ID, sessionId);
   }
 
   // 1. 특정 세션 ID가 있을 경우 해당 세션 조회
@@ -50,27 +51,27 @@ function WelcomeBackPage() {
 
       // voice 설정 (없으면 기본값 'nova')
       if (detail.voice) {
-        localStorage.setItem("selectedVoice", String(detail.voice));
+        localStorage.setItem(STORAGE_KEYS.SELECTED_VOICE, String(detail.voice));
       } else {
-        localStorage.setItem("selectedVoice", "nova");
+        localStorage.setItem(STORAGE_KEYS.SELECTED_VOICE, "nova");
       }
 
       // subtitleEnabled 설정 (boolean -> string)
       if (detail.show_text) {
-        localStorage.setItem("subtitleEnabled", String(detail.show_text));
+        localStorage.setItem(STORAGE_KEYS.SUBTITLE_ENABLED, String(detail.show_text));
       } else {
-        localStorage.setItem("subtitleEnabled", "true");
+        localStorage.setItem(STORAGE_KEYS.SUBTITLE_ENABLED, "true");
       }
 
       // 시나리오 정보 저장 (conversationGoal, conversationPartner, place)
       if (detail.scenario_goal) {
-        localStorage.setItem("conversationGoal", String(detail.scenario_goal));
+        localStorage.setItem(STORAGE_KEYS.CONVERSATION_GOAL, String(detail.scenario_goal));
       }
       if (detail.scenario_partner) {
-        localStorage.setItem("conversationPartner", String(detail.scenario_partner));
+        localStorage.setItem(STORAGE_KEYS.CONVERSATION_PARTNER, String(detail.scenario_partner));
       }
       if (detail.scenario_place) {
-        localStorage.setItem("place", String(detail.scenario_place));
+        localStorage.setItem(STORAGE_KEYS.PLACE, String(detail.scenario_place));
       }
     }
   }, [sessionDetail]);

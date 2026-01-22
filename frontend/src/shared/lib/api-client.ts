@@ -1,3 +1,5 @@
+import { STORAGE_KEYS } from "@/shared/config";
+
 import { config } from "./config";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -89,7 +91,7 @@ class ApiClient {
       // 401: 인증 오류 - 토큰이 없거나 유효하지 않음
       if (response.status === 401) {
         if (typeof window !== "undefined") {
-          localStorage.removeItem("access_token");
+          localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
           // 현재 페이지가 이미 로그인 페이지가 아닌 경우에만 이동
           if (!window.location.pathname.startsWith("/auth/login")) {
             window.location.href = "/auth/login";
@@ -141,7 +143,8 @@ class ApiClient {
 
 export const apiClient = new ApiClient({
   baseUrl: config.apiUrl,
-  getToken: () => (typeof window !== "undefined" ? localStorage.getItem("access_token") : null),
+  getToken: () =>
+    typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) : null,
 });
 
 export { ApiClient };

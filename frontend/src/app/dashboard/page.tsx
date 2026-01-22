@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AuthGuard, useCurrentUser } from "@/features/auth";
 import { useInfiniteChatSessions } from "@/features/chat/api/use-chat-sessions";
+import { STORAGE_KEYS } from "@/shared/config";
 import { usePopupStore } from "@/shared/lib/store";
 import type { ChatHistoryItem } from "@/shared/types/chat";
 import { Button } from "@/shared/ui";
@@ -133,20 +134,20 @@ export default function DashboardPage() {
 
   const handleNewChatClick = () => {
     // 공통 저장 정보 (회원 진입)
-    localStorage.setItem("entryType", "member");
+    localStorage.setItem(STORAGE_KEYS.ENTRY_TYPE, "member");
     if (currentUser?.login_id) {
-      localStorage.setItem("loginId", currentUser.login_id);
+      localStorage.setItem(STORAGE_KEYS.LOGIN_ID, currentUser.login_id);
     }
 
     if (allSessions.length > 0) {
       // 대화 기록이 있으면 마지막 세션 ID 저장 후 welcome-back으로 이동
       const lastSession = allSessions[0]; // 최신순 정렬 가정
-      localStorage.setItem("chatSessionId", lastSession.id);
+      localStorage.setItem(STORAGE_KEYS.CHAT_SESSION_ID, lastSession.id);
       router.push("/chat/welcome-back?sessionId=" + lastSession.id);
     } else {
       // 대화 기록이 없으면 시나리오 선택으로 이동
       // 이전 세션 ID가 남아있을 수 있으므로 제거
-      localStorage.removeItem("chatSessionId");
+      localStorage.removeItem(STORAGE_KEYS.CHAT_SESSION_ID);
       router.push("/chat/scenario-select");
     }
   };
