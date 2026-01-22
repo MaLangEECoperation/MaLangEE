@@ -50,12 +50,22 @@ export const NicknameChangePopup: React.FC<NicknameChangePopupProps> = ({ onClos
     formState: { errors },
     watch,
     setValue,
+    setFocus,
   } = useForm<NicknameUpdateFormData>({
     resolver: nicknameUpdateResolver,
   });
 
   const watchNewNickname = watch("new_nickname");
   const watchCurrentNickname = watch("current_nickname");
+
+  // 팝업이 열릴 때 새로운 닉네임 입력 필드에 포커스
+  useEffect(() => {
+    // 약간의 지연을 주어 렌더링 후 포커스가 잡히도록 함
+    const timer = setTimeout(() => {
+      setFocus("new_nickname");
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [setFocus]);
 
   // 현재 사용자 닉네임을 기존 닉네임 필드에 자동 설정
   useEffect(() => {
