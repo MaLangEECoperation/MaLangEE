@@ -67,20 +67,20 @@ export const SplitViewLayout = ({
             <>
               <div
                 id="sv-logo"
-                className="fixed left-0 top-0 z-50 flex h-[50px] w-full items-center  justify-center bg-white/70 backdrop-blur-sm md:static md:mb-4 md:block md:h-auto md:w-auto md:bg-transparent md:p-0 md:text-lg md:font-semibold md:text-[#5F51D9]"
+                className="fixed left-0 top-0 z-50 flex h-[50px] w-full items-center  justify-center bg-white/50 backdrop-blur-sm md:static md:mb-4 md:block md:h-auto md:w-auto md:bg-transparent md:p-0 md:text-lg md:font-semibold md:text-[#5F51D9]"
               >
                 <Link href={"/dashboard"} className="inline-block">
                   <Image src="/images/logo.png" alt="MalangEE Logo" width={100} height={50} />
                 </Link>
               </div>
-              <div className="flex w-full items-center justify-center md:justify-start">
+              <div className="flex w-full items-center justify-center md:justify-start md:p-0 sm:p-10  ">
                 <MalangEE size={120} />
               </div>
             </>
             {leftChildren && (
               <div
                 id="sv-left-children"
-                className="flex w-full min-w-[270px] items-center justify-center md:w-full md:items-start md:justify-start"
+                className="flex w-full min-w-[270px] items-center justify-center  md:w-full md:items-start md:justify-start"
               >
                 <div className="flex w-full flex-col items-center space-y-2 text-center md:w-full md:items-start md:text-left">
                   {leftChildren}

@@ -333,7 +333,10 @@ async def handle_client_message(
                     },
                 }
             )
-        return
+    if msg_type == "response.create":
+        logger.info("Response create event received")
+        pass
+    return
 
 
 def _tts_pcm16_from_text(client: OpenAI, text: str) -> tuple[bytes, int]:
