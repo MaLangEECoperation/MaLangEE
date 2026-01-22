@@ -376,6 +376,49 @@ showErrorDialog({
 });
 ```
 
+### 9. localStorage 키 네이밍 일관성
+
+- **모든 localStorage 키는 camelCase로 통일**
+- 키 이름은 `shared/config/storage-keys.ts`에서 상수로 관리
+
+```typescript
+// shared/config/storage-keys.ts
+export const STORAGE_KEYS = {
+  // 시나리오 관련
+  conversationGoal: "conversationGoal",
+  conversationPartner: "conversationPartner",
+  place: "place",
+
+  // 채팅 설정
+  chatSessionId: "chatSessionId",
+  selectedVoice: "selectedVoice",
+  subtitleEnabled: "subtitleEnabled",
+
+  // 인증 관련
+  entryType: "entryType",
+  loginId: "loginId",
+} as const;
+```
+
+```tsx
+// ❌ Bad: 스네이크케이스 사용 (데이터 불일치 발생)
+localStorage.setItem("conversation_goal", goal); // direct-speech에서 저장
+localStorage.getItem("conversationGoal"); // welcome-back에서 읽기 → undefined!
+
+// ✅ Good: 상수 사용으로 일관성 보장
+import { STORAGE_KEYS } from "@/shared/config/storage-keys";
+
+localStorage.setItem(STORAGE_KEYS.conversationGoal, goal);
+localStorage.getItem(STORAGE_KEYS.conversationGoal); // 정상 작동
+```
+
+**수정 필요 파일**:
+
+| 파일                             | 현재 키 (snake_case)   | 수정할 키 (camelCase) |
+| -------------------------------- | ---------------------- | --------------------- |
+| `direct-speech/page.tsx:152-153` | `conversation_goal`    | `conversationGoal`    |
+| `direct-speech/page.tsx:152-153` | `conversation_partner` | `conversationPartner` |
+
 ---
 
 ## 현재 구현 상태 (2025-01-23)
@@ -654,12 +697,20 @@ src/app/chat/
 20. [ ] 공용 상수 → `shared/config/`
 21. [ ] feature별 상수 → `features/<feature>/config/`
 
+### Phase 10: localStorage 키 일관성 수정
+
+22. [ ] `shared/config/storage-keys.ts` 생성 (모든 localStorage 키 상수화)
+23. [ ] `direct-speech/page.tsx` - snake_case → camelCase 수정
+    - [ ] `conversation_goal` → `conversationGoal`
+    - [ ] `conversation_partner` → `conversationPartner`
+24. [ ] 전체 코드베이스 localStorage 키 상수 사용으로 교체
+
 ### 검증
 
-22. [ ] 타입 체크 (`yarn tsc --noEmit`)
-23. [ ] ESLint 검사 (`yarn lint`) - 에러 0개 확인
-24. [ ] 빌드 검증 (`yarn build`)
-25. [ ] 테스트 실행 (`yarn test`)
+25. [ ] 타입 체크 (`yarn tsc --noEmit`)
+26. [ ] ESLint 검사 (`yarn lint`) - 에러 0개 확인
+27. [ ] 빌드 검증 (`yarn build`)
+28. [ ] 테스트 실행 (`yarn test`)
 
 ---
 

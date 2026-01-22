@@ -54,6 +54,33 @@
 | 회원가입 권유 팝업   | 14.회원가입 권유    | ❌ 미구현    | 중간     |
 | 실시간 힌트 UI       | 13.실시간 힌트      | ⚠️ 부분 구현 | 중간     |
 
+### 알려진 버그
+
+#### localStorage 키 일관성 문제
+
+`direct-speech/page.tsx`에서만 snake_case(`conversation_goal`, `conversation_partner`)로 저장하고, 다른 페이지에서는 camelCase(`conversationGoal`, `conversationPartner`)를 사용하여 데이터 불일치 발생.
+
+**영향 범위**:
+
+| 파일                              | 키 형식    | 상태 |
+| --------------------------------- | ---------- | ---- |
+| `direct-speech/page.tsx:152-153`  | snake_case | ❌   |
+| `welcome-back/page.tsx:67,70`     | camelCase  | ✅   |
+| `topic-suggestion/page.tsx:45-46` | camelCase  | ✅   |
+| `ScenarioResult` 인터페이스       | camelCase  | ✅   |
+| `e2e/scenario.spec.ts`            | camelCase  | ✅   |
+
+**데이터 손실 시나리오**:
+
+1. Direct Speech에서 시나리오 완성 → `conversation_goal` (snake_case) 저장
+2. Welcome Back 페이지에서 `conversationGoal` (camelCase) 읽기 시도
+3. 키가 다르므로 `undefined` 반환 → 데이터 손실
+
+**해결 방안** (Phase 1에서 수정 예정):
+
+- [ ] `shared/config/storage-keys.ts` 생성 (모든 localStorage 키 상수화)
+- [ ] `direct-speech/page.tsx` snake_case → camelCase 수정
+
 ---
 
 ## 3. 개선 계획
@@ -64,6 +91,7 @@
 - [x] 공용 컴포넌트 (DecorativeCircle, GlassmorphicCard, PageBackground)
 - [ ] 반응형 디자인 (모바일 퍼스트)
 - [ ] 접근성 개선 (WCAG AA)
+- [ ] **[버그]** localStorage 키 일관성 수정 (`direct-speech/page.tsx` snake_case → camelCase)
 
 ### Phase 2: 음성/WebSocket ✅ 완료
 
