@@ -1,7 +1,17 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Button, ChatMicButton, MalangEE, MalangEEStatus, ConfirmPopup, PopupLayout, SettingsPopup, SettingsTrigger } from "@/shared/ui";
+import {
+  Button,
+  ChatMicButton,
+  MalangEE,
+  MalangEEStatus,
+  ConfirmPopup,
+  PopupLayout,
+  SettingsPopup,
+  SettingsTrigger,
+  DebugStatus,
+} from "@/shared/ui";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useConversationChatNew } from "@/features/chat/hook/useConversationChatNew";
 import { useGetHints } from "@/features/chat/api/use-chat-sessions";
@@ -325,6 +335,15 @@ export default function ConversationPage() {
 
   return (
     <>
+      <DebugStatus
+        isConnected={state.isConnected}
+        isReady={state.isReady}
+        lastEvent={state.logs.length > 0 ? state.logs[state.logs.length - 1] : null}
+        isAiSpeaking={state.isAiSpeaking}
+        isRecording={state.isRecording}
+        userTranscript={state.userTranscript}
+      />
+
       {/* Character */}
       <div className="character-box relative">
         <MalangEE status={getMalangEEStatus()} size={150} />
@@ -367,7 +386,9 @@ export default function ConversationPage() {
         <ConfirmPopup
           message={
             <p className="text-xl font-semibold leading-relaxed text-gray-800">
-              로그인을 하면 대화를 저장하고<br />이어 말할 수 있어요
+              로그인을 하면 대화를 저장하고
+              <br />
+              이어 말할 수 있어요
             </p>
           }
           confirmText="로그인하기"
@@ -382,7 +403,9 @@ export default function ConversationPage() {
         <ConfirmPopup
           message={
             <p className="text-xl font-semibold leading-relaxed text-gray-800">
-              대화가 잠시 멈췄어요.<br />계속 이야기 할까요?
+              대화가 잠시 멈췄어요.
+              <br />
+              계속 이야기 할까요?
             </p>
           }
           confirmText="이어 말하기"
