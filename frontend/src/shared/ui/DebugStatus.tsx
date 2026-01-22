@@ -1,4 +1,7 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { isDev } from "@/shared/lib/debug";
 
 interface DebugStatusProps {
@@ -22,20 +25,28 @@ export const DebugStatus: React.FC<DebugStatusProps> = ({
   isRecording,
   userTranscript,
 }) => {
-  // 개발 환경에서만 표시
-  if (!isDev()) return null;
+  const [mounted, setMounted] = useState(false);
 
-  return (
-    <div className="pointer-events-none fixed bottom-4 left-4 right-4 z-50 flex flex-col items-center gap-2">
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  // 개발 환경이 아니거나 마운트되지 않았으면 렌더링 안 함
+  if (!isDev() || !mounted) return null;
+
+  // Portal을 사용하여 body에 직접 렌더링 (GlassCard 등의 상위 요소 스타일 영향 회피)
+  return createPortal(
+    <div className="pointer-events-none fixed bottom-4 left-1/2 z-[9999] flex -translate-x-1/2 flex-col items-center gap-2">
       {/* User Transcript Debug (Only in Debug Bar) */}
       {userTranscript && (
-        <div className="rounded-lg bg-green-900/80 px-3 py-1 text-[10px] text-white backdrop-blur-md">
+        <div className="pointer-events-auto rounded-lg bg-green-900/80 px-3 py-1 text-[10px] text-white backdrop-blur-md">
           <span className="font-bold text-green-400 mr-2">YOU:</span>
           {userTranscript}
         </div>
       )}
 
-      <div className="flex items-center gap-3 rounded-full bg-black/70 px-3 py-1 text-[10px] text-white backdrop-blur-md">
+      <div className="pointer-events-auto flex items-center gap-3 rounded-full bg-black/80 px-4 py-2 text-[10px] text-white shadow-lg backdrop-blur-md transition-transform hover:scale-105">
         {/* 연결 상태 */}
         <div className="flex items-center gap-1">
           <div
@@ -93,6 +104,7 @@ export const DebugStatus: React.FC<DebugStatusProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
