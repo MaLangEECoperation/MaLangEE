@@ -6,7 +6,7 @@ import { Suspense, useEffect, useState, useRef, useCallback } from "react";
 import { useAuth } from "@/features/auth";
 import { useGetHints } from "@/features/chat/api/use-chat-sessions";
 import { useConversationChatNew } from "@/features/chat/hook/useConversationChatNew";
-import { RealtimeHint } from "@/features/chat/ui";
+import { LanguageNotRecognizedDialog, RealtimeHint } from "@/features/chat/ui";
 import { STORAGE_KEYS } from "@/shared/config";
 import { debugLog, debugError } from "@/shared/lib";
 import {
@@ -52,6 +52,7 @@ function ConversationContent() {
   const [showSettingsPopup, setShowSettingsPopup] = useState(false);
   const [showWaitPopup, setShowWaitPopup] = useState(false);
   const [showLoginPopup, _setShowLoginPopup] = useState(false);
+  const [showLanguageErrorPopup, setShowLanguageErrorPopup] = useState(false);
 
   // sessionId 초기화
   useEffect(() => {
@@ -204,6 +205,14 @@ function ConversationContent() {
     setIsMounted(true);
   }, []);
 
+  // [unintelligible] 감지 시 언어 인식 실패 팝업 표시
+  useEffect(() => {
+    if (state.userTranscript?.toLowerCase().includes("[unintelligible]")) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setShowLanguageErrorPopup(true);
+    }
+  }, [state.userTranscript]);
+
   // 자동 연결
   useEffect(() => {
     if (!isMounted || !sessionId || sessionId.trim() === "") return;
@@ -351,6 +360,22 @@ function ConversationContent() {
     setShowHintText(false);
   }, []);
 
+  // 언어 인식 실패 팝업 핸들러
+  const handleLanguageErrorRetry = useCallback(() => {
+    setShowLanguageErrorPopup(false);
+    // 마이크는 이미 활성화 상태이므로 팝업만 닫기
+  }, []);
+
+  const handleLanguageErrorSwitchToText = useCallback(() => {
+    setShowLanguageErrorPopup(false);
+    // TODO: Phase 7에서 텍스트 입력 모드 구현
+    alert("텍스트 입력 기능은 준비 중입니다.");
+  }, []);
+
+  const handleLanguageErrorClose = useCallback(() => {
+    setShowLanguageErrorPopup(false);
+  }, []);
+
   const handleStopFromWait = async () => {
     setShowWaitPopup(false);
     await disconnect();
@@ -462,6 +487,14 @@ function ConversationContent() {
           onCancel={handleStopFromWait}
         />
       )}
+
+      {/* 언어 인식 실패 팝업 */}
+      <LanguageNotRecognizedDialog
+        isOpen={showLanguageErrorPopup}
+        onRetry={handleLanguageErrorRetry}
+        onSwitchToText={handleLanguageErrorSwitchToText}
+        onClose={handleLanguageErrorClose}
+      />
 
       {/* SessionId 에러 팝업 */}
       {showSessionErrorPopup && (
