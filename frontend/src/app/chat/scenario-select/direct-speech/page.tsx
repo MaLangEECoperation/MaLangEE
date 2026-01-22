@@ -3,11 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button, MalangEE, ChatMicButton, ConfirmPopup, ScenarioResultPopup } from "@/shared/ui";
+import { Button, MalangEE, ChatMicButton, ConfirmPopup, ScenarioResultPopup, DebugStatus } from "@/shared/ui";
 import "@/shared/styles/scenario.css";
 import { useScenarioChatNew } from "@/features/chat/hook/useScenarioChatNew";
 import { useInactivityTimer } from "@/shared/hooks";
-import { Volume2, VolumeX } from "lucide-react";
 
 export default function DirectSpeechPage() {
   const router = useRouter();
@@ -17,7 +16,6 @@ export default function DirectSpeechPage() {
   const [showNotUnderstood, setShowNotUnderstood] = useState(false);
   const [showEndChatPopup, setShowEndChatPopup] = useState(false);
   const [showScenarioResultPopup, setShowScenarioResultPopup] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
   const [wasConnected, setWasConnected] = useState(false);
 
   const {
@@ -39,7 +37,6 @@ export default function DirectSpeechPage() {
     stopMicrophone,
     initAudio,
     startScenarioSession,
-    toggleMute,
   } = useScenarioChatNew();
 
   const hintMessage = "예: 공항 체크인 상황을 연습하고 싶어요.";
@@ -208,12 +205,6 @@ export default function DirectSpeechPage() {
     startMicrophone();
   };
 
-  const handleMuteToggle = () => {
-    const newMuteState = !isMuted;
-    setIsMuted(newMuteState);
-    toggleMute(newMuteState);
-  };
-
   const handleMicClick = () => {
     initAudio();
     resetTimers();
@@ -266,15 +257,21 @@ export default function DirectSpeechPage() {
 
   return (
     <>
+      <DebugStatus
+        isConnected={chatState.isConnected}
+        isReady={chatState.isReady}
+        lastEvent={chatState.logs.length > 0 ? chatState.logs[chatState.logs.length - 1] : null}
+        isAiSpeaking={chatState.isAiSpeaking}
+        isRecording={chatState.isRecording}
+        userTranscript={chatState.userTranscript}
+      />
+
       <div className="character-box relative">
         <MalangEE status={showInactivityMessage ? "humm" : "default"} size={120} />
         {showInactivityMessage && (
-          <div className="absolute -bottom-[25px] left-1/2 z-10 -translate-x-1/2">
-            <div className="relative rounded-2xl border-2 border-yellow-300 bg-yellow-50 px-6 py-3 shadow-lg">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <div className="h-0 w-0 border-b-[12px] border-l-[12px] border-r-[12px] border-b-yellow-300 border-l-transparent border-r-transparent"></div>
-                <div className="absolute left-1/2 top-[2px] h-0 w-0 -translate-x-1/2 border-b-[10px] border-l-[10px] border-r-[10px] border-b-yellow-50 border-l-transparent border-r-transparent"></div>
-              </div>
+          <div className="absolute -bottom-[25px] left-1/2 z-50 -translate-x-1/2">
+            <div className="absolute -top-[8px] left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-l-2 border-t-2 border-gray-100 bg-white"></div>
+            <div className="relative rounded-2xl border-2 border-gray-100 bg-white px-6 py-3 shadow-lg">
               <p className="whitespace-nowrap text-sm text-gray-700">{hintMessage}</p>
             </div>
           </div>
@@ -301,26 +298,8 @@ export default function DirectSpeechPage() {
             </div>
           </div>
 
-          <div className="flex flex-col items-center gap-3">
-            {!hasStarted && (
-              <Button asChild variant="outline-purple" size="md">
-                <Link href="/chat/scenario-select">추천 주제 보기</Link>
-              </Button>
-            )}
-          </div>
         </div>
       </div>
-
-      {hasStarted && (
-        <button
-          onClick={handleMuteToggle}
-          className={`fixed bottom-8 right-8 z-50 flex h-16 w-16 items-center justify-center rounded-full shadow-2xl transition-all hover:scale-110 active:scale-95 ${isMuted ? "bg-red-50 text-red-500" : "bg-white text-brand"
-            } border border-gray-100`}
-          title={isMuted ? "음소거 해제" : "음소거"}
-        >
-          {isMuted ? <VolumeX size={32} /> : <Volume2 size={32} />}
-        </button>
-      )}
 
       {showScenarioResultPopup && chatState.scenarioResult && (
         <ScenarioResultPopup
