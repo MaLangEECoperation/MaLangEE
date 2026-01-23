@@ -42,9 +42,18 @@
       "Bash(git rm:*)",
       "Bash(GIT_EDITOR=true git rebase:*)",
       "Bash(git -c core.editor=true rebase --continue)",
-      "Bash(EDITOR=: git rebase:*)"
+      "Bash(EDITOR=: git rebase:*)",
+      "Bash(sudo systemctl status:*)",
+      "Bash(systemctl --user status:*)",
+      "Bash(journalctl:*)",
+      "Bash(ss:*)",
+      "Bash(systemctl:*)",
+      "Bash(ps:*)",
+      "Bash(chmod:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["figma-developer-mcp"]
+  "enabledMcpjsonServers": [
+    "figma-developer-mcp"
+  ]
 }

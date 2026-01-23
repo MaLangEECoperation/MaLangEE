@@ -245,7 +245,7 @@ if [[ "$TARGET" == "all" || "$TARGET" == "restart" ]]; then
     fi
     
     echo "  • Frontend 재시작 중..."
-    sudo systemctl restart malangee-frontend
+    systemctl --user restart malangee-frontend
     if [ $? -eq 0 ]; then
         echo "[INFO] Frontend 재시작 성공" | tee -a $LOG_FILE
     else
@@ -272,7 +272,7 @@ if [[ "$TARGET" == "all" || "$TARGET" == "restart" ]]; then
     echo ""
     
     echo "Frontend 상태:"
-    sudo systemctl status malangee-frontend --no-pager | head -n 3
+    systemctl --user status malangee-frontend --no-pager | head -n 3
     echo ""
     
     echo "AI-Engine 상태:"
