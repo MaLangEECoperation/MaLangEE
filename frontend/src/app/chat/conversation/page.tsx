@@ -350,16 +350,8 @@ function ConversationContent() {
 
   // 핸들러
   const handleHintClick = useCallback(() => {
-    if (showHintText) {
-      setShowHintText(false);
-      return;
-    }
     setShouldFetchHint(true);
     setShowHintText(true);
-  }, [showHintText]);
-
-  const handleHintDismiss = useCallback(() => {
-    setShowHintText(false);
   }, []);
 
   // 언어 인식 실패 팝업 핸들러
@@ -385,7 +377,8 @@ function ConversationContent() {
   };
 
   const handleContinueChat = () => {
-    resetHintState();
+    clearWaitPopupTimer();
+    setShowWaitPopup(false);
   };
 
   const handleSubtitleChange = (enabled: boolean) => {
@@ -421,7 +414,6 @@ function ConversationContent() {
         showPrompt={showHintPrompt && !state.isUserSpeaking && !state.isAiSpeaking}
         showHintText={showHintText}
         onRequestHint={handleHintClick}
-        onDismiss={handleHintDismiss}
       />
 
       {/* 메시지 및 마이크 */}
@@ -497,6 +489,7 @@ function ConversationContent() {
           cancelText="대화 그만하기"
           onConfirm={handleContinueChat}
           onCancel={handleStopFromWait}
+          disableBackdropClick
         />
       )}
 

@@ -25,6 +25,8 @@ interface ConfirmPopupProps {
   malangEEStatus?: MalangEEStatus;
   /** 팝업 최대 너비 */
   maxWidth?: "sm" | "md" | "lg";
+  /** 배경 클릭으로 닫기 비활성화 (버튼으로만 닫기) */
+  disableBackdropClick?: boolean;
 }
 
 export const ConfirmPopup: FC<ConfirmPopupProps> = ({
@@ -37,9 +39,15 @@ export const ConfirmPopup: FC<ConfirmPopupProps> = ({
   showMalangEE = false,
   malangEEStatus = "default",
   maxWidth = "md",
+  disableBackdropClick = false,
 }) => {
   return (
-    <PopupLayout onClose={onCancel} maxWidth={maxWidth} showCloseButton={false}>
+    <PopupLayout
+      onClose={onCancel}
+      maxWidth={maxWidth}
+      showCloseButton={false}
+      disableBackdropClick={disableBackdropClick}
+    >
       <div className="flex flex-col items-center gap-6 py-4">
         {showMalangEE && <MalangEE status={malangEEStatus} size={120} />}
         <div className="text-center">
