@@ -421,39 +421,72 @@ localStorage.getItem(STORAGE_KEYS.conversationGoal); // 정상 작동
 
 ---
 
-## 현재 구현 상태 (2025-01-23)
+## 현재 구현 상태 (2026-01-23)
 
 ### 완료된 FSD 구조
 
-- [x] `shared/ui/` - 18개 공용 UI 컴포넌트
-- [x] `shared/hooks/` - useAudioRecorder, useInactivityTimer
-- [x] `shared/lib/` - api-client, websocket-client, utils
-- [x] `features/auth/` - 인증 기능 완전 구현 (api, hook, model, ui)
-- [x] `features/chat/` - 채팅 기능 구현 (api, hook)
+- [x] `shared/ui/` - 20+ 공용 UI 컴포넌트 (테스트 포함)
+- [x] `shared/hooks/` - useAudioRecorder, useInactivityTimer (테스트 포함)
+- [x] `shared/lib/` - api-client, websocket-client, utils, jwt, debug 등 (테스트 포함)
+- [x] `shared/config/` - storage-keys.ts (localStorage 키 상수화, 테스트 포함)
+- [x] `features/auth/` - 인증 기능 완전 구현 (api, hook, model, ui + 전체 테스트)
+- [x] `features/chat/api/` - scenarios, use-chat-sessions (테스트 포함)
+- [x] `features/chat/hook/` - useConversationChatNew, useScenarioChatNew, useWebSocketBase (테스트 포함)
+- [x] `features/chat/ui/` - RealtimeHint, LanguageNotRecognizedDialog (테스트 포함)
 
 ### 미완료 항목
 
 - [ ] `entities/user/` - 사용자 엔티티 구축
 - [ ] `entities/scenario/` - 시나리오 엔티티 구축
-- [ ] `features/chat/model/` - 타입 분리 필요
-- [ ] `features/chat/ui/` - 팝업 컴포넌트 이동 필요
+- [ ] `features/chat/model/` - 타입 분리 필요 (hook/types.ts 이동)
+- [ ] `features/chat/ui/` - 대시보드 팝업 컴포넌트 이동 (ChatDetailPopup, ChatTranscriptPopup)
 - [ ] `views/` - 페이지 로직 분리 필요
+- [ ] `shared/types/` → `shared/model/` 리네이밍
 
 ---
 
 ## 현재 상태 분석
 
-### FSD 준수율: ~65%
+### FSD 준수율: ~75%
 
-| 레이어           | 상태 | 문제점                                         |
-| ---------------- | ---- | ---------------------------------------------- |
-| `app/`           | ⚠️   | 페이지 컴포넌트가 라우터 파일에 직접 포함됨    |
-| `_pages/`        | ❌   | 비어있음 → `views/`로 변경 필요                |
-| `features/auth/` | ✅   | 완전한 FSD 구조 (model/, api/, hook/, ui/)     |
-| `features/chat/` | ❌   | model/, ui/ 폴더 누락                          |
-| `shared/`        | ⚠️   | types/ → model/로 변경 필요, config/ 폴더 필요 |
-| `entities/`      | ⚠️   | 비어있음 (현재 필요 없음)                      |
-| `widgets/`       | ⚠️   | 비어있음 (현재 필요 없음)                      |
+| 레이어           | 상태 | 설명                                                     |
+| ---------------- | ---- | -------------------------------------------------------- |
+| `app/`           | ⚠️   | 페이지 컴포넌트가 라우터 파일에 직접 포함됨              |
+| `features/auth/` | ✅   | 완전한 FSD 구조 (api/, hook/, model/, ui/ + 전체 테스트) |
+| `features/chat/` | ⚠️   | api/, hook/, ui/ 완성, model/ 누락 (types.ts 이동 필요)  |
+| `shared/`        | ⚠️   | config/ 완성, types/ → model/ 리네이밍 필요              |
+| `entities/`      | ⚠️   | 미생성 (현재 필요 없음)                                  |
+| `widgets/`       | ⚠️   | 미생성 (현재 필요 없음)                                  |
+| `views/`         | ❌   | 미생성 → 페이지 로직 분리 필요                           |
+
+### 라우트 구조 (현재)
+
+```
+src/app/
+├── (chat-flow)/              # Route Group (채팅 플로우)
+│   ├── chat/
+│   │   ├── conversation/
+│   │   │   └── page.tsx
+│   │   ├── complete/
+│   │   │   └── page.tsx
+│   │   └── welcome-back/
+│   │       └── page.tsx
+│   └── scenario-select/
+│       ├── topic-suggestion/
+│       ├── voice-selection/
+│       ├── direct-speech/
+│       └── subtitle-settings/
+├── auth/
+│   ├── login/
+│   ├── signup/
+│   └── logout/
+├── dashboard/
+│   ├── page.tsx
+│   ├── ChatDetailPopup.tsx    # ❌ FSD 위반
+│   ├── ChatTranscriptPopup.tsx # ❌ FSD 위반
+│   └── NicknameChangePopup.tsx # ❌ FSD 위반
+└── ws-test/
+```
 
 ### FSD 위반 파일
 
@@ -462,6 +495,13 @@ localStorage.getItem(STORAGE_KEYS.conversationGoal); // 정상 작동
 3. `app/dashboard/NicknameChangePopup.tsx` → features/auth/ui/
 4. 모든 `app/**/page.tsx` → 로직을 `views/`로 분리 필요
 5. `shared/types/` → `shared/model/`로 변경 필요
+6. `features/chat/hook/types.ts` → `features/chat/model/`로 이동 필요
+
+### 테스트 현황
+
+- **총 단위 테스트**: 148개 (Vitest) - 모두 통과
+- **E2E 테스트**: 22개 (Playwright) - 모두 활성화
+- **테스트 커버리지**: features/, shared/ 레이어 전체 테스트 완비
 
 ---
 
@@ -469,7 +509,9 @@ localStorage.getItem(STORAGE_KEYS.conversationGoal); // 정상 작동
 
 ### Phase 0: views 폴더 구조 생성 (nextjs-fsd-starter 패턴)
 
-**0.1 `_pages/` → `views/` 폴더 변경**
+**0.1 `views/` 폴더 생성**
+
+> 현재 라우트 구조: `(chat-flow)` Route Group 사용 중
 
 ```
 src/views/
@@ -482,14 +524,14 @@ src/views/
 ├── dashboard/
 │   └── DashboardPage.tsx      # app/dashboard/page.tsx 로직 분리
 ├── chat/
-│   ├── ConversationPage.tsx   # app/chat/conversation/page.tsx 로직 분리
-│   ├── CompletePage.tsx       # app/chat/complete/page.tsx 로직 분리
-│   ├── WelcomeBackPage.tsx    # app/chat/welcome-back/page.tsx 로직 분리
+│   ├── ConversationPage.tsx   # app/(chat-flow)/chat/conversation/page.tsx 로직 분리
+│   ├── CompletePage.tsx       # app/(chat-flow)/chat/complete/page.tsx 로직 분리
+│   ├── WelcomeBackPage.tsx    # app/(chat-flow)/chat/welcome-back/page.tsx 로직 분리
 │   └── scenario-select/
-│       ├── TopicSuggestionPage.tsx
-│       ├── VoiceSelectionPage.tsx
-│       ├── DirectSpeechPage.tsx
-│       └── SubtitleSettingsPage.tsx
+│       ├── TopicSuggestionPage.tsx  # app/(chat-flow)/scenario-select/topic-suggestion/
+│       ├── VoiceSelectionPage.tsx   # app/(chat-flow)/scenario-select/voice-selection/
+│       ├── DirectSpeechPage.tsx     # app/(chat-flow)/scenario-select/direct-speech/
+│       └── SubtitleSettingsPage.tsx # app/(chat-flow)/scenario-select/subtitle-settings/
 └── index.ts                   # Public API export
 ```
 
@@ -521,18 +563,23 @@ src/features/chat/model/
 ├── index.ts      # Public API export
 ```
 
-**1.2 ui/ 폴더 생성 및 파일 이동**
+**1.2 ui/ 폴더 - 대시보드 팝업 컴포넌트 이동** _(ui/ 폴더 자체는 생성 완료)_
 
 ```
 src/features/chat/ui/
-├── ChatDetailPopup.tsx      # app/dashboard/에서 이동
-├── ChatTranscriptPopup.tsx  # app/dashboard/에서 이동
-├── index.ts                 # Public API export
+├── RealtimeHint.tsx                  # ✅ 완료 (테스트 포함)
+├── RealtimeHint.test.tsx             # ✅ 완료
+├── LanguageNotRecognizedDialog.tsx    # ✅ 완료 (테스트 포함)
+├── LanguageNotRecognizedDialog.test.tsx # ✅ 완료
+├── ChatDetailPopup.tsx               # ⬜ app/dashboard/에서 이동 필요
+├── ChatTranscriptPopup.tsx           # ⬜ app/dashboard/에서 이동 필요
+├── index.ts                          # ✅ 완료 (export 추가 필요)
 ```
 
 **1.3 index.ts 업데이트**
 
-- model, ui export 추가
+- model export 추가 필요
+- ui export에 이동된 팝업 추가 필요
 
 ### Phase 2: features/auth 구조 보완
 
@@ -565,20 +612,21 @@ src/shared/api/
 └── index.ts            # Public API export
 ```
 
-**3.3 config/ 폴더 생성 (segment별)**
+**3.3 config/ 폴더 생성 (segment별)** _(shared/config/ 생성 완료)_
 
 ```
-# 공용 상수
+# 공용 상수 ✅ 생성됨
 src/shared/config/
-├── index.ts     # 통합 export
-├── api.ts       # API 관련 상수
-└── ui.ts        # UI 관련 상수
+├── index.ts          # ✅ 통합 export
+├── storage-keys.ts   # ✅ localStorage 키 상수 (테스트 포함)
+├── api.ts            # ⬜ API 관련 상수
+└── ui.ts             # ⬜ UI 관련 상수
 
 # feature별 상수
 src/features/chat/config/
-├── index.ts     # 통합 export
-├── audio.ts     # 오디오 관련 상수
-└── message.ts   # 메시지 관련 상수
+├── index.ts     # ⬜ 통합 export
+├── audio.ts     # ⬜ 오디오 관련 상수
+└── message.ts   # ⬜ 메시지 관련 상수
 ```
 
 **3.4 shared/index.ts 생성**
@@ -644,73 +692,77 @@ src/app/chat/
 
 ### Phase 0: views 폴더 구조 (우선순위 높음)
 
-1. [ ] `_pages/` 폴더 삭제 후 `views/` 폴더 생성
+1. [ ] `views/` 폴더 생성
 2. [ ] 페이지 컴포넌트 분리 및 이동
 3. [ ] `app/**/page.tsx` 파일들 단순화 (import + re-export만)
 4. [ ] `views/index.ts` Public API 생성
 
 ### Phase 1-2: features 구조 보완
 
-5. [ ] `features/chat/model/` 생성 및 types.ts 이동
-6. [ ] `features/chat/ui/` 생성 및 팝업 컴포넌트 이동
-7. [ ] NicknameChangePopup.tsx → features/auth/ui/ 이동
-8. [ ] features/chat/index.ts, features/auth/ui/index.ts 업데이트
+5. [ ] `features/chat/model/` 생성 및 `hook/types.ts` 이동
+6. [x] `features/chat/ui/` 생성 (RealtimeHint, LanguageNotRecognizedDialog + 테스트)
+7. [ ] `app/dashboard/ChatDetailPopup.tsx` → `features/chat/ui/` 이동
+8. [ ] `app/dashboard/ChatTranscriptPopup.tsx` → `features/chat/ui/` 이동
+9. [ ] `app/dashboard/NicknameChangePopup.tsx` → `features/auth/ui/` 이동
+10. [ ] `features/chat/index.ts` - model, ui(팝업) export 추가
+11. [ ] `features/auth/ui/index.ts` - NicknameChangePopup export 추가
 
 ### Phase 3: shared 레이어 정리 + API 클라이언트 + config
 
-9. [ ] `shared/types/` → `shared/model/` 폴더 변경
-10. [ ] `shared/api/` 듀얼 인증 패턴 구현
+12. [ ] `shared/types/` → `shared/model/` 폴더 리네이밍
+13. [ ] `shared/api/` 듀얼 인증 패턴 구현
     - [ ] `config.ts` - API_BASE_URL, ApiError
     - [ ] `server-fetch.ts` - 서버 컴포넌트용 (cookies() 사용)
     - [ ] `client-fetch.ts` - 클라이언트용 (credentials: 'include', apiClient 객체)
     - [ ] `index.ts` - Public API export
-11. [ ] `features/auth/api/actions.ts` - 로그인/로그아웃 Server Actions (HttpOnly 쿠키 설정)
-12. [ ] `shared/config/` 폴더 생성 (공용 상수)
-13. [ ] `features/chat/config/` 폴더 생성 (feature별 상수)
-14. [ ] `shared/index.ts` 생성 (api, lib, ui, model, config 통합 export)
+14. [ ] `features/auth/api/actions.ts` - 로그인/로그아웃 Server Actions (HttpOnly 쿠키 설정)
+15. [x] `shared/config/` 폴더 생성 + `storage-keys.ts` (테스트 포함)
+16. [ ] `shared/config/api.ts` - API 관련 상수
+17. [ ] `features/chat/config/` 폴더 생성 (feature별 상수)
+18. [ ] `shared/index.ts` 생성 (api, lib, ui, model, config 통합 export)
 
 ### Phase 4: 에러 바운더리
 
-12. [ ] `app/global-error.tsx` 생성
-13. [ ] 각 라우트별 `error.tsx` 생성
+19. [ ] `app/global-error.tsx` 생성
+20. [ ] 각 라우트별 `error.tsx` 생성
 
 ### Phase 5: 인터셉터 라우터
 
-14. [ ] 정보성 팝업 인터셉터 라우터 구조 생성
+21. [ ] 정보성 팝업 인터셉터 라우터 구조 생성
 
 ### Phase 6: ESLint 강제 적용
 
-15. [ ] `eslint.config.mjs` - FSD 규칙 `"warn"` → `"error"` 변경
-16. [ ] `yarn lint` 실행하여 FSD 위반 없음 확인
+22. [ ] `eslint.config.mjs` - FSD 규칙 `"warn"` → `"error"` 변경
+23. [ ] `yarn lint` 실행하여 FSD 위반 없음 확인
 
 ### Phase 7: 버튼/링크 리팩토링
 
-17. [ ] 네비게이션 버튼 → `asChild` + `Link` 패턴 적용
+24. [ ] 네비게이션 버튼 → `asChild` + `Link` 패턴 적용
 
 ### Phase 8: Custom Hook 분리
 
-18. [ ] 각 페이지 비즈니스 로직 hook 분리
+25. [ ] 각 페이지 비즈니스 로직 hook 분리
 
 ### Phase 9: 매직넘버 상수화
 
-19. [ ] 코드베이스 매직넘버 스캔
-20. [ ] 공용 상수 → `shared/config/`
-21. [ ] feature별 상수 → `features/<feature>/config/`
+26. [ ] 코드베이스 매직넘버 스캔
+27. [ ] 공용 상수 → `shared/config/`
+28. [ ] feature별 상수 → `features/<feature>/config/`
 
 ### Phase 10: localStorage 키 일관성 수정
 
-22. [ ] `shared/config/storage-keys.ts` 생성 (모든 localStorage 키 상수화)
-23. [ ] `direct-speech/page.tsx` - snake_case → camelCase 수정
+29. [x] `shared/config/storage-keys.ts` 생성 (모든 localStorage 키 상수화, 테스트 포함)
+30. [ ] `direct-speech/page.tsx` - snake_case → camelCase 수정
     - [ ] `conversation_goal` → `conversationGoal`
     - [ ] `conversation_partner` → `conversationPartner`
-24. [ ] 전체 코드베이스 localStorage 키 상수 사용으로 교체
+31. [ ] 전체 코드베이스 localStorage 키 상수 사용으로 교체
 
 ### 검증
 
-25. [ ] 타입 체크 (`yarn tsc --noEmit`)
-26. [ ] ESLint 검사 (`yarn lint`) - 에러 0개 확인
-27. [ ] 빌드 검증 (`yarn build`)
-28. [ ] 테스트 실행 (`yarn test`)
+32. [ ] 타입 체크 (`yarn tsc --noEmit`)
+33. [ ] ESLint 검사 (`yarn lint`) - 에러 0개 확인
+34. [ ] 빌드 검증 (`yarn build`)
+35. [ ] 테스트 실행 (`yarn test`)
 
 ---
 
