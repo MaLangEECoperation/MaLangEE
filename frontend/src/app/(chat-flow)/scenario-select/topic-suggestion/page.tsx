@@ -102,7 +102,7 @@ export default function TopicSuggestionPage() {
       localStorage.setItem(STORAGE_KEYS.SUBTITLE_ENABLED, showText.toString());
       localStorage.setItem(STORAGE_KEYS.CHAT_SESSION_ID, sessionResult.session_id);
 
-      router.push(`/chat/conversation?sessionId=${sessionResult.session_id}`);
+      router.push(`/chat?sessionId=${sessionResult.session_id}`);
     } catch (error) {
       console.error("Failed to create session:", error);
       alert("세션 생성에 실패했습니다. 다시 시도해주세요.");
@@ -151,7 +151,7 @@ export default function TopicSuggestionPage() {
           </div>
           <div className="mt-8">
             <Button asChild variant="outline-purple" size="xl" className="flex gap-2">
-              <Link href="/chat/scenario-select/direct-speech">
+              <Link href="/scenario-select/direct-speech">
                 <Mic size={20} />
                 직접 말하기
               </Link>
@@ -196,7 +196,7 @@ export default function TopicSuggestionPage() {
             </Button>
 
             <Button asChild variant="outline-purple" size="lg" className="flex gap-2">
-              <Link href="/chat/scenario-select/direct-speech">
+              <Link href="/scenario-select/direct-speech">
                 <Mic size={20} />
                 직접 말하기
               </Link>

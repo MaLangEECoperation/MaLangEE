@@ -89,7 +89,7 @@ test.describe("페이지 간 네비게이션", () => {
     await page.goto("/auth/login");
     // Button asChild를 사용하므로 실제로는 링크로 렌더링됨
     await page.getByRole("link", { name: "바로 체험해보기" }).click();
-    await expect(page).toHaveURL(/\/chat\/scenario-select/);
+    await expect(page).toHaveURL(/\/scenario-select/);
   });
 });
 
@@ -132,9 +132,9 @@ test.describe("인증 상태에 따른 라우팅", () => {
 
 test.describe("시나리오 선택 페이지 네비게이션", () => {
   test("시나리오 선택 페이지에 접근할 수 있어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select");
+    await page.goto("/scenario-select");
     // topic-suggestion으로 리다이렉트됨
-    await expect(page).toHaveURL(/\/chat\/scenario-select/);
+    await expect(page).toHaveURL(/\/scenario-select/);
   });
 
   test("주제 선택 페이지가 정상적으로 로드되어야 함", async ({ page }) => {
@@ -157,24 +157,24 @@ test.describe("시나리오 선택 페이지 네비게이션", () => {
       });
     });
 
-    await page.goto("/chat/scenario-select/topic-suggestion");
+    await page.goto("/scenario-select/topic-suggestion");
 
     // 페이지 제목 확인
     await expect(page.getByText("이런 주제는 어때요?")).toBeVisible({ timeout: 10000 });
   });
 
   test("직접 말하기 페이지에 접근할 수 있어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/direct-speech");
-    await expect(page).toHaveURL(/\/chat\/scenario-select\/direct-speech/);
+    await page.goto("/scenario-select/direct-speech");
+    await expect(page).toHaveURL(/\/scenario-select\/direct-speech/);
   });
 
   test("자막 설정 페이지에 접근할 수 있어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/subtitle-settings");
+    await page.goto("/scenario-select/subtitle-settings");
     await expect(page.getByText("말랭이의 답변을 자막으로 볼까요?")).toBeVisible();
   });
 
   test("목소리 선택 페이지에 접근할 수 있어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/voice-selection");
+    await page.goto("/scenario-select/voice-selection");
     await expect(page.getByText("말랭이 목소리 톤을 선택해 주세요.")).toBeVisible();
   });
 });
@@ -281,9 +281,8 @@ test.describe("채팅 관련 페이지 네비게이션", () => {
   });
 
   test("대화 페이지에 접근할 수 있어야 함", async ({ page }) => {
-    // 대화 페이지는 세션이 필요할 수 있음
-    await page.goto("/chat/conversation");
-    await page.waitForLoadState("networkidle");
+    // 대화 페이지는 세션이 필요할 수 있음 (WebSocket 연결 시도로 networkidle 불가)
+    await page.goto("/chat", { waitUntil: "domcontentloaded" });
   });
 
   test("환영 페이지에 접근할 수 있어야 함", async ({ page }) => {
@@ -322,10 +321,10 @@ test.describe("모바일 네비게이션", () => {
   });
 
   test("모바일에서 시나리오 선택 페이지가 정상적으로 표시되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select");
+    await page.goto("/scenario-select");
 
     // 페이지가 로드되어야 함
-    await expect(page).toHaveURL(/\/chat\/scenario-select/);
+    await expect(page).toHaveURL(/\/scenario-select/);
   });
 });
 

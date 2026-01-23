@@ -4,10 +4,10 @@ import { MOCK_USER, setAuthStorage } from "./helpers/auth";
 
 /**
  * 시나리오 선택 플로우 E2E 테스트 (새 URL 구조)
- * - /chat/scenario-select/topic-suggestion: 주제 선택
- * - /chat/scenario-select/direct-speech: 직접 말하기
- * - /chat/scenario-select/subtitle-settings: 자막 설정
- * - /chat/scenario-select/voice-selection: 목소리 선택
+ * - /scenario-select/topic-suggestion: 주제 선택
+ * - /scenario-select/direct-speech: 직접 말하기
+ * - /scenario-select/subtitle-settings: 자막 설정
+ * - /scenario-select/voice-selection: 목소리 선택
  */
 
 // 시나리오 목록 모킹 데이터
@@ -77,7 +77,7 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
   });
 
   test("주제 선택 페이지가 정상적으로 로드되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/topic-suggestion");
+    await page.goto("/scenario-select/topic-suggestion");
 
     // 페이지 제목 확인
     await expect(page.getByText("이런 주제는 어때요?")).toBeVisible({ timeout: 10000 });
@@ -88,7 +88,7 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
   });
 
   test("시나리오 목록이 표시되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/topic-suggestion");
+    await page.goto("/scenario-select/topic-suggestion");
 
     // 시나리오 버튼들 확인 (일부만 표시될 수 있음)
     await page.waitForLoadState("networkidle");
@@ -101,7 +101,7 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
   });
 
   test("다른 주제 더보기 버튼이 작동해야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/topic-suggestion");
+    await page.goto("/scenario-select/topic-suggestion");
 
     // 다른 주제 더보기 버튼 클릭
     await page.getByRole("button", { name: "다른 주제 더보기" }).click();
@@ -111,17 +111,17 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
   });
 
   test("직접 말하기 버튼 클릭 시 직접 말하기 페이지로 이동해야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/topic-suggestion");
+    await page.goto("/scenario-select/topic-suggestion");
 
     // 직접 말하기 버튼 클릭
     await page.getByRole("link", { name: "직접 말하기" }).click();
 
     // 직접 말하기 페이지로 이동 확인
-    await expect(page).toHaveURL(/\/chat\/scenario-select\/direct-speech/);
+    await expect(page).toHaveURL(/\/scenario-select\/direct-speech/);
   });
 
   test("시나리오 클릭 시 상세 팝업이 표시되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/topic-suggestion");
+    await page.goto("/scenario-select/topic-suggestion");
 
     // 첫 번째 시나리오 버튼 클릭
     const scenarioButton = page
@@ -141,7 +141,7 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
   });
 
   test("시나리오 팝업에서 닫기 버튼이 작동해야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/topic-suggestion");
+    await page.goto("/scenario-select/topic-suggestion");
 
     // 시나리오 버튼 클릭
     const scenarioButton = page
@@ -157,7 +157,7 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
   });
 
   test("시나리오 팝업에서 자막 토글이 작동해야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/topic-suggestion");
+    await page.goto("/scenario-select/topic-suggestion");
 
     // 시나리오 버튼 클릭
     const scenarioButton = page
@@ -174,7 +174,7 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
   });
 
   test("시나리오 팝업에서 목소리 선택이 작동해야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/topic-suggestion");
+    await page.goto("/scenario-select/topic-suggestion");
 
     // 시나리오 버튼 클릭
     const scenarioButton = page
@@ -204,7 +204,7 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
       });
     });
 
-    await page.goto("/chat/scenario-select/topic-suggestion");
+    await page.goto("/scenario-select/topic-suggestion");
 
     // 에러 메시지 확인
     await expect(page.getByText("주제를 불러올 수 없어요")).toBeVisible({ timeout: 10000 });
@@ -225,7 +225,7 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
       });
     });
 
-    await page.goto("/chat/scenario-select/topic-suggestion");
+    await page.goto("/scenario-select/topic-suggestion");
 
     // 로딩 메시지 확인
     await expect(page.getByText("주제를 불러오는 중...")).toBeVisible();
@@ -234,7 +234,7 @@ test.describe("시나리오 선택 - 주제 선택 페이지", () => {
 
 test.describe("시나리오 선택 - 자막 설정 페이지", () => {
   test("자막 설정 페이지가 정상적으로 로드되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/subtitle-settings");
+    await page.goto("/scenario-select/subtitle-settings");
 
     // 페이지 제목 확인
     await expect(page.getByText("말랭이의 답변을 자막으로 볼까요?")).toBeVisible();
@@ -246,12 +246,12 @@ test.describe("시나리오 선택 - 자막 설정 페이지", () => {
   });
 
   test("자막 보기 선택 시 목소리 선택 페이지로 이동해야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/subtitle-settings");
+    await page.goto("/scenario-select/subtitle-settings");
 
     await page.getByRole("button", { name: "자막 보기" }).click();
 
     // 목소리 선택 페이지로 이동 확인
-    await expect(page).toHaveURL(/\/chat\/scenario-select\/voice-selection/);
+    await expect(page).toHaveURL(/\/scenario-select\/voice-selection/);
 
     // localStorage 확인
     const subtitleEnabled = await page.evaluate(() => localStorage.getItem("subtitleEnabled"));
@@ -259,12 +259,12 @@ test.describe("시나리오 선택 - 자막 설정 페이지", () => {
   });
 
   test("자막 없이 진행하기 선택 시 목소리 선택 페이지로 이동해야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/subtitle-settings");
+    await page.goto("/scenario-select/subtitle-settings");
 
     await page.getByRole("button", { name: "자막 없이 진행하기" }).click();
 
     // 목소리 선택 페이지로 이동 확인
-    await expect(page).toHaveURL(/\/chat\/scenario-select\/voice-selection/);
+    await expect(page).toHaveURL(/\/scenario-select\/voice-selection/);
 
     // localStorage 확인
     const subtitleEnabled = await page.evaluate(() => localStorage.getItem("subtitleEnabled"));
@@ -274,7 +274,7 @@ test.describe("시나리오 선택 - 자막 설정 페이지", () => {
 
 test.describe("시나리오 선택 - 목소리 선택 페이지", () => {
   test("목소리 선택 페이지가 정상적으로 로드되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/voice-selection");
+    await page.goto("/scenario-select/voice-selection");
 
     // 페이지 제목 확인
     await expect(page.getByText("말랭이 목소리 톤을 선택해 주세요.")).toBeVisible();
@@ -287,7 +287,7 @@ test.describe("시나리오 선택 - 목소리 선택 페이지", () => {
   });
 
   test("목소리 선택 화살표 버튼이 작동해야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/voice-selection");
+    await page.goto("/scenario-select/voice-selection");
 
     // 초기 목소리 확인
     await expect(page.getByRole("heading", { name: "Echo" })).toBeVisible();
@@ -306,7 +306,7 @@ test.describe("시나리오 선택 - 목소리 선택 페이지", () => {
   });
 
   test("미리듣기 버튼이 작동해야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/voice-selection");
+    await page.goto("/scenario-select/voice-selection");
 
     // 미리듣기 버튼 클릭
     const previewButton = page.getByRole("button", { name: /미리듣기/ });
@@ -319,12 +319,12 @@ test.describe("시나리오 선택 - 목소리 선택 페이지", () => {
   });
 
   test("대화 시작하기 버튼 클릭 시 대화 페이지로 이동해야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/voice-selection");
+    await page.goto("/scenario-select/voice-selection");
 
     await page.getByRole("button", { name: "대화 시작하기" }).click();
 
     // 대화 페이지로 이동 확인
-    await expect(page).toHaveURL(/\/chat\/conversation/);
+    await expect(page).toHaveURL(/\/chat(\?|$)/);
 
     // localStorage에 목소리 설정 저장 확인
     const selectedVoice = await page.evaluate(() => localStorage.getItem("selectedVoice"));
@@ -332,7 +332,7 @@ test.describe("시나리오 선택 - 목소리 선택 페이지", () => {
   });
 
   test("목소리 인디케이터가 현재 선택된 목소리를 표시해야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/voice-selection");
+    await page.goto("/scenario-select/voice-selection");
 
     // 인디케이터 도트 확인 (4개)
     const indicators = page.locator(".rounded-full.bg-brand, .rounded-full.bg-border");
@@ -347,7 +347,7 @@ test.describe("시나리오 선택 - 직접 말하기 페이지", () => {
   });
 
   test("직접 말하기 페이지가 정상적으로 로드되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/direct-speech");
+    await page.goto("/scenario-select/direct-speech");
 
     // 캐릭터 표시 확인
     await expect(page.locator(".character-box")).toBeVisible();
@@ -357,14 +357,14 @@ test.describe("시나리오 선택 - 직접 말하기 페이지", () => {
   });
 
   test("마이크 버튼이 표시되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/direct-speech");
+    await page.goto("/scenario-select/direct-speech");
 
     // 대화가 자동으로 시작되므로 마이크 버튼이 표시되어야 함
     await expect(page.locator(".mic-container")).toBeVisible({ timeout: 10000 });
   });
 
   test("캐릭터가 표시되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/direct-speech");
+    await page.goto("/scenario-select/direct-speech");
 
     // 캐릭터가 표시되어야 함
     await expect(page.locator(".character-box")).toBeVisible({ timeout: 10000 });
@@ -372,13 +372,11 @@ test.describe("시나리오 선택 - 직접 말하기 페이지", () => {
 });
 
 test.describe("시나리오 선택 플로우 - 리다이렉트", () => {
-  test("/chat/scenario-select 접속 시 topic-suggestion으로 리다이렉트되어야 함", async ({
-    page,
-  }) => {
-    await page.goto("/chat/scenario-select");
+  test("/scenario-select 접속 시 topic-suggestion으로 리다이렉트되어야 함", async ({ page }) => {
+    await page.goto("/scenario-select");
 
     // topic-suggestion으로 리다이렉트 확인
-    await expect(page).toHaveURL(/\/chat\/scenario-select\/topic-suggestion/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/scenario-select\/topic-suggestion/, { timeout: 10000 });
   });
 });
 
@@ -388,19 +386,19 @@ test.describe("시나리오 선택 - 반응형 디자인", () => {
 
     test("모바일에서 주제 선택 페이지가 정상적으로 표시되어야 함", async ({ page }) => {
       await mockScenarioApi(page);
-      await page.goto("/chat/scenario-select/topic-suggestion");
+      await page.goto("/scenario-select/topic-suggestion");
 
       await expect(page.getByText("이런 주제는 어때요?")).toBeVisible({ timeout: 10000 });
     });
 
     test("모바일에서 자막 설정 페이지가 정상적으로 표시되어야 함", async ({ page }) => {
-      await page.goto("/chat/scenario-select/subtitle-settings");
+      await page.goto("/scenario-select/subtitle-settings");
 
       await expect(page.getByText("말랭이의 답변을 자막으로 볼까요?")).toBeVisible();
     });
 
     test("모바일에서 목소리 선택 페이지가 정상적으로 표시되어야 함", async ({ page }) => {
-      await page.goto("/chat/scenario-select/voice-selection");
+      await page.goto("/scenario-select/voice-selection");
 
       await expect(page.getByText("말랭이 목소리 톤을 선택해 주세요.")).toBeVisible();
     });
@@ -411,7 +409,7 @@ test.describe("시나리오 선택 - 반응형 디자인", () => {
 
     test("태블릿에서 주제 선택 페이지가 정상적으로 표시되어야 함", async ({ page }) => {
       await mockScenarioApi(page);
-      await page.goto("/chat/scenario-select/topic-suggestion");
+      await page.goto("/scenario-select/topic-suggestion");
 
       await expect(page.getByText("이런 주제는 어때요?")).toBeVisible({ timeout: 10000 });
     });
@@ -423,7 +421,7 @@ test.describe("시나리오 선택 - 세션 생성 통합 테스트", () => {
     await mockScenarioApi(page);
     await mockCreateSessionApi(page);
 
-    await page.goto("/chat/scenario-select/topic-suggestion");
+    await page.goto("/scenario-select/topic-suggestion");
 
     // 시나리오 버튼 클릭
     const scenarioButton = page
@@ -435,6 +433,6 @@ test.describe("시나리오 선택 - 세션 생성 통합 테스트", () => {
     await page.getByRole("button", { name: "이 주제로 시작하기" }).click();
 
     // 대화 페이지로 이동 확인
-    await expect(page).toHaveURL(/\/chat\/conversation\?sessionId=/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/chat\?sessionId=/, { timeout: 10000 });
   });
 });

@@ -7,7 +7,7 @@ export default function ScenarioSelectPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/chat/scenario-select/topic-suggestion");
+    router.replace("/scenario-select/topic-suggestion");
   }, [router]);
 
   return null;

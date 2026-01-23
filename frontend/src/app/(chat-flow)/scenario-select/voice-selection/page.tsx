@@ -109,9 +109,9 @@ function VoiceSelectionContent() {
     localStorage.setItem(STORAGE_KEYS.SELECTED_VOICE, selectedVoice);
 
     if (sessionId) {
-      router.push(`/chat/conversation?sessionId=${sessionId}`);
+      router.push(`/chat?sessionId=${sessionId}`);
     } else {
-      router.push("/chat/conversation");
+      router.push("/chat");
     }
   };
 

@@ -71,7 +71,7 @@ function ConversationContent() {
       debugLog("[SessionId] Using stored sessionId:", storedSessionId);
 
       setSessionId(storedSessionId);
-      router.replace(`/chat/conversation?sessionId=${storedSessionId}`, { scroll: false });
+      router.replace(`/chat?sessionId=${storedSessionId}`, { scroll: false });
     } else {
       debugError("[SessionId] No sessionId found");
       setShowSessionErrorPopup(true);
@@ -256,45 +256,6 @@ function ConversationContent() {
       }
     }
   }, [state.isConnected, state.isReady, isMicEnabled, stopMicrophone]);
-
-  // 디버그 상태 전달
-  useEffect(() => {
-    window.dispatchEvent(
-      new CustomEvent("chat-debug-status", {
-        detail: {
-          isConnected: state.isConnected,
-          isReady: state.isReady,
-          lastEvent: null,
-          isAiSpeaking: state.isAiSpeaking,
-          isUserSpeaking: state.isUserSpeaking,
-          isMuted,
-          isRecording: isMicEnabled || state.isRecording,
-          userTranscript: state.userTranscript,
-        },
-      })
-    );
-  }, [
-    state.isConnected,
-    state.isReady,
-    state.isAiSpeaking,
-    state.isUserSpeaking,
-    state.isRecording,
-    state.userTranscript,
-    isMuted,
-    isMicEnabled,
-  ]);
-
-  // 대화 종료 이벤트
-  useEffect(() => {
-    const handleConfirmEndConversation = async () => {
-      await disconnect();
-      router.push("/chat/complete");
-    };
-
-    window.addEventListener("confirm-end-conversation", handleConfirmEndConversation);
-    return () =>
-      window.removeEventListener("confirm-end-conversation", handleConfirmEndConversation);
-  }, [disconnect, router]);
 
   // MalangEE 상태
   const getMalangEEStatus = (): MalangEEStatus => {
@@ -513,7 +474,7 @@ function ConversationContent() {
                 variant="primary"
                 size="md"
                 fullWidth
-                onClick={() => router.push("/chat/scenario-select")}
+                onClick={() => router.push("/scenario-select")}
               >
                 주제 선택하기
               </Button>
