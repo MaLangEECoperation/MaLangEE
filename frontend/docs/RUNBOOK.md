@@ -8,7 +8,7 @@ MaLangEE 프론트엔드 운영 및 서버 관리 가이드입니다.
 | ---------------- | --------------------------------------------------------------- | ------------------------- |
 | Frontend (HTTPS) | https://lb-dev-web-ai-117002060-f11523401681.kr.lb.naverncp.com | 운영 (네이버 클라우드 LB) |
 | Frontend (직접)  | http://49.50.137.35:3000                                        | 개발/디버깅               |
-| Backend API      | http://49.50.137.35:8080                                        | Spring Boot               |
+| Backend API      | http://49.50.137.35:8080                                        | FastAPI (Python)          |
 | AI Engine        | http://49.50.137.35:5000                                        | Python FastAPI            |
 | Database         | 49.50.137.35:5432                                               | PostgreSQL                |
 
@@ -20,7 +20,7 @@ MaLangEE 프론트엔드 운영 및 서버 관리 가이드입니다.
 
 ```bash
 # 모든 서비스 상태
-ps aux | grep -E "next|java|python"
+ps aux | grep -E "next|uvicorn|python"
 
 # 포트 확인
 sudo lsof -i :3000  # Frontend
@@ -93,14 +93,14 @@ sudo lsof -i :3000
 # 강제 종료 후 재시작
 kill -9 <PID>
 cd /home/aimaster/projects/MaLangEE/frontend
-npm run dev
+yarn dev
 ```
 
 ### 2. Backend 접속 불가
 
 ```bash
 # 프로세스 확인
-ps aux | grep java
+ps aux | grep uvicorn
 
 # 포트 점유 확인
 sudo lsof -i :8080
@@ -108,7 +108,7 @@ sudo lsof -i :8080
 # 강제 종료 후 재시작
 kill -9 <PID>
 cd /home/aimaster/projects/MaLangEE/backend
-mvn spring-boot:run
+poetry run uvicorn app.main:app --host 0.0.0.0 --port 8080
 ```
 
 ### 3. DB 연결 오류
@@ -146,17 +146,16 @@ psql -h localhost -U malangee_user -d malangee
 
 ```bash
 # /home/aimaster/projects/MaLangEE/frontend/.env.production
-NEXT_PUBLIC_API_BASE_URL=http://49.50.137.35:8080
+NEXT_PUBLIC_API_URL=http://49.50.137.35:8080
 ```
 
-### Backend (application.properties)
+### Backend (환경 설정)
 
-```properties
-server.port=8080
-server.servlet.context-path=/
-spring.datasource.url=jdbc:postgresql://localhost:5432/malangee
-spring.datasource.username=malangee_user
-spring.datasource.password=malangee_password
+```bash
+# /home/aimaster/projects/MaLangEE/backend
+# FastAPI + PostgreSQL
+# DB: postgresql://malangee_user:malangee_password@localhost:5432/malangee
+# 포트: 8080
 ```
 
 ---
