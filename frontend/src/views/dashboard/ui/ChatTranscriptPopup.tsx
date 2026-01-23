@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { FC } from "react";
 
 import { MalangEE } from "@/shared/ui";
 import { PopupLayout } from "@/shared/ui/PopupLayout";
@@ -20,7 +20,7 @@ interface ChatTranscriptPopupProps {
   onClose: () => void;
 }
 
-export const ChatTranscriptPopup: React.FC<ChatTranscriptPopupProps> = ({
+export const ChatTranscriptPopup: FC<ChatTranscriptPopupProps> = ({
   sessionTitle,
   messages,
   onClose,

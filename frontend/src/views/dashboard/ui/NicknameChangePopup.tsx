@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 
 import {
@@ -40,7 +40,7 @@ interface NicknameChangePopupProps {
   onSuccess?: (nickname: string) => void;
 }
 
-export const NicknameChangePopup: React.FC<NicknameChangePopupProps> = ({ onClose, onSuccess }) => {
+export const NicknameChangePopup: FC<NicknameChangePopupProps> = ({ onClose, onSuccess }) => {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { data: currentUser } = useCurrentUser();

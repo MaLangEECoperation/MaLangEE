@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState, useMemo } from "react";
+import { FC, useState, useMemo } from "react";
 
 import { useGetChatSession } from "@/features/chat";
 import type { ChatHistoryItem } from "@/shared/types/chat";
@@ -15,7 +15,7 @@ interface ChatDetailPopupProps {
   onClose: () => void;
 }
 
-export const ChatDetailPopup: React.FC<ChatDetailPopupProps> = ({ session, onClose }) => {
+export const ChatDetailPopup: FC<ChatDetailPopupProps> = ({ session, onClose }) => {
   const [showTranscript, setShowTranscript] = useState(false);
 
   // 실제 API에서 세션 상세 정보 조회
@@ -168,7 +168,7 @@ export const ChatDetailPopup: React.FC<ChatDetailPopupProps> = ({ session, onClo
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-[#6A667A]">
                       어휘 다양성 지수 :{" "}
-                      <span className="font-semibold text-md text-[#1F1C2B]">
+                      <span className="text-md font-semibold text-[#1F1C2B]">
                         {Math.round(sessionDetail.analytics.richness_score)}
                       </span>
                       {(() => {
