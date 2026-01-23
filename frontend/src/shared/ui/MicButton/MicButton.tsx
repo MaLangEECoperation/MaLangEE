@@ -1,5 +1,5 @@
-import { FC } from "react";
 import { Mic, MicOff } from "lucide-react";
+import { FC } from "react";
 import "./MicButton.css";
 
 interface MicButtonProps {

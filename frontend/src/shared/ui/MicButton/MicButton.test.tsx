@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+
 import { MicButton } from "./MicButton";
 
 describe("MicButton", () => {
@@ -75,13 +76,7 @@ describe("MicButton", () => {
   });
 
   it("merges custom className", () => {
-    render(
-      <MicButton
-        isListening={false}
-        onClick={() => {}}
-        className="custom-class"
-      />
-    );
+    render(<MicButton isListening={false} onClick={() => {}} className="custom-class" />);
 
     const container = document.querySelector(".mic-container");
     expect(container).toHaveClass("custom-class");

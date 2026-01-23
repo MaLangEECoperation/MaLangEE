@@ -1,10 +1,11 @@
 ﻿"use client";
 
-import React, { useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import React, { useEffect } from "react";
+
 import { GlassCard } from "./GlassCard";
 import { MalangEE } from "./MalangEE";
-import Link from "next/link";
 
 interface SplitViewLayoutProps {
   leftChildren?: React.ReactNode;
@@ -62,7 +63,7 @@ export const SplitViewLayout = ({
           {/* Left Content Section */}
           <div
             id="sv-left-content"
-            className={`flex w-full max-w-[80%] mx-auto flex-col items-center justify-center gap-6 pb-10 pt-20 text-center md:max-w-none md:mx-0 md:items-start md:pt-0 md:text-left ${colSpans[leftColSpan] || "md:col-span-6"} ${leftClassName}`}
+            className={`mx-auto flex w-full max-w-[80%] flex-col items-center justify-center gap-6 pb-10 pt-20 text-center md:mx-0 md:max-w-none md:items-start md:pt-0 md:text-left ${colSpans[leftColSpan] || "md:col-span-6"} ${leftClassName}`}
           >
             <>
               <div
@@ -73,7 +74,7 @@ export const SplitViewLayout = ({
                   <Image src="/images/logo.png" alt="MalangEE Logo" width={100} height={50} />
                 </Link>
               </div>
-              <div className="flex w-full items-center justify-center md:justify-start md:p-0 sm:p-10  ">
+              <div className="flex w-full items-center justify-center sm:p-10 md:justify-start md:p-0  ">
                 <MalangEE size={120} />
               </div>
             </>

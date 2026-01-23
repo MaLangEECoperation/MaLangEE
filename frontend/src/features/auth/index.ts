@@ -2,7 +2,8 @@
 export {
   // Schemas
   loginSchema,
-  registerSchema, nicknameUpdateSchema,
+  registerSchema,
+  nicknameUpdateSchema,
   tokenSchema,
   userSchema,
   // Types
@@ -34,4 +35,10 @@ export {
 export { useAuth, useLoginIdCheck, useNicknameCheck, usePasswordValidation } from "./hook";
 
 // UI
-export { AuthGuard, GuestGuard, TokenKeepAlive } from "./ui";
+export {
+  AuthGuard,
+  GuestGuard,
+  SignupPromptDialog,
+  type SignupPromptDialogProps,
+  TokenKeepAlive,
+} from "./ui";

@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useRef, useState, useEffect } from "react";
+
 import { tokenStorage } from "@/features/auth";
-import { translateToKorean } from "@/shared/lib/translate";
 import { debugLog, debugError } from "@/shared/lib/debug";
+import { translateToKorean } from "@/shared/lib/translate";
 import { buildConversationWebSocketUrl, WEBSOCKET_CONSTANTS } from "@/shared/lib/websocket";
-import { useWebSocketBase } from "./useWebSocketBase";
+
 import type { SessionReport } from "./types";
+import { useWebSocketBase } from "./useWebSocketBase";
 
 const DISCONNECT_TIMEOUT_MS = WEBSOCKET_CONSTANTS.TIMEOUT.DISCONNECT_MS;
 
@@ -50,7 +52,7 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
   // disconnect 타임아웃 관리
   const disconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // disconnect Promise resolve 함수 저장
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const disconnectResolveRef = useRef<((report: SessionReport | null) => void) | null>(null);
 
   // useWebSocketBase 사용
@@ -63,121 +65,123 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
   });
 
   // onMessage 구현 (base를 사용할 수 있도록 여기서 정의)
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+
   useEffect(() => {
     onMessageRef.current = (event: MessageEvent) => {
-    try {
-      const data = JSON.parse(event.data);
-      debugLog("[WebSocket] Received message type:", data.type, "data:", data);
+      try {
+        const data = JSON.parse(event.data);
+        debugLog("[WebSocket] Received message type:", data.type, "data:", data);
 
-      switch (data.type) {
-        case "session.update":
-          debugLog("[WebSocket] ✅ session.update received! Setting isReady = true");
-          base.addLog("Received 'session.update'. Sending init messages...");
-          base.setIsReady(true);
-
-          // Session Update (config 필드 사용)
-          base.wsRef.current?.send(
-            JSON.stringify({
-              type: "session.update",
-              config: {
-                voice: voice,
-              },
-            })
-          );
-          base.addLog("Sent session.update (config)");
-          debugLog("[WebSocket] Sent session.update with voice:", voice);
-          break;
-
-        case "session.created":
-        case "ready":
-        case "connected":
-          debugLog("[WebSocket] ✅ Session ready event received! Setting isReady = true");
-          base.setIsReady(true);
-          break;
-
-        case "audio.delta":
-          // audio.delta를 받았다는 것은 세션이 준비되었다는 의미
-          if (!base.isReady) {
-            debugLog("[WebSocket] ✅ audio.delta received! Session is ready. Setting isReady = true");
+        switch (data.type) {
+          case "session.update":
+            debugLog("[WebSocket] ✅ session.update received! Setting isReady = true");
+            base.addLog("Received 'session.update'. Sending init messages...");
             base.setIsReady(true);
+
+            // Session Update (config 필드 사용)
+            base.wsRef.current?.send(
+              JSON.stringify({
+                type: "session.update",
+                config: {
+                  voice: voice,
+                },
+              })
+            );
+            base.addLog("Sent session.update (config)");
+            debugLog("[WebSocket] Sent session.update with voice:", voice);
+            break;
+
+          case "session.created":
+          case "ready":
+          case "connected":
+            debugLog("[WebSocket] ✅ Session ready event received! Setting isReady = true");
+            base.setIsReady(true);
+            break;
+
+          case "audio.delta":
+            // audio.delta를 받았다는 것은 세션이 준비되었다는 의미
+            if (!base.isReady) {
+              debugLog(
+                "[WebSocket] ✅ audio.delta received! Session is ready. Setting isReady = true"
+              );
+              base.setIsReady(true);
+            }
+            base.playAudioChunk(data.delta, 24000);
+            break;
+
+          case "audio.done":
+            base.addLog("AI audio stream completed");
+            setLastAiAudioDoneAt(Date.now());
+            break;
+
+          case "transcript.done":
+            setAiMessage(data.transcript);
+            base.addLog(`AI: ${data.transcript}`);
+            translateToKorean(data.transcript).then((translated) => {
+              setAiMessageKR(translated);
+              base.addLog(`AI (KR): ${translated}`);
+            });
+            break;
+
+          case "speech.started":
+            base.addLog("User speech started (VAD)");
+            base.stopAudio();
+            base.setIsUserSpeaking(true);
+            setLastAiAudioDoneAt(null); // 사용자 발화 시작 시 힌트 타이머 리셋
+            break;
+
+          case "speech.stopped":
+            base.addLog("User speech stopped (VAD)");
+            base.setIsUserSpeaking(false);
+            break;
+
+          case "user.transcript":
+            setUserTranscript(data.transcript);
+            base.addLog(`User: ${data.transcript}`);
+            break;
+
+          case "disconnected": {
+            // 타임아웃 취소
+            if (disconnectTimeoutRef.current) {
+              clearTimeout(disconnectTimeoutRef.current);
+              disconnectTimeoutRef.current = null;
+            }
+            base.addLog(`Session disconnected: ${data.reason || "Unknown"}`);
+            debugLog("[WebSocket] Received disconnected response");
+
+            const report = data.report || null;
+            if (report) {
+              setSessionReport(report);
+              base.addLog(`Session report received: ${JSON.stringify(report)}`);
+              debugLog("[WebSocket] Session report:", report);
+            }
+
+            // disconnected 응답을 받은 후 WebSocket 정리
+            base.disconnect();
+
+            // Promise resolve 호출
+            if (disconnectResolveRef.current) {
+              disconnectResolveRef.current(report);
+              disconnectResolveRef.current = null;
+            }
+            break;
           }
-          base.playAudioChunk(data.delta, 24000);
-          break;
 
-        case "audio.done":
-          base.addLog("AI audio stream completed");
-          setLastAiAudioDoneAt(Date.now());
-          break;
+          case "error":
+            debugError("[WebSocket] ❌ Error received:", data.message);
+            base.addLog(`Error: ${data.message}`);
+            break;
 
-        case "transcript.done":
-          setAiMessage(data.transcript);
-          base.addLog(`AI: ${data.transcript}`);
-          translateToKorean(data.transcript).then((translated) => {
-            setAiMessageKR(translated);
-            base.addLog(`AI (KR): ${translated}`);
-          });
-          break;
-
-        case "speech.started":
-          base.addLog("User speech started (VAD)");
-          base.stopAudio();
-          base.setIsUserSpeaking(true);
-          setLastAiAudioDoneAt(null); // 사용자 발화 시작 시 힌트 타이머 리셋
-          break;
-
-        case "speech.stopped":
-          base.addLog("User speech stopped (VAD)");
-          base.setIsUserSpeaking(false);
-          break;
-
-        case "user.transcript":
-          setUserTranscript(data.transcript);
-          base.addLog(`User: ${data.transcript}`);
-          break;
-
-        case "disconnected": {
-          // 타임아웃 취소
-          if (disconnectTimeoutRef.current) {
-            clearTimeout(disconnectTimeoutRef.current);
-            disconnectTimeoutRef.current = null;
-          }
-          base.addLog(`Session disconnected: ${data.reason || "Unknown"}`);
-          debugLog("[WebSocket] Received disconnected response");
-
-          const report = data.report || null;
-          if (report) {
-            setSessionReport(report);
-            base.addLog(`Session report received: ${JSON.stringify(report)}`);
-            debugLog("[WebSocket] Session report:", report);
-          }
-
-          // disconnected 응답을 받은 후 WebSocket 정리
-          base.disconnect();
-
-          // Promise resolve 호출
-          if (disconnectResolveRef.current) {
-            disconnectResolveRef.current(report);
-            disconnectResolveRef.current = null;
-          }
-          break;
+          default:
+            debugLog("[WebSocket] ⚠️ Unknown message type:", data.type);
+            base.addLog(`Unknown type: ${data.type}`);
+            break;
         }
-
-        case "error":
-          debugError("[WebSocket] ❌ Error received:", data.message);
-          base.addLog(`Error: ${data.message}`);
-          break;
-
-        default:
-          debugLog("[WebSocket] ⚠️ Unknown message type:", data.type);
-          base.addLog(`Unknown type: ${data.type}`);
-          break;
+      } catch (e) {
+        debugError("[WebSocket] Parse Error:", e);
+        base.addLog(`Parse Error: ${e}`);
       }
-    } catch (e) {
-      debugError("[WebSocket] Parse Error:", e);
-      base.addLog(`Parse Error: ${e}`);
-    }
-  };
+    };
   });
 
   // 오디오 전송 콜백 (Conversation 메시지 타입 사용)

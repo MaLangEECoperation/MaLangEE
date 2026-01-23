@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
 import { useWebSocketBase } from "./useWebSocketBase";
 
 // Mock debugLog
@@ -112,7 +113,7 @@ describe("useWebSocketBase", () => {
 
     // Mock AudioContext
     global.AudioContext = MockAudioContext as unknown as typeof AudioContext;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     (global as unknown as Record<string, unknown>).window = {
       AudioContext: MockAudioContext,
       webkitAudioContext: MockAudioContext,

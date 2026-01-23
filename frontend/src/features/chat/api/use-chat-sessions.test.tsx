@@ -1,9 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
 import React, { ReactNode } from "react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
 import {
   useGetChatSessions,
+  useInfiniteChatSessions,
   useGetChatSession,
   useGetRecentSession,
   useCreateChatSession,
@@ -239,6 +241,130 @@ describe("useDeleteChatSession", () => {
     });
 
     expect(apiClient.delete).toHaveBeenCalledWith("/chat/sessions/session-123");
+  });
+});
+
+describe("useInfiniteChatSessions", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should not fetch when userId is undefined", () => {
+    const { result } = renderHook(() => useInfiniteChatSessions(10, undefined), {
+      wrapper: createWrapper(),
+    });
+
+    // enabled: !!userId → false
+    expect(result.current.isLoading).toBe(false);
+    expect(apiClient.get).not.toHaveBeenCalled();
+  });
+
+  it("should fetch infinite chat sessions with userId (array response)", async () => {
+    const mockSessions = [
+      { session_id: "1", title: "Session 1" },
+      { session_id: "2", title: "Session 2" },
+    ];
+    vi.mocked(apiClient.get).mockResolvedValue(mockSessions);
+
+    const { result } = renderHook(() => useInfiniteChatSessions(10, 42), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(apiClient.get).toHaveBeenCalledWith("/chat/sessions", {
+      params: { skip: "0", limit: "10", user_id: "42" },
+    });
+    expect(result.current.data?.pages[0].items).toEqual(mockSessions);
+    expect(result.current.data?.pages[0].total).toBe(0);
+  });
+
+  it("should fetch infinite chat sessions (object response)", async () => {
+    const mockResponse = {
+      items: [{ session_id: "1" }, { session_id: "2" }],
+      total: 50,
+    };
+    vi.mocked(apiClient.get).mockResolvedValue(mockResponse);
+
+    const { result } = renderHook(() => useInfiniteChatSessions(10, 42), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(result.current.data?.pages[0]).toEqual(mockResponse);
+  });
+
+  it("should have next page when items length equals limit", async () => {
+    const mockItems = Array.from({ length: 10 }, (_, i) => ({ session_id: `${i}` }));
+    vi.mocked(apiClient.get).mockResolvedValue(mockItems);
+
+    const { result } = renderHook(() => useInfiniteChatSessions(10, 42), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(result.current.hasNextPage).toBe(true);
+  });
+
+  it("should not have next page when items length is less than limit", async () => {
+    const mockItems = [{ session_id: "1" }, { session_id: "2" }];
+    vi.mocked(apiClient.get).mockResolvedValue(mockItems);
+
+    const { result } = renderHook(() => useInfiniteChatSessions(10, 42), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(result.current.hasNextPage).toBe(false);
+  });
+
+  it("should fetch next page with correct skip param", async () => {
+    const firstPage = Array.from({ length: 10 }, (_, i) => ({ session_id: `${i}` }));
+    const secondPage = [{ session_id: "10" }, { session_id: "11" }];
+
+    vi.mocked(apiClient.get).mockResolvedValueOnce(firstPage).mockResolvedValueOnce(secondPage);
+
+    const { result } = renderHook(() => useInfiniteChatSessions(10, 42), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    // Fetch next page
+    result.current.fetchNextPage();
+
+    await waitFor(() => {
+      expect(result.current.data?.pages.length).toBe(2);
+    });
+
+    expect(apiClient.get).toHaveBeenCalledWith("/chat/sessions", {
+      params: { skip: "10", limit: "10", user_id: "42" },
+    });
+  });
+
+  it("should use default limit of 10", async () => {
+    vi.mocked(apiClient.get).mockResolvedValue([]);
+
+    renderHook(() => useInfiniteChatSessions(undefined as unknown as number, 42), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(apiClient.get).toHaveBeenCalled();
+    });
   });
 });
 

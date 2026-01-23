@@ -34,7 +34,11 @@ export const WebSocketErrorSchema = z.object({
 export type WebSocketError = z.infer<typeof WebSocketErrorSchema>;
 
 /** 복구 가능한 에러 코드 */
-const RECOVERABLE_ERRORS: WebSocketErrorCode[] = ["TIMEOUT", "UNEXPECTED_CLOSE", "CONNECTION_FAILED"];
+const RECOVERABLE_ERRORS: WebSocketErrorCode[] = [
+  "TIMEOUT",
+  "UNEXPECTED_CLOSE",
+  "CONNECTION_FAILED",
+];
 
 /**
  * WebSocket 에러 생성 팩토리

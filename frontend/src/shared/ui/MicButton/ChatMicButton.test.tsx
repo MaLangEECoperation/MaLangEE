@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+
 import { ChatMicButton } from "./ChatMicButton";
 
 describe("ChatMicButton", () => {
@@ -31,10 +32,7 @@ describe("ChatMicButton", () => {
 
   it("should be disabled when hasStarted and not connected", () => {
     const { container } = render(
-      <ChatMicButton
-        state={{ isAiSpeaking: false, isConnected: false }}
-        hasStarted={true}
-      />
+      <ChatMicButton state={{ isAiSpeaking: false, isConnected: false }} hasStarted={true} />
     );
     const micButton = getMicButton(container);
 
@@ -44,10 +42,7 @@ describe("ChatMicButton", () => {
 
   it("should be disabled when hasStarted and AI is speaking", () => {
     const { container } = render(
-      <ChatMicButton
-        state={{ isAiSpeaking: true, isConnected: true }}
-        hasStarted={true}
-      />
+      <ChatMicButton state={{ isAiSpeaking: true, isConnected: true }} hasStarted={true} />
     );
     const micButton = getMicButton(container);
 
@@ -57,11 +52,7 @@ describe("ChatMicButton", () => {
 
   it("should be disabled when hasStarted and isPaused", () => {
     const { container } = render(
-      <ChatMicButton
-        state={defaultState}
-        hasStarted={true}
-        isPaused={true}
-      />
+      <ChatMicButton state={defaultState} hasStarted={true} isPaused={true} />
     );
     const micButton = getMicButton(container);
 
@@ -70,10 +61,7 @@ describe("ChatMicButton", () => {
 
   it("should not be disabled when hasStarted is false", () => {
     const { container } = render(
-      <ChatMicButton
-        state={{ isAiSpeaking: true, isConnected: false }}
-        hasStarted={false}
-      />
+      <ChatMicButton state={{ isAiSpeaking: true, isConnected: false }} hasStarted={false} />
     );
     const micButton = getMicButton(container);
 
@@ -82,11 +70,7 @@ describe("ChatMicButton", () => {
 
   it("should show waves when isListening and not muted", () => {
     const { container } = render(
-      <ChatMicButton
-        state={defaultState}
-        isListening={true}
-        isMuted={false}
-      />
+      <ChatMicButton state={defaultState} isListening={true} isMuted={false} />
     );
     const micButton = getMicButton(container);
 
@@ -95,11 +79,7 @@ describe("ChatMicButton", () => {
 
   it("should not show waves when muted", () => {
     const { container } = render(
-      <ChatMicButton
-        state={defaultState}
-        isListening={true}
-        isMuted={true}
-      />
+      <ChatMicButton state={defaultState} isListening={true} isMuted={true} />
     );
     const micButton = getMicButton(container);
 
@@ -108,11 +88,7 @@ describe("ChatMicButton", () => {
 
   it("should not show waves when paused", () => {
     const { container } = render(
-      <ChatMicButton
-        state={defaultState}
-        isListening={true}
-        isPaused={true}
-      />
+      <ChatMicButton state={defaultState} isListening={true} isPaused={true} />
     );
     const micButton = getMicButton(container);
 
@@ -120,45 +96,28 @@ describe("ChatMicButton", () => {
   });
 
   it("should show muted state when isMuted is true", () => {
-    const { container } = render(
-      <ChatMicButton
-        state={defaultState}
-        isMuted={true}
-      />
-    );
+    const { container } = render(<ChatMicButton state={defaultState} isMuted={true} />);
     const micButton = getMicButton(container);
 
     expect(micButton.className).toContain("is-muted");
   });
 
   it("should show muted state when isPaused is true", () => {
-    const { container } = render(
-      <ChatMicButton
-        state={defaultState}
-        isPaused={true}
-      />
-    );
+    const { container } = render(<ChatMicButton state={defaultState} isPaused={true} />);
     const micButton = getMicButton(container);
 
     expect(micButton.className).toContain("is-muted");
   });
 
   it("should apply custom className", () => {
-    const { container } = render(
-      <ChatMicButton
-        state={defaultState}
-        className="custom-class"
-      />
-    );
+    const { container } = render(<ChatMicButton state={defaultState} className="custom-class" />);
     const micButton = getMicButton(container);
 
     expect(micButton.className).toContain("custom-class");
   });
 
   it("should handle different sizes", () => {
-    const { container, rerender } = render(
-      <ChatMicButton state={defaultState} size="sm" />
-    );
+    const { container, rerender } = render(<ChatMicButton state={defaultState} size="sm" />);
     let micButton = getMicButton(container);
     expect(micButton.className).toContain("mic-container-sm");
 

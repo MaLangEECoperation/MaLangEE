@@ -1,4 +1,5 @@
 import * as React from "react";
+
 import { cn } from "../lib/utils";
 
 export interface ToggleProps {
@@ -18,7 +19,7 @@ export function Toggle({ label, enabled, onChange, className }: ToggleProps) {
         aria-checked={enabled}
         onClick={() => onChange(!enabled)}
         className={cn(
-          "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2",
+          "focus:ring-brand relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2",
           enabled ? "bg-brand" : "bg-gray-300"
         )}
       >

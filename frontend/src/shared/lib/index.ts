@@ -14,13 +14,12 @@ export {
   debugInfo,
   prodLog,
   prodError,
-  prodWarn
+  prodWarn,
 } from "./debug";
 export {
   decodeJWT,
   isTokenExpired,
   getTokenExpiresIn,
   getTokenExpirationDate,
-  isTokenExpiringSoon
+  isTokenExpiringSoon,
 } from "./jwt";
-

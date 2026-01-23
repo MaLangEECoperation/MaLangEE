@@ -1,13 +1,7 @@
-import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "./card";
+import { describe, it, expect } from "vitest";
+
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./card";
 
 describe("Card Components", () => {
   describe("Card", () => {
@@ -39,9 +33,7 @@ describe("Card Components", () => {
     });
 
     it("should apply custom className", () => {
-      const { container } = render(
-        <CardHeader className="custom-header">Content</CardHeader>
-      );
+      const { container } = render(<CardHeader className="custom-header">Content</CardHeader>);
       expect(container.firstChild).toHaveClass("custom-header");
     });
 
@@ -93,9 +85,7 @@ describe("Card Components", () => {
     });
 
     it("should apply custom className", () => {
-      const { container } = render(
-        <CardContent className="custom-content">Content</CardContent>
-      );
+      const { container } = render(<CardContent className="custom-content">Content</CardContent>);
       expect(container.firstChild).toHaveClass("custom-content");
     });
 
@@ -111,9 +101,7 @@ describe("Card Components", () => {
     });
 
     it("should apply custom className", () => {
-      const { container } = render(
-        <CardFooter className="custom-footer">Footer</CardFooter>
-      );
+      const { container } = render(<CardFooter className="custom-footer">Footer</CardFooter>);
       expect(container.firstChild).toHaveClass("custom-footer");
     });
 

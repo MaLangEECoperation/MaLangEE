@@ -1,9 +1,10 @@
 "use client";
 
 import type { FC, ReactNode } from "react";
-import { PopupLayout } from "./PopupLayout";
+
 import { Button } from "./Button";
 import { MalangEE, type MalangEEStatus } from "./MalangEE";
+import { PopupLayout } from "./PopupLayout";
 
 interface ConfirmPopupProps {
   /** 팝업 메시지 (문자열 또는 ReactNode) */
@@ -24,6 +25,8 @@ interface ConfirmPopupProps {
   malangEEStatus?: MalangEEStatus;
   /** 팝업 최대 너비 */
   maxWidth?: "sm" | "md" | "lg";
+  /** 배경 클릭으로 닫기 비활성화 (버튼으로만 닫기) */
+  disableBackdropClick?: boolean;
 }
 
 export const ConfirmPopup: FC<ConfirmPopupProps> = ({
@@ -36,34 +39,33 @@ export const ConfirmPopup: FC<ConfirmPopupProps> = ({
   showMalangEE = false,
   malangEEStatus = "default",
   maxWidth = "md",
+  disableBackdropClick = false,
 }) => {
   return (
-    <PopupLayout onClose={onCancel} maxWidth={maxWidth} showCloseButton={false}>
+    <PopupLayout
+      onClose={onCancel}
+      maxWidth={maxWidth}
+      showCloseButton={false}
+      disableBackdropClick={disableBackdropClick}
+    >
       <div className="flex flex-col items-center gap-6 py-4">
         {showMalangEE && <MalangEE status={malangEEStatus} size={120} />}
         <div className="text-center">
           {typeof message === "string" ? (
-            <p className="text-xl font-semibold leading-relaxed text-gray-800">
-              {message}
-            </p>
+            <p className="text-xl font-semibold leading-relaxed text-gray-800">{message}</p>
           ) : (
             message
           )}
         </div>
         <div className="flex w-full gap-3">
-          <Button
-            onClick={onCancel}
-            variant="outline-gray"
-            size="md"
-            className="flex-1"
-          >
+          <Button onClick={onCancel} variant="outline-gray" size="md" className="flex-1">
             {cancelText}
           </Button>
           <Button
             onClick={onConfirm}
             variant={variant === "danger" ? "primary" : "primary"}
             size="md"
-            className={`flex-1 ${variant === "danger" ? "bg-red-500 hover:bg-red-600 border-red-500 hover:border-red-600" : ""}`}
+            className={`flex-1 ${variant === "danger" ? "border-red-500 bg-red-500 hover:border-red-600 hover:bg-red-600" : ""}`}
           >
             {confirmText}
           </Button>

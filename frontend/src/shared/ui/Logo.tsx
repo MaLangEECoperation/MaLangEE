@@ -1,5 +1,6 @@
-import { type FC } from "react";
 import Link from "next/link";
+import { type FC } from "react";
+
 import { cn } from "@/shared/lib/utils";
 
 interface LogoProps {
@@ -29,20 +30,10 @@ const colorClasses = {
  * <Logo size="lg" href="/" color="brand" />
  * ```
  */
-export const Logo: FC<LogoProps> = ({
-  className,
-  size = "md",
-  href = "/",
-  color = "brand",
-}) => {
+export const Logo: FC<LogoProps> = ({ className, size = "md", href = "/", color = "brand" }) => {
   const logoText = (
     <span
-      className={cn(
-        "font-semibold",
-        sizeClasses[size],
-        colorClasses[color],
-        className
-      )}
+      className={cn("font-semibold", sizeClasses[size], colorClasses[color], className)}
       style={{ letterSpacing: "-0.3px" }}
     >
       MalangEE

@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { PopupLayout } from "@/shared/ui/PopupLayout";
+
 import { MalangEE } from "@/shared/ui";
+import { PopupLayout } from "@/shared/ui/PopupLayout";
 
 interface Message {
   speaker: string;
@@ -37,11 +38,11 @@ export const ChatTranscriptPopup: React.FC<ChatTranscriptPopupProps> = ({
       const date = new Date(timestamp);
       if (isNaN(date.getTime())) return timestamp;
 
-      const mm = String(date.getMonth() + 1).padStart(2, '0');
-      const dd = String(date.getDate()).padStart(2, '0');
-      const HH = String(date.getHours()).padStart(2, '0');
-      const MM = String(date.getMinutes()).padStart(2, '0');
-      
+      const mm = String(date.getMonth() + 1).padStart(2, "0");
+      const dd = String(date.getDate()).padStart(2, "0");
+      const HH = String(date.getHours()).padStart(2, "0");
+      const MM = String(date.getMinutes()).padStart(2, "0");
+
       return `${mm}/${dd} ${HH}:${MM}`;
     } catch (e) {
       return timestamp;
@@ -117,7 +118,7 @@ export const ChatTranscriptPopup: React.FC<ChatTranscriptPopupProps> = ({
 
                         {/* 시간 및 날짜 */}
                         {message.timestamp && (
-                          <span className="mb-0.5 shrink-0 text-[10px] text-[#6A667A] whitespace-nowrap">
+                          <span className="mb-0.5 shrink-0 whitespace-nowrap text-[10px] text-[#6A667A]">
                             {formatTimestamp(message.timestamp)}
                           </span>
                         )}

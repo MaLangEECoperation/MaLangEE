@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+
 import { ChatStatusBadge } from "./ChatStatusBadge";
 
 describe("ChatStatusBadge", () => {
@@ -24,30 +25,22 @@ describe("ChatStatusBadge", () => {
   });
 
   it("should show '🔊 말랭이가 말하는 중' when AI is speaking", () => {
-    render(
-      <ChatStatusBadge isConnected={true} isReady={true} isAiSpeaking={true} />
-    );
+    render(<ChatStatusBadge isConnected={true} isReady={true} isAiSpeaking={true} />);
     expect(screen.getByText("🔊 말랭이가 말하는 중")).toBeInTheDocument();
   });
 
   it("should show '🎤 말하는 중...' when user is speaking", () => {
-    render(
-      <ChatStatusBadge isConnected={true} isReady={true} isUserSpeaking={true} />
-    );
+    render(<ChatStatusBadge isConnected={true} isReady={true} isUserSpeaking={true} />);
     expect(screen.getByText("🎤 말하는 중...")).toBeInTheDocument();
   });
 
   it("should show '🎤 말랭이가 듣는 중' when recording", () => {
-    render(
-      <ChatStatusBadge isConnected={true} isReady={true} isRecording={true} />
-    );
+    render(<ChatStatusBadge isConnected={true} isReady={true} isRecording={true} />);
     expect(screen.getByText("🎤 말랭이가 듣는 중")).toBeInTheDocument();
   });
 
   it("should show '말랭이가 듣는 중' when it is user turn", () => {
-    render(
-      <ChatStatusBadge isConnected={true} isReady={true} isUserTurn={true} />
-    );
+    render(<ChatStatusBadge isConnected={true} isReady={true} isUserTurn={true} />);
     expect(screen.getByText("말랭이가 듣는 중")).toBeInTheDocument();
   });
 
@@ -57,9 +50,7 @@ describe("ChatStatusBadge", () => {
   });
 
   it("should apply custom className", () => {
-    const { container } = render(
-      <ChatStatusBadge isConnected={true} className="custom-class" />
-    );
+    const { container } = render(<ChatStatusBadge isConnected={true} className="custom-class" />);
     expect(container.firstChild).toHaveClass("custom-class");
   });
 

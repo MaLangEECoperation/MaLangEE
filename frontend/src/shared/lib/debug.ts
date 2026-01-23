@@ -7,7 +7,7 @@
  * 개발 환경 여부 체크
  */
 export const isDev = (): boolean => {
-  return process.env.NODE_ENV === 'development';
+  return false;
 };
 
 /**

@@ -1,7 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
 import { ReactNode } from "react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+import { apiClient } from "@/shared/lib/api-client";
+
 import { useDeleteUser } from "./user";
 
 // Mock apiClient
@@ -26,8 +29,6 @@ vi.mock("next/navigation", () => ({
     push: mockPush,
   }),
 }));
-
-import { apiClient } from "@/shared/lib/api-client";
 
 const createTestQueryClient = () =>
   new QueryClient({

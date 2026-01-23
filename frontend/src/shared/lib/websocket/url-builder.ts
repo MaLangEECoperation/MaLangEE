@@ -26,7 +26,11 @@ export const getWebSocketBaseUrl = (): string => {
     let wsUrl = apiUrl.replace(/^http/, "ws");
 
     // HTTPS 환경에서 WSS로 업그레이드
-    if (typeof window !== "undefined" && window.location.protocol === "https:" && wsUrl.startsWith("ws:")) {
+    if (
+      typeof window !== "undefined" &&
+      window.location.protocol === "https:" &&
+      wsUrl.startsWith("ws:")
+    ) {
       wsUrl = wsUrl.replace(/^ws:/, "wss:");
     }
 
@@ -41,7 +45,9 @@ export const getWebSocketBaseUrl = (): string => {
     return `${protocol}://${host}${port}`;
   }
 
-  throw new Error("Cannot determine WebSocket URL: No environment variables or window object available");
+  throw new Error(
+    "Cannot determine WebSocket URL: No environment variables or window object available"
+  );
 };
 
 /**
@@ -80,7 +86,9 @@ export const buildConversationWebSocketUrl = (
   voice: string = "alloy",
   showText: boolean = true
 ): string => {
-  const endpoint = token ? `/api/v1/chat/ws/chat/${sessionId}` : `/api/v1/chat/ws/guest-chat/${sessionId}`;
+  const endpoint = token
+    ? `/api/v1/chat/ws/chat/${sessionId}`
+    : `/api/v1/chat/ws/guest-chat/${sessionId}`;
 
   const params: Record<string, string> = {
     voice,

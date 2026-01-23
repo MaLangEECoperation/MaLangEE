@@ -1,3 +1,5 @@
+import { STORAGE_KEYS } from "@/shared/config";
+
 import { config } from "./config";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -22,13 +24,13 @@ class ApiClient {
 
   private buildUrl(endpoint: string, params?: Record<string, string>): string {
     // endpoint에서 시작하는 '/'를 제거하여 baseUrl과 올바르게 결합
-    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    const cleanEndpoint = endpoint.startsWith("/") ? endpoint.slice(1) : endpoint;
     const fullUrl = `${this.baseUrl}/${cleanEndpoint}`;
-    
+
     // 상대 경로인 경우 (baseUrl이 '/'로 시작하는 경우)
     // 브라우저 환경에서는 window.location.origin을 base로 사용
     let url: URL;
-    if (this.baseUrl.startsWith('/') && typeof window !== 'undefined') {
+    if (this.baseUrl.startsWith("/") && typeof window !== "undefined") {
       // 상대 경로인 경우 window.location.origin을 base로 사용
       url = new URL(fullUrl, window.location.origin);
     } else {
@@ -89,7 +91,7 @@ class ApiClient {
       // 401: 인증 오류 - 토큰이 없거나 유효하지 않음
       if (response.status === 401) {
         if (typeof window !== "undefined") {
-          localStorage.removeItem("access_token");
+          localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
           // 현재 페이지가 이미 로그인 페이지가 아닌 경우에만 이동
           if (!window.location.pathname.startsWith("/auth/login")) {
             window.location.href = "/auth/login";
@@ -141,7 +143,8 @@ class ApiClient {
 
 export const apiClient = new ApiClient({
   baseUrl: config.apiUrl,
-  getToken: () => (typeof window !== "undefined" ? localStorage.getItem("access_token") : null),
+  getToken: () =>
+    typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) : null,
 });
 
 export { ApiClient };

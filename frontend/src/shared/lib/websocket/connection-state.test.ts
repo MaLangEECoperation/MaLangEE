@@ -1,9 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  ConnectionState,
-  canTransition,
-  createConnectionStateMachine,
-} from "./connection-state";
+
+import { ConnectionState, canTransition, createConnectionStateMachine } from "./connection-state";
 
 // Mock debug module
 vi.mock("@/shared/lib/debug", () => ({

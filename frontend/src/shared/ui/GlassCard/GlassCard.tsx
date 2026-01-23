@@ -1,13 +1,15 @@
 "use client";
 
-import { FC, ReactNode, useState } from "react";
-import Image from "next/image";
 import { History, LogOut } from "lucide-react";
-import { useAuth } from "@/features/auth/hook/use-auth";
-import { PopupLayout } from "../PopupLayout";
-import { MalangEE } from "../MalangEE";
-import { Button } from "../Button";
+import Image from "next/image";
 import Link from "next/link";
+import { FC, ReactNode, useState } from "react";
+
+import { useAuth } from "@/features/auth/hook/use-auth";
+
+import { Button } from "../Button";
+import { MalangEE } from "../MalangEE";
+import { PopupLayout } from "../PopupLayout";
 
 interface GlassCardProps {
   children: ReactNode;
@@ -26,8 +28,6 @@ export const GlassCard: FC<GlassCardProps> = ({
   className = "",
   showHeader = false,
 }) => {
-
-
   const defaultHeaderLeft = (
     <div className="scenario-logo">
       <Link href={"/dashboard"} className="inline-block">
@@ -36,11 +36,7 @@ export const GlassCard: FC<GlassCardProps> = ({
     </div>
   );
 
-  const defaultHeaderRight = (
-    <div className="flex hidden items-center gap-4">
-
-    </div>
-  );
+  const defaultHeaderRight = <div className="flex hidden items-center gap-4"></div>;
 
   return (
     <>
@@ -60,7 +56,6 @@ export const GlassCard: FC<GlassCardProps> = ({
         {/* Footer */}
         {footer && <footer className="glass-card-footer">{footer}</footer>}
       </main>
-
     </>
   );
 };

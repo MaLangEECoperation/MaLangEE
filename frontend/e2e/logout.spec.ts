@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+
 import { MOCK_USER, setAuthStorage } from "./helpers/auth";
 
 /**
@@ -97,7 +98,9 @@ test.describe("로그아웃 페이지", () => {
 });
 
 test.describe("로그아웃 - 비로그인 상태", () => {
-  test("비로그인 상태에서 로그아웃 페이지 접근 시에도 로그인 페이지로 이동해야 함", async ({ page }) => {
+  test("비로그인 상태에서 로그아웃 페이지 접근 시에도 로그인 페이지로 이동해야 함", async ({
+    page,
+  }) => {
     await page.goto("/auth/logout");
 
     // 로그인 페이지로 리다이렉트 확인
@@ -118,8 +121,14 @@ test.describe("로그아웃 - 스피너 표시", () => {
 
     // 스피너 또는 로딩 텍스트 확인
     // 빠른 리다이렉트로 인해 보이지 않을 수 있음
-    const hasSpinner = await page.locator(".animate-spin").isVisible().catch(() => false);
-    const hasLoadingText = await page.getByText("로그아웃 중...").isVisible().catch(() => false);
+    const hasSpinner = await page
+      .locator(".animate-spin")
+      .isVisible()
+      .catch(() => false);
+    const hasLoadingText = await page
+      .getByText("로그아웃 중...")
+      .isVisible()
+      .catch(() => false);
 
     // 최종적으로 로그인 페이지로 이동 확인
     await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10000 });

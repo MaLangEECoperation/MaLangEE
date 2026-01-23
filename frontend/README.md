@@ -4,17 +4,17 @@ AI 기반 실시간 영어 회화 학습 플랫폼의 프론트엔드 애플리�
 
 ## 기술 스택
 
-| 영역 | 기술 |
-|------|------|
-| 프레임워크 | Next.js 16 (App Router) + React 19 |
-| 언어 | TypeScript 5 |
-| 스타일링 | Tailwind CSS 4 + shadcn/ui (New York) |
-| 상태관리 | TanStack React Query v5 |
-| 폼 검증 | React Hook Form + Zod |
-| 테스팅 | Vitest (단위), Playwright (E2E) |
-| 아이콘 | Lucide React |
-| 차트 | Recharts |
-| i18n | next-intl |
+| 영역       | 기술                                  |
+| ---------- | ------------------------------------- |
+| 프레임워크 | Next.js 16 (App Router) + React 19    |
+| 언어       | TypeScript 5                          |
+| 스타일링   | Tailwind CSS 4 + shadcn/ui (New York) |
+| 상태관리   | TanStack React Query v5               |
+| 폼 검증    | React Hook Form + Zod                 |
+| 테스팅     | Vitest (단위), Playwright (E2E)       |
+| 아이콘     | Lucide React                          |
+| 차트       | Recharts                              |
+| i18n       | next-intl                             |
 
 ## 시작하기
 
@@ -152,10 +152,11 @@ NEXT_PUBLIC_API_URL=http://49.50.137.35:8080
 - [개발 가이드](./docs/01-DEV_GUIDE.md)
 - [서버 운영](./docs/02-SERVER_OPS.md)
 
-
 ## 프론트엔드 문서
+
 API 서버 : http://49.50.137.35:8080/
 API 스웨거 : http://49.50.137.35:8080/docs#/
+
 - [Tailwind 가이드](./docs/tailwind.md)
 - [프론트 개발 가이드](../docs/03-FRONTEND_SCENARIO_GUIDE.md)
 - [프론트 개발 시나리오](./docs//BusinessReport.md)]

@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { authApi } from "./auth-api";
+
 import { tokenStorage } from "../model";
 import type { User } from "../model";
+
+import { authApi } from "./auth-api";
 
 const AUTH_QUERY_KEY = ["auth", "user"];
 
