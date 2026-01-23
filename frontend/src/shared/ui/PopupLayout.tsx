@@ -11,6 +11,8 @@ interface PopupLayoutProps {
   maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl";
   showCloseButton?: boolean;
   headerContent?: ReactNode; // 제목 대신 커스텀 헤더 컨텐츠
+  /** 배경 클릭으로 닫기 비활성화 (버튼으로만 닫기) */
+  disableBackdropClick?: boolean;
 }
 
 const maxWidthClasses = {
@@ -30,6 +32,7 @@ export const PopupLayout: React.FC<PopupLayoutProps> = ({
   maxWidth = "2xl",
   showCloseButton = true,
   headerContent,
+  disableBackdropClick = false,
 }) => {
   const [mounted, setMounted] = useState(false);
 
@@ -49,7 +52,7 @@ export const PopupLayout: React.FC<PopupLayoutProps> = ({
   return createPortal(
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={onClose}
+      onClick={disableBackdropClick ? undefined : onClose}
     >
       <div
         className={`relative mx-4 w-full ${maxWidthClasses[maxWidth]} rounded-[32px] border border-white/60 bg-white shadow-[0_20px_80px_rgba(123,108,246,0.3)] backdrop-blur-2xl`}

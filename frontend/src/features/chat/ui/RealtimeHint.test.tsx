@@ -14,7 +14,6 @@ describe("RealtimeHint", () => {
     showPrompt: false,
     showHintText: false,
     onRequestHint: vi.fn(),
-    onDismiss: vi.fn(),
   };
 
   describe("힌트 프롬프트 버튼", () => {
@@ -66,16 +65,18 @@ describe("RealtimeHint", () => {
       );
 
       expect(screen.getByTestId("hint-bubble")).toBeInTheDocument();
-      expect(screen.getByText("How about trying this?")).toBeInTheDocument();
+      expect(screen.getByText(/How about trying this\?/)).toBeInTheDocument();
     });
 
-    it("showHintText가 false일 때 힌트 말풍선이 렌더링되지 않음", () => {
+    it("showHintText가 false일 때 힌트 유도 텍스트가 표시됨", () => {
       const hints = ["How about trying this?"];
       render(
         <RealtimeHint {...defaultProps} showPrompt={true} showHintText={false} hints={hints} />
       );
 
       expect(screen.queryByTestId("hint-bubble")).not.toBeInTheDocument();
+      expect(screen.getByText("Lost your words?")).toBeInTheDocument();
+      expect(screen.getByText("tap for a hint.")).toBeInTheDocument();
     });
 
     it("hints가 비어있을 때 기본 메시지가 표시됨", () => {
@@ -93,9 +94,9 @@ describe("RealtimeHint", () => {
     });
   });
 
-  describe("힌트 닫기", () => {
-    it("힌트 말풍선의 닫기 버튼 클릭 시 onDismiss가 호출됨", () => {
-      const onDismiss = vi.fn();
+  describe("힌트 상태 전환", () => {
+    it("힌트 표시 후 버튼 클릭 시 onRequestHint가 호출되지 않음", () => {
+      const onRequestHint = vi.fn();
       const hints = ["Test hint"];
       render(
         <RealtimeHint
@@ -103,44 +104,31 @@ describe("RealtimeHint", () => {
           showPrompt={true}
           showHintText={true}
           hints={hints}
-          onDismiss={onDismiss}
+          onRequestHint={onRequestHint}
         />
       );
 
-      const closeButton = screen.getByRole("button", { name: /닫기/i });
-      fireEvent.click(closeButton);
-
-      expect(onDismiss).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe("애니메이션 클래스", () => {
-    it("힌트 말풍선에 애니메이션 클래스가 적용됨", () => {
-      const hints = ["Test hint"];
-      render(
-        <RealtimeHint {...defaultProps} showPrompt={true} showHintText={true} hints={hints} />
-      );
-
-      const bubble = screen.getByTestId("hint-bubble");
-      expect(bubble).toHaveClass("animate-fade-in-up");
+      fireEvent.click(screen.getByRole("button"));
+      expect(onRequestHint).not.toHaveBeenCalled();
     });
   });
 
   describe("접근성", () => {
-    it("힌트 버튼에 적절한 aria-label이 있음", () => {
+    it("클릭 전 힌트 버튼에 적절한 aria-label이 있음", () => {
       render(<RealtimeHint {...defaultProps} showPrompt={true} />);
 
-      const button = screen.getByRole("button", { name: /힌트/i });
-      expect(button).toHaveAttribute("aria-label");
+      const button = screen.getByRole("button", { name: /힌트 보기/i });
+      expect(button).toHaveAttribute("aria-label", "힌트 보기");
     });
 
-    it("힌트 말풍선에 role=tooltip이 적용됨", () => {
+    it("클릭 후 힌트 버튼에 적절한 aria-label이 있음", () => {
       const hints = ["Test hint"];
       render(
         <RealtimeHint {...defaultProps} showPrompt={true} showHintText={true} hints={hints} />
       );
 
-      expect(screen.getByRole("tooltip")).toBeInTheDocument();
+      const button = screen.getByRole("button", { name: /힌트/i });
+      expect(button).toHaveAttribute("aria-label", "힌트");
     });
   });
 });

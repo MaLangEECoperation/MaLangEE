@@ -71,7 +71,7 @@ function ConversationContent() {
       debugLog("[SessionId] Using stored sessionId:", storedSessionId);
 
       setSessionId(storedSessionId);
-      router.replace(`/chat/conversation?sessionId=${storedSessionId}`, { scroll: false });
+      router.replace(`/chat?sessionId=${storedSessionId}`, { scroll: false });
     } else {
       debugError("[SessionId] No sessionId found");
       setShowSessionErrorPopup(true);
@@ -257,45 +257,6 @@ function ConversationContent() {
     }
   }, [state.isConnected, state.isReady, isMicEnabled, stopMicrophone]);
 
-  // 디버그 상태 전달
-  useEffect(() => {
-    window.dispatchEvent(
-      new CustomEvent("chat-debug-status", {
-        detail: {
-          isConnected: state.isConnected,
-          isReady: state.isReady,
-          lastEvent: null,
-          isAiSpeaking: state.isAiSpeaking,
-          isUserSpeaking: state.isUserSpeaking,
-          isMuted,
-          isRecording: isMicEnabled || state.isRecording,
-          userTranscript: state.userTranscript,
-        },
-      })
-    );
-  }, [
-    state.isConnected,
-    state.isReady,
-    state.isAiSpeaking,
-    state.isUserSpeaking,
-    state.isRecording,
-    state.userTranscript,
-    isMuted,
-    isMicEnabled,
-  ]);
-
-  // 대화 종료 이벤트
-  useEffect(() => {
-    const handleConfirmEndConversation = async () => {
-      await disconnect();
-      router.push("/chat/complete");
-    };
-
-    window.addEventListener("confirm-end-conversation", handleConfirmEndConversation);
-    return () =>
-      window.removeEventListener("confirm-end-conversation", handleConfirmEndConversation);
-  }, [disconnect, router]);
-
   // MalangEE 상태
   const getMalangEEStatus = (): MalangEEStatus => {
     if (state.userTranscript?.toLowerCase().includes("[unintelligible]")) return "sad";
@@ -350,16 +311,8 @@ function ConversationContent() {
 
   // 핸들러
   const handleHintClick = useCallback(() => {
-    if (showHintText) {
-      setShowHintText(false);
-      return;
-    }
     setShouldFetchHint(true);
     setShowHintText(true);
-  }, [showHintText]);
-
-  const handleHintDismiss = useCallback(() => {
-    setShowHintText(false);
   }, []);
 
   // 언어 인식 실패 팝업 핸들러
@@ -385,7 +338,8 @@ function ConversationContent() {
   };
 
   const handleContinueChat = () => {
-    resetHintState();
+    clearWaitPopupTimer();
+    setShowWaitPopup(false);
   };
 
   const handleSubtitleChange = (enabled: boolean) => {
@@ -421,7 +375,6 @@ function ConversationContent() {
         showPrompt={showHintPrompt && !state.isUserSpeaking && !state.isAiSpeaking}
         showHintText={showHintText}
         onRequestHint={handleHintClick}
-        onDismiss={handleHintDismiss}
       />
 
       {/* 메시지 및 마이크 */}
@@ -497,6 +450,7 @@ function ConversationContent() {
           cancelText="대화 그만하기"
           onConfirm={handleContinueChat}
           onCancel={handleStopFromWait}
+          disableBackdropClick
         />
       )}
 
@@ -520,7 +474,7 @@ function ConversationContent() {
                 variant="primary"
                 size="md"
                 fullWidth
-                onClick={() => router.push("/chat/scenario-select")}
+                onClick={() => router.push("/scenario-select")}
               >
                 주제 선택하기
               </Button>

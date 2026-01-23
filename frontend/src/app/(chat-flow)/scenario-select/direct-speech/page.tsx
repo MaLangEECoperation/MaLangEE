@@ -1,17 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import {
-  Button,
-  MalangEE,
-  ChatMicButton,
-  ConfirmPopup,
-  ScenarioResultPopup,
-  DebugStatus,
-} from "@/shared/ui";
+import { MalangEE, ChatMicButton, ScenarioResultPopup, DebugStatus } from "@/shared/ui";
 import { STORAGE_KEYS } from "@/shared/config";
 import "@/shared/styles/scenario.css";
 import { useScenarioChatNew } from "@/features/chat/hook/useScenarioChatNew";
@@ -23,7 +15,6 @@ export default function DirectSpeechPage() {
   const [hasStarted, setHasStarted] = useState(false);
   const [textOpacity, setTextOpacity] = useState(1);
   const [showNotUnderstood, setShowNotUnderstood] = useState(false);
-  const [showEndChatPopup, setShowEndChatPopup] = useState(false);
   const [showScenarioResultPopup, setShowScenarioResultPopup] = useState(false);
   const [wasConnected, setWasConnected] = useState(false);
 
@@ -178,18 +169,17 @@ export default function DirectSpeechPage() {
         if (sessionId) localStorage.setItem(STORAGE_KEYS.CHAT_SESSION_ID, sessionId);
 
         setShowScenarioResultPopup(true);
-        //router.push("/chat/scenario-select/subtitle-settings");
       }
     }
   }, [chatState.scenarioResult, stopMicrophone, resetTimers, router]);
 
   // 팝업 표시 시 타이머 리셋
   useEffect(() => {
-    if (showScenarioResultPopup || showEndChatPopup) {
+    if (showScenarioResultPopup) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       resetTimers();
     }
-  }, [showScenarioResultPopup, showEndChatPopup, resetTimers]);
+  }, [showScenarioResultPopup, resetTimers]);
 
   // AI 메시지 수신 시 타이머 초기화
   useEffect(() => {
@@ -211,23 +201,6 @@ export default function DirectSpeechPage() {
       }
     }, 5000);
   }, [chatState.userTranscript, chatState.isAiSpeaking]);
-
-  const handleStopFromEnd = () => {
-    resetTimers();
-    setShowEndChatPopup(false);
-    setIsListening(false);
-    stopMicrophone();
-    disconnect();
-    router.push("/");
-  };
-
-  const handleContinueFromEnd = () => {
-    setShowEndChatPopup(false);
-    resetTimers();
-    startInactivityTimer();
-    setIsListening(true);
-    startMicrophone();
-  };
 
   const handleMicClick = () => {
     initAudio();
@@ -331,29 +304,13 @@ export default function DirectSpeechPage() {
           scenarioResult={chatState.scenarioResult}
           onConfirm={() => {
             setShowScenarioResultPopup(false);
-            router.push("/chat/scenario-select/subtitle-settings");
+            router.push("/scenario-select/subtitle-settings");
           }}
           onCancel={() => {
             setShowScenarioResultPopup(false);
             disconnect();
-            router.push("/chat/scenario-select");
+            router.push("/scenario-select");
           }}
-        />
-      )}
-
-      {showEndChatPopup && (
-        <ConfirmPopup
-          message={
-            <p className="text-xl font-semibold leading-relaxed text-gray-800">
-              지금은 여기까지만 할까요?
-              <br />
-              언제든지 다시 시작할 수 있어요.
-            </p>
-          }
-          confirmText="이어 말하기"
-          cancelText="다음에 하기"
-          onConfirm={handleContinueFromEnd}
-          onCancel={handleStopFromEnd}
         />
       )}
     </>

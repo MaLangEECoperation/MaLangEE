@@ -148,7 +148,7 @@ export default function DashboardPage() {
       // 대화 기록이 없으면 시나리오 선택으로 이동
       // 이전 세션 ID가 남아있을 수 있으므로 제거
       localStorage.removeItem(STORAGE_KEYS.CHAT_SESSION_ID);
-      router.push("/chat/scenario-select");
+      router.push("/scenario-select");
     }
   };
 

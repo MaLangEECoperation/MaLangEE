@@ -54,12 +54,12 @@ test.describe("시나리오 선택 페이지 (새 URL 구조)", () => {
         ]),
       });
     });
-    await page.goto("/chat/scenario-select/topic-suggestion");
+    await page.goto("/scenario-select/topic-suggestion");
   });
 
   test("시나리오 선택 페이지가 정상적으로 로드되어야 함", async ({ page }) => {
     // 페이지 URL 확인
-    await expect(page).toHaveURL(/\/chat\/scenario-select\/topic-suggestion/);
+    await expect(page).toHaveURL(/\/scenario-select\/topic-suggestion/);
 
     // MalangEE 캐릭터가 표시되어야 함
     await expect(page.locator(".character-box")).toBeVisible();
@@ -74,7 +74,7 @@ test.describe("시나리오 선택 페이지 (새 URL 구조)", () => {
 test.describe("시나리오 선택 - 직접 말하기 페이지", () => {
   test.beforeEach(async ({ page, context }) => {
     await context.grantPermissions(["microphone"]);
-    await page.goto("/chat/scenario-select/direct-speech");
+    await page.goto("/scenario-select/direct-speech");
   });
 
   test("마이크 버튼이 표시되어야 함", async ({ page }) => {
@@ -99,7 +99,8 @@ test.describe("시나리오 선택 - 직접 말하기 페이지", () => {
 
 test.describe("시나리오 결과 localStorage 저장", () => {
   test("시나리오 결과가 localStorage에 저장되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/topic-suggestion");
+    await page.goto("/scenario-select/topic-suggestion");
+    await page.waitForLoadState("domcontentloaded");
 
     // JavaScript를 통해 시나리오 결과 상태를 시뮬레이션
     await page.evaluate((mockResult) => {
@@ -117,7 +118,7 @@ test.describe("시나리오 결과 localStorage 저장", () => {
 
 test.describe("자막 설정 페이지", () => {
   test("자막 설정 페이지가 정상적으로 로드되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/subtitle-settings");
+    await page.goto("/scenario-select/subtitle-settings");
 
     await expect(page.getByText("말랭이의 답변을 자막으로 볼까요?")).toBeVisible();
     await expect(page.getByRole("button", { name: "자막 보기" })).toBeVisible();
@@ -127,7 +128,7 @@ test.describe("자막 설정 페이지", () => {
 
 test.describe("목소리 선택 페이지", () => {
   test("목소리 선택 페이지가 정상적으로 로드되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/voice-selection");
+    await page.goto("/scenario-select/voice-selection");
 
     await expect(page.getByText("말랭이 목소리 톤을 선택해 주세요.")).toBeVisible();
     await expect(page.getByRole("button", { name: "대화 시작하기" })).toBeVisible();
@@ -137,8 +138,8 @@ test.describe("목소리 선택 페이지", () => {
 test.describe("게스트 모드 시나리오 플로우", () => {
   test("게스트 사용자가 시나리오 선택 페이지에 접근할 수 있어야 함", async ({ page }) => {
     // 로그인하지 않은 상태로 시나리오 선택 페이지 접근
-    await page.goto("/chat/scenario-select");
-    await expect(page).toHaveURL(/\/chat\/scenario-select/);
+    await page.goto("/scenario-select");
+    await expect(page).toHaveURL(/\/scenario-select/);
   });
 
   test("게스트 진입 타입으로 시나리오 선택 페이지 이동", async ({ page }) => {
@@ -147,7 +148,7 @@ test.describe("게스트 모드 시나리오 플로우", () => {
     await page.getByRole("link", { name: "바로 체험해보기" }).click();
 
     // 시나리오 선택 페이지로 이동 확인
-    await expect(page).toHaveURL(/\/chat\/scenario-select/);
+    await expect(page).toHaveURL(/\/scenario-select/);
   });
 });
 
@@ -156,26 +157,26 @@ test.describe("마이크 권한 및 오디오", () => {
     // Playwright에서 마이크 권한을 시뮬레이션
     await page.context().grantPermissions(["microphone"]);
 
-    await page.goto("/chat/scenario-select/direct-speech");
+    await page.goto("/scenario-select/direct-speech");
 
     // 페이지가 정상적으로 로드되어야 함
-    await expect(page).toHaveURL(/\/chat\/scenario-select\/direct-speech/);
+    await expect(page).toHaveURL(/\/scenario-select\/direct-speech/);
   });
 
   test("마이크 권한이 거부된 경우에도 페이지가 로드되어야 함", async ({ page, context }) => {
     // 마이크 권한 거부 시뮬레이션
     await context.clearPermissions();
 
-    await page.goto("/chat/scenario-select/direct-speech");
+    await page.goto("/scenario-select/direct-speech");
 
     // 페이지는 여전히 로드되어야 함
-    await expect(page).toHaveURL(/\/chat\/scenario-select\/direct-speech/);
+    await expect(page).toHaveURL(/\/scenario-select\/direct-speech/);
   });
 });
 
 test.describe("시나리오 대화 타임아웃", () => {
   test("직접 말하기 페이지에서 캐릭터가 표시되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/direct-speech");
+    await page.goto("/scenario-select/direct-speech");
 
     // 비활성 타이머는 실제로 대화가 시작된 후에만 작동
     // 여기서는 기본 UI만 확인
@@ -188,10 +189,10 @@ test.describe("시나리오 페이지 반응형 디자인", () => {
     test.use({ viewport: { width: 375, height: 667 } });
 
     test("모바일에서 직접 말하기 페이지가 정상적으로 표시되어야 함", async ({ page }) => {
-      await page.goto("/chat/scenario-select/direct-speech");
+      await page.goto("/scenario-select/direct-speech");
 
       // 페이지가 로드되어야 함
-      await expect(page).toHaveURL(/\/chat\/scenario-select\/direct-speech/);
+      await expect(page).toHaveURL(/\/scenario-select\/direct-speech/);
 
       // 캐릭터가 표시되어야 함
       await expect(page.locator(".character-box")).toBeVisible();
@@ -202,9 +203,9 @@ test.describe("시나리오 페이지 반응형 디자인", () => {
     test.use({ viewport: { width: 768, height: 1024 } });
 
     test("태블릿에서 직접 말하기 페이지가 정상적으로 표시되어야 함", async ({ page }) => {
-      await page.goto("/chat/scenario-select/direct-speech");
+      await page.goto("/scenario-select/direct-speech");
 
-      await expect(page).toHaveURL(/\/chat\/scenario-select\/direct-speech/);
+      await expect(page).toHaveURL(/\/scenario-select\/direct-speech/);
       await expect(page.locator(".character-box")).toBeVisible();
     });
   });
@@ -212,8 +213,8 @@ test.describe("시나리오 페이지 반응형 디자인", () => {
 
 test.describe("에러 처리", () => {
   test("페이지가 정상적으로 로드되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/direct-speech");
-    await expect(page).toHaveURL(/\/chat\/scenario-select\/direct-speech/);
+    await page.goto("/scenario-select/direct-speech");
+    await expect(page).toHaveURL(/\/scenario-select\/direct-speech/);
   });
 
   test("네트워크 오류 시에도 페이지가 로드되어야 함", async ({ page }) => {
@@ -222,7 +223,7 @@ test.describe("에러 처리", () => {
       await route.abort("failed");
     });
 
-    await page.goto("/chat/scenario-select/direct-speech");
+    await page.goto("/scenario-select/direct-speech");
 
     // 페이지는 여전히 로드되어야 함 (오프라인 상태에서도)
     await expect(page.locator(".character-box")).toBeVisible({ timeout: 10000 });
@@ -231,7 +232,7 @@ test.describe("에러 처리", () => {
 
 test.describe("LocalStorage 상태 관리", () => {
   test("시나리오 결과가 localStorage에 저장되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/direct-speech");
+    await page.goto("/scenario-select/direct-speech");
 
     // 시나리오 결과 저장 테스트
     await page.evaluate((mockResult) => {
@@ -251,7 +252,7 @@ test.describe("LocalStorage 상태 관리", () => {
   });
 
   test("진입 타입이 localStorage에 저장되어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/direct-speech");
+    await page.goto("/scenario-select/direct-speech");
 
     // 게스트 진입 타입 저장
     await page.evaluate(() => {
@@ -265,7 +266,7 @@ test.describe("LocalStorage 상태 관리", () => {
 
 test.describe("접근성", () => {
   test("시나리오 선택 페이지가 키보드로 탐색 가능해야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/direct-speech");
+    await page.goto("/scenario-select/direct-speech");
 
     // Tab 키로 탐색
     await page.keyboard.press("Tab");
@@ -274,7 +275,7 @@ test.describe("접근성", () => {
   });
 
   test("목소리 선택 페이지에 적절한 ARIA 레이블이 있어야 함", async ({ page }) => {
-    await page.goto("/chat/scenario-select/voice-selection");
+    await page.goto("/scenario-select/voice-selection");
 
     // 이전/다음 목소리 버튼에 접근 가능해야 함
     await expect(page.getByLabel("이전 목소리")).toBeVisible();
@@ -286,10 +287,10 @@ test.describe("10분 로그인 유도", () => {
   test("비로그인 상태에서 페이지 로드 확인", async ({ page }) => {
     // 이 테스트는 실제로 10분을 기다릴 수 없으므로
     // 페이지가 정상적으로 로드되는지만 확인합니다.
-    await page.goto("/chat/scenario-select/direct-speech");
+    await page.goto("/scenario-select/direct-speech");
 
     // 페이지가 로드되어야 함
-    await expect(page).toHaveURL(/\/chat\/scenario-select\/direct-speech/);
+    await expect(page).toHaveURL(/\/scenario-select\/direct-speech/);
 
     // 캐릭터가 표시되어야 함
     await expect(page.locator(".character-box")).toBeVisible();

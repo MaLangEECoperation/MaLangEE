@@ -4,7 +4,7 @@ import { MOCK_USER, setAuthStorage } from "./helpers/auth";
 
 /**
  * 채팅 플로우 E2E 테스트
- * - /chat/conversation: 대화 페이지
+ * - /chat: 대화 페이지
  * - /chat/complete: 대화 완료 페이지
  * - /chat/welcome-back: 재방문 환영 페이지
  */
@@ -91,7 +91,7 @@ test.describe("대화 페이지", () => {
   });
 
   test("sessionId가 없으면 에러 팝업이 표시되어야 함", async ({ page }) => {
-    await page.goto("/chat/conversation");
+    await page.goto("/chat", { waitUntil: "domcontentloaded" });
 
     // 세션 에러 팝업 확인
     await expect(page.getByText("세션을 찾을 수 없어요")).toBeVisible({ timeout: 10000 });
@@ -102,11 +102,11 @@ test.describe("대화 페이지", () => {
   test("에러 팝업에서 주제 선택하기 클릭 시 시나리오 선택 페이지로 이동해야 함", async ({
     page,
   }) => {
-    await page.goto("/chat/conversation");
+    await page.goto("/chat", { waitUntil: "domcontentloaded" });
 
     await page.getByRole("button", { name: "주제 선택하기" }).click();
 
-    await expect(page).toHaveURL(/\/chat\/scenario-select/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/scenario-select/, { timeout: 10000 });
   });
 
   test("sessionId가 있으면 대화 페이지가 로드되어야 함", async ({ page }) => {
@@ -114,7 +114,7 @@ test.describe("대화 페이지", () => {
     await page.goto("/auth/login");
     await setupLocalStorage(page);
 
-    await page.goto(`/chat/conversation?sessionId=${MOCK_SESSION.session_id}`);
+    await page.goto(`/chat?sessionId=${MOCK_SESSION.session_id}`);
 
     // 캐릭터 표시 확인
     await expect(page.locator(".character-box")).toBeVisible({ timeout: 10000 });
@@ -124,7 +124,7 @@ test.describe("대화 페이지", () => {
   });
 
   test("URL에 sessionId가 있으면 localStorage에 저장되어야 함", async ({ page }) => {
-    await page.goto(`/chat/conversation?sessionId=${MOCK_SESSION.session_id}`);
+    await page.goto(`/chat?sessionId=${MOCK_SESSION.session_id}`);
 
     // 페이지가 로드되고 useEffect가 실행될 때까지 대기
     await page.waitForLoadState("networkidle");
@@ -142,7 +142,7 @@ test.describe("대화 페이지", () => {
   test.skip("대화 페이지에서 메시지 상태가 표시되어야 함 (requires backend)", async ({ page }) => {
     await page.goto("/auth/login");
     await setupLocalStorage(page);
-    await page.goto(`/chat/conversation?sessionId=${MOCK_SESSION.session_id}`);
+    await page.goto(`/chat?sessionId=${MOCK_SESSION.session_id}`);
 
     // 대화 페이지 로드 확인 - 연결 중 또는 준비 완료 메시지
     await expect(page.getByText(/말랭이와 연결|편하게 말해보세요|잠시만 기다려주세요/)).toBeVisible(
@@ -154,7 +154,7 @@ test.describe("대화 페이지", () => {
   test.skip("음소거 버튼이 작동해야 함 (requires backend)", async ({ page }) => {
     await page.goto("/auth/login");
     await setupLocalStorage(page);
-    await page.goto(`/chat/conversation?sessionId=${MOCK_SESSION.session_id}`);
+    await page.goto(`/chat?sessionId=${MOCK_SESSION.session_id}`);
 
     // 음소거 버튼 확인 (title 속성으로 찾기)
     const muteButton = page.locator('button[title="음소거"]');
@@ -255,7 +255,7 @@ test.describe("재방문 환영 페이지", () => {
 
     await page.getByRole("link", { name: "대화 시작하기" }).click();
 
-    await expect(page).toHaveURL(/\/chat\/conversation/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/chat/, { timeout: 10000 });
   });
 
   test("새로운 주제 고르기 클릭 시 시나리오 선택 페이지로 이동해야 함", async ({ page }) => {
@@ -267,7 +267,7 @@ test.describe("재방문 환영 페이지", () => {
 
     await page.getByRole("link", { name: "새로운 주제 고르기" }).click();
 
-    await expect(page).toHaveURL(/\/chat\/scenario-select/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/scenario-select/, { timeout: 10000 });
   });
 
   test("로딩 중 상태가 표시되어야 함", async ({ page }) => {
@@ -339,7 +339,7 @@ test.describe("채팅 플로우 - localStorage 상태 관리", () => {
       localStorage.setItem("subtitleEnabled", "false");
     });
 
-    await page.goto("/chat/conversation?sessionId=test-session-123");
+    await page.goto("/chat?sessionId=test-session-123");
 
     // 페이지가 로드되어야 함
     await expect(page.locator(".character-box")).toBeVisible({ timeout: 10000 });

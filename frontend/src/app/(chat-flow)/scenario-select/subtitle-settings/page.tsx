@@ -10,7 +10,7 @@ export default function SubtitleSettingsPage() {
 
   const handleChoice = (enabled: boolean) => {
     localStorage.setItem(STORAGE_KEYS.SUBTITLE_ENABLED, enabled.toString());
-    router.push("/chat/scenario-select/voice-selection");
+    router.push("/scenario-select/voice-selection");
   };
 
   return (

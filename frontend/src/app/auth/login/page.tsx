@@ -203,7 +203,7 @@ export default function LoginPage() {
           </Button>
 
           <Button asChild variant="outline-purple" size="lg" fullWidth>
-            <Link href="/chat/scenario-select">바로 체험해보기</Link>
+            <Link href="/scenario-select">바로 체험해보기</Link>
           </Button>
         </div>
       </form>

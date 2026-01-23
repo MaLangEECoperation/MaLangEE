@@ -80,10 +80,10 @@ function WelcomeBackPage() {
   useEffect(() => {
     if (!isLoading && sessionId && !sessionDetail) {
       // 세션 ID는 있는데 조회가 안되는 경우 (삭제됨 등)
-      router.push("/chat/scenario-select");
+      router.push("/scenario-select");
     } else if (isLoading && !sessionId) {
       // 세션 ID가 없는 경우
-      router.push("/chat/scenario-select");
+      router.push("/scenario-select");
     }
   }, [isLoading, sessionId, sessionDetail, router]);
 
@@ -128,11 +128,11 @@ function WelcomeBackPage() {
       {/* Buttons */}
       <div className="mt-8 flex w-full max-w-md flex-col gap-4">
         <Button asChild variant="primary" size="xl" fullWidth>
-          <Link href="/chat/conversation">대화 시작하기</Link>
+          <Link href="/chat">대화 시작하기</Link>
         </Button>
 
         <Button asChild variant="outline-purple" size="xl" fullWidth>
-          <Link href="/chat/scenario-select">새로운 주제 고르기</Link>
+          <Link href="/scenario-select">새로운 주제 고르기</Link>
         </Button>
       </div>
     </>
