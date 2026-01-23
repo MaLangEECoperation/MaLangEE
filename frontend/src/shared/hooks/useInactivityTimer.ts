@@ -2,12 +2,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 interface UseInactivityTimerOptions {
   inactivityTime?: number; // 비활동 감지 시간 (기본 15초)
-  waitTime?: number; // 응답 대기 시간 (기본 5초)
+  waitTime?: number; // 응답 대기 시간 (기본 10초)
 }
 
 export function useInactivityTimer({
   inactivityTime = 15000,
-  waitTime = 5000,
+  waitTime = 10000,
 }: UseInactivityTimerOptions = {}) {
   const [showInactivityMessage, setShowInactivityMessage] = useState(false);
   const [showWaitPopup, setShowWaitPopup] = useState(false);
