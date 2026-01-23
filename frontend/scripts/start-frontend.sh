@@ -26,15 +26,22 @@ rm -f .next/dev/lock || true
 MODE=${1:-development}
 
 if [ "$MODE" = "production" ]; then
-  echo "Starting in PRODUCTION mode..."
+  echo "Starting in PRODUCTION mode (Standalone)..."
   export NODE_ENV=production
   export PORT=$TARGET_PORT
-  
-  if command -v yarn >/dev/null 2>&1; then
-    exec yarn start
-  else
-    exec npm run start
+  export HOSTNAME="0.0.0.0"
+
+  # Copy static assets for standalone mode if they exist
+  if [ -d ".next/static" ]; then
+    mkdir -p .next/standalone/.next
+    cp -r .next/static .next/standalone/.next/
   fi
+  if [ -d "public" ]; then
+    cp -r public .next/standalone/
+  fi
+  
+  # Run standalone server
+  exec node .next/standalone/server.js
 else
   echo "Starting in DEVELOPMENT mode..."
   export NODE_ENV=development
