@@ -297,11 +297,23 @@ test.describe("새 대화 시작", () => {
     await expect(page).toHaveURL(/\/scenario-select/, { timeout: 10000 });
   });
 
-  // TODO: welcome-back 페이지 접근 시 인증 유실 이슈 조사 필요
-  // 앱 내부에서 새 대화 시작 시 welcome-back 페이지로 이동하지만, E2E에서 인증 상태가 유지되지 않음
-  test.skip("대화 내역이 있을 때 새 대화 시작 시 welcome-back 페이지로 이동해야 함", async ({
+  test("대화 내역이 있을 때 새 대화 시작 시 welcome-back 페이지로 이동해야 함", async ({
     page,
   }) => {
+    // 세션 상세 API 모킹 (welcome-back 페이지에서 useGetChatSession 호출 시 필요)
+    await page.route(/\/api\/v1\/chat\/sessions\/[^/?]+/, async (route) => {
+      const url = route.request().url();
+      const sessionIdMatch = url.match(/\/sessions\/([^/?]+)/);
+      const requestedId = sessionIdMatch?.[1];
+      const session = MOCK_CHAT_SESSIONS.find((s) => s.session_id === requestedId);
+
+      await route.fulfill({
+        status: session ? 200 : 404,
+        contentType: "application/json",
+        body: JSON.stringify(session || { detail: "Not found" }),
+      });
+    });
+
     // 세션 목록이 로드되었는지 확인 (대화 내역이 있는 상태)
     await expect(page.getByText(MOCK_CHAT_SESSIONS[0].title)).toBeVisible({ timeout: 10000 });
 
@@ -345,9 +357,8 @@ test.describe("대시보드 반응형 디자인", () => {
   });
 });
 
-// 로딩 상태 테스트 - 앱에서 실제로 사용하는 로딩 컴포넌트에 따라 스킵
 test.describe("대시보드 로딩 상태", () => {
-  test.skip("로딩 중 스피너가 표시되어야 함", async ({ page }) => {
+  test("로딩 중 스피너가 표시되어야 함", async ({ page }) => {
     // API 응답 지연 시뮬레이션
     await page.route("**/api/v1/users/me", async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -384,10 +395,9 @@ test.describe("대시보드 로딩 상태", () => {
     // 대시보드로 이동
     await page.goto("/dashboard");
 
-    // 참고: 앱에서 실제로 사용하는 로딩 컴포넌트에 따라 선택자 수정 필요
-    // AuthGuard는 자체 로딩 상태를 표시하지만, animate-spin 클래스를 사용하지 않을 수 있음
+    // 대시보드 로딩 스피너 확인 (.animate-spin + border-[#5F51D9])
     const spinner = page.locator(".animate-spin");
-    await expect(spinner.first()).toBeVisible({ timeout: 3000 });
+    await expect(spinner.first()).toBeVisible({ timeout: 5000 });
   });
 });
 

@@ -138,27 +138,44 @@ test.describe("대화 페이지", () => {
     expect(storedSessionId).toBe(MOCK_SESSION.session_id);
   });
 
-  // WebSocket 연결이 필요한 테스트 - 백엔드 실행 시에만 동작
-  test.skip("대화 페이지에서 메시지 상태가 표시되어야 함 (requires backend)", async ({ page }) => {
+  test("대화 페이지에서 메시지 상태가 표시되어야 함", async ({ page }) => {
+    // WebSocket 모킹: 연결 후 session.update 전송하여 isReady 트리거
+    await page.routeWebSocket(/\/api\/v1\/chat\/ws\//, (ws) => {
+      ws.onMessage((message) => {
+        // 클라이언트가 session.update를 보내면 무시 (이미 isReady 설정됨)
+        void message;
+      });
+      // 연결 직후 서버에서 session.update 전송 → isReady = true
+      setTimeout(() => {
+        ws.send(JSON.stringify({ type: "session.update" }));
+      }, 100);
+    });
+
     await page.goto("/auth/login");
     await setupLocalStorage(page);
     await page.goto(`/chat?sessionId=${MOCK_SESSION.session_id}`);
 
-    // 대화 페이지 로드 확인 - 연결 중 또는 준비 완료 메시지
-    await expect(page.getByText(/말랭이와 연결|편하게 말해보세요|잠시만 기다려주세요/)).toBeVisible(
-      { timeout: 15000 }
-    );
+    // isConnected && isReady 시 "편하게 말해보세요" 표시
+    await expect(page.getByText("편하게 말해보세요")).toBeVisible({ timeout: 15000 });
   });
 
-  // WebSocket 연결이 필요한 테스트 - 백엔드 실행 시에만 동작
-  test.skip("음소거 버튼이 작동해야 함 (requires backend)", async ({ page }) => {
+  test("WebSocket 연결 완료 후 마이크 버튼이 표시되어야 함", async ({ page }) => {
+    // WebSocket 모킹: session.update로 isReady 트리거
+    await page.routeWebSocket(/\/api\/v1\/chat\/ws\//, (ws) => {
+      ws.onMessage((message) => {
+        void message;
+      });
+      setTimeout(() => {
+        ws.send(JSON.stringify({ type: "session.update" }));
+      }, 100);
+    });
+
     await page.goto("/auth/login");
     await setupLocalStorage(page);
     await page.goto(`/chat?sessionId=${MOCK_SESSION.session_id}`);
 
-    // 음소거 버튼 확인 (title 속성으로 찾기)
-    const muteButton = page.locator('button[title="음소거"]');
-    await expect(muteButton).toBeVisible({ timeout: 10000 });
+    // 마이크 버튼 (div.mic-container) 확인
+    await expect(page.locator(".mic-container")).toBeVisible({ timeout: 10000 });
   });
 });
 
