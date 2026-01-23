@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     OPENAI_MODEL: str = "gpt-5"
 
     # LangSmith (LLM Observability)
-    LANGCHAIN_TRACING_V2: bool = False  # True로 설정하면 트레이싱 활성화
+    LANGCHAIN_TRACING_V2: bool = True  # True로 설정하면 트레이싱 활성화
     LANGCHAIN_API_KEY: Optional[str] = None
     LANGCHAIN_PROJECT: str = "malangee"
 
