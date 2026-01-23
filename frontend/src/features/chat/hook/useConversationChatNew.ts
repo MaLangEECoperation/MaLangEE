@@ -7,7 +7,8 @@ import { debugLog, debugError } from "@/shared/lib/debug";
 import { translateToKorean } from "@/shared/lib/translate";
 import { buildConversationWebSocketUrl, WEBSOCKET_CONSTANTS } from "@/shared/lib/websocket";
 
-import type { SessionReport } from "./types";
+import type { SessionReport } from "../model/types";
+
 import { useWebSocketBase } from "./useWebSocketBase";
 
 const DISCONNECT_TIMEOUT_MS = WEBSOCKET_CONSTANTS.TIMEOUT.DISCONNECT_MS;

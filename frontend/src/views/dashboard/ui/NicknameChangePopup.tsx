@@ -11,7 +11,7 @@ import {
   useUpdateNickname,
 } from "@/features/auth";
 import { Button, MalangEE } from "@/shared/ui";
-import { PopupLayout } from "@/shared/ui/PopupLayout";
+import { Dialog } from "@/shared/ui/Dialog";
 
 // safeParse를 사용하는 커스텀 resolver (콘솔 에러 방지)
 const nicknameUpdateResolver: Resolver<NicknameUpdateFormData> = async (values) => {
@@ -149,7 +149,7 @@ export const NicknameChangePopup: FC<NicknameChangePopupProps> = ({ onClose, onS
     isSameAsCurrent;
 
   return (
-    <PopupLayout
+    <Dialog
       onClose={onClose}
       title={successMessage ? "" : "닉네임 변경"}
       maxWidth="md"
@@ -245,6 +245,6 @@ export const NicknameChangePopup: FC<NicknameChangePopupProps> = ({ onClose, onS
           </Button>
         </form>
       )}
-    </PopupLayout>
+    </Dialog>
   );
 };

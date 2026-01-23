@@ -7,7 +7,8 @@ import { debugLog } from "@/shared/lib/debug";
 import { translateToKorean } from "@/shared/lib/translate";
 import { buildScenarioWebSocketUrl } from "@/shared/lib/websocket";
 
-import type { ScenarioResult } from "./types";
+import type { ScenarioResult } from "../model/types";
+
 import { useWebSocketBase } from "./useWebSocketBase";
 
 export interface ScenarioChatStateNew {

@@ -6,7 +6,7 @@ import { FC, useState, useMemo } from "react";
 import { useGetChatSession } from "@/features/chat";
 import type { ChatHistoryItem } from "@/shared/types/chat";
 import { Button, Tooltip } from "@/shared/ui";
-import { PopupLayout } from "@/shared/ui/PopupLayout";
+import { Dialog } from "@/shared/ui/Dialog";
 
 import { ChatTranscriptPopup } from "./ChatTranscriptPopup";
 
@@ -60,7 +60,7 @@ export const ChatDetailPopup: FC<ChatDetailPopupProps> = ({ session, onClose }) 
 
   return (
     <>
-      <PopupLayout onClose={onClose} headerContent={headerContent} maxWidth="2xl">
+      <Dialog onClose={onClose} headerContent={headerContent} maxWidth="2xl">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#5F51D9] border-t-transparent" />
@@ -273,7 +273,7 @@ export const ChatDetailPopup: FC<ChatDetailPopupProps> = ({ session, onClose }) 
             </div>
           </>
         )}
-      </PopupLayout>
+      </Dialog>
 
       {/* 전문 스크립트 팝업 */}
       {showTranscript && (

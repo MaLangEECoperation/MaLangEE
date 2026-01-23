@@ -4,8 +4,8 @@ import { useAuth, useDeleteUser } from "@/features/auth";
 import { usePopupStore } from "@/shared/lib/store";
 
 import { Button } from "./Button";
+import { Dialog } from "./Dialog";
 import { MalangEE } from "./MalangEE";
-import { PopupLayout } from "./PopupLayout";
 
 export const GlobalPopup = () => {
   const { type, isOpen, closePopup } = usePopupStore();
@@ -30,7 +30,7 @@ export const GlobalPopup = () => {
   return (
     <>
       {type === "logout" && (
-        <PopupLayout onClose={closePopup} showCloseButton={false} maxWidth="sm">
+        <Dialog onClose={closePopup} showCloseButton={false} maxWidth="sm">
           <div className="flex flex-col items-center gap-6 py-2">
             <MalangEE status="humm" size={120} />
             <div className="text-xl font-bold text-[#1F1C2B]">정말 로그아웃 하실건가요?</div>
@@ -43,11 +43,11 @@ export const GlobalPopup = () => {
               </Button>
             </div>
           </div>
-        </PopupLayout>
+        </Dialog>
       )}
 
       {type === "deleteUser" && (
-        <PopupLayout onClose={closePopup} showCloseButton={false} maxWidth="sm">
+        <Dialog onClose={closePopup} showCloseButton={false} maxWidth="sm">
           <div className="flex flex-col items-center gap-6 py-2">
             <MalangEE status="sad" size={120} />
             <div className="text-center">
@@ -72,7 +72,7 @@ export const GlobalPopup = () => {
               </Button>
             </div>
           </div>
-        </PopupLayout>
+        </Dialog>
       )}
     </>
   );

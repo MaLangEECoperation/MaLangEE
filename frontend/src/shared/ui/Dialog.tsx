@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import React, { type ReactNode, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
-interface PopupLayoutProps {
+interface DialogProps {
   children: ReactNode;
   onClose: () => void;
   title?: string;
@@ -25,7 +25,7 @@ const maxWidthClasses = {
   "4xl": "max-w-4xl",
 };
 
-export const PopupLayout: React.FC<PopupLayoutProps> = ({
+export const Dialog: React.FC<DialogProps> = ({
   children,
   onClose,
   title,

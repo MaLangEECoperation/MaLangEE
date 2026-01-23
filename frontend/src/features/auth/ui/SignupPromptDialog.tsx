@@ -3,7 +3,7 @@
 import { FC } from "react";
 
 import { cn } from "@/shared/lib";
-import { Button, MalangEE, PopupLayout } from "@/shared/ui";
+import { Button, MalangEE, Dialog } from "@/shared/ui";
 
 export interface SignupPromptDialogProps {
   /** 다이얼로그 표시 여부 */
@@ -42,7 +42,7 @@ export const SignupPromptDialog: FC<SignupPromptDialogProps> = ({
   const dialogTitleId = "signup-prompt-title";
 
   return (
-    <PopupLayout onClose={onClose} showCloseButton={false} maxWidth="sm">
+    <Dialog onClose={onClose} showCloseButton={false} maxWidth="sm">
       <div
         role="dialog"
         aria-labelledby={dialogTitleId}
@@ -75,7 +75,7 @@ export const SignupPromptDialog: FC<SignupPromptDialogProps> = ({
           </Button>
         </div>
       </div>
-    </PopupLayout>
+    </Dialog>
   );
 };
 

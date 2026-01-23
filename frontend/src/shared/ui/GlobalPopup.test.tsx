@@ -27,9 +27,9 @@ vi.mock("@/features/auth", () => ({
   }),
 }));
 
-// Mock PopupLayout
-vi.mock("./PopupLayout", () => ({
-  PopupLayout: ({ children, onClose }: { children: React.ReactNode; onClose: () => void }) => (
+// Mock Dialog
+vi.mock("./Dialog", () => ({
+  Dialog: ({ children, onClose }: { children: React.ReactNode; onClose: () => void }) => (
     <div data-testid="popup-layout" onClick={onClose}>
       {children}
     </div>

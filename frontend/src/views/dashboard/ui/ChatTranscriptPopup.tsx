@@ -3,7 +3,7 @@
 import { FC } from "react";
 
 import { MalangEE } from "@/shared/ui";
-import { PopupLayout } from "@/shared/ui/PopupLayout";
+import { Dialog } from "@/shared/ui/Dialog";
 
 interface Message {
   speaker: string;
@@ -50,7 +50,7 @@ export const ChatTranscriptPopup: FC<ChatTranscriptPopupProps> = ({
   };
 
   return (
-    <PopupLayout onClose={onClose} headerContent={headerContent} maxWidth="2xl">
+    <Dialog onClose={onClose} headerContent={headerContent} maxWidth="2xl">
       <div className="-mx-6 max-h-[60vh] min-h-[400px] overflow-y-auto bg-[#FFFFFF] p-4">
         <div className="flex flex-col gap-4">
           {/* 메시지를 시간 순서대로 정렬 (오름차순) */}
@@ -130,6 +130,6 @@ export const ChatTranscriptPopup: FC<ChatTranscriptPopupProps> = ({
             })}
         </div>
       </div>
-    </PopupLayout>
+    </Dialog>
   );
 };

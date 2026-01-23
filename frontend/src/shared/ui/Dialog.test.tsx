@@ -1,41 +1,41 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 
-import { PopupLayout } from "./PopupLayout";
+import { Dialog } from "./Dialog";
 
-describe("PopupLayout", () => {
+describe("Dialog", () => {
   it("renders children content", () => {
     render(
-      <PopupLayout onClose={() => {}}>
+      <Dialog onClose={() => {}}>
         <div>Popup Content</div>
-      </PopupLayout>
+      </Dialog>
     );
     expect(screen.getByText("Popup Content")).toBeInTheDocument();
   });
 
   it("renders title when provided", () => {
     render(
-      <PopupLayout onClose={() => {}} title="Test Title">
+      <Dialog onClose={() => {}} title="Test Title">
         <div>Content</div>
-      </PopupLayout>
+      </Dialog>
     );
     expect(screen.getByText("Test Title")).toBeInTheDocument();
   });
 
   it("renders close button by default", () => {
     render(
-      <PopupLayout onClose={() => {}}>
+      <Dialog onClose={() => {}}>
         <div>Content</div>
-      </PopupLayout>
+      </Dialog>
     );
     expect(screen.getByLabelText("닫기")).toBeInTheDocument();
   });
 
   it("hides close button when showCloseButton is false", () => {
     render(
-      <PopupLayout onClose={() => {}} showCloseButton={false}>
+      <Dialog onClose={() => {}} showCloseButton={false}>
         <div>Content</div>
-      </PopupLayout>
+      </Dialog>
     );
     expect(screen.queryByLabelText("닫기")).not.toBeInTheDocument();
   });
@@ -43,9 +43,9 @@ describe("PopupLayout", () => {
   it("calls onClose when close button is clicked", () => {
     const handleClose = vi.fn();
     render(
-      <PopupLayout onClose={handleClose}>
+      <Dialog onClose={handleClose}>
         <div>Content</div>
-      </PopupLayout>
+      </Dialog>
     );
 
     fireEvent.click(screen.getByLabelText("닫기"));
@@ -55,9 +55,9 @@ describe("PopupLayout", () => {
   it("calls onClose when backdrop is clicked", () => {
     const handleClose = vi.fn();
     render(
-      <PopupLayout onClose={handleClose}>
+      <Dialog onClose={handleClose}>
         <div>Content</div>
-      </PopupLayout>
+      </Dialog>
     );
 
     const backdrop = document.querySelector(".fixed.inset-0");
@@ -68,9 +68,9 @@ describe("PopupLayout", () => {
   it("does not call onClose when content is clicked", () => {
     const handleClose = vi.fn();
     render(
-      <PopupLayout onClose={handleClose}>
+      <Dialog onClose={handleClose}>
         <div>Content</div>
-      </PopupLayout>
+      </Dialog>
     );
 
     fireEvent.click(screen.getByText("Content"));
@@ -79,18 +79,18 @@ describe("PopupLayout", () => {
 
   it("renders headerContent when provided", () => {
     render(
-      <PopupLayout onClose={() => {}} headerContent={<div>Custom Header</div>}>
+      <Dialog onClose={() => {}} headerContent={<div>Custom Header</div>}>
         <div>Content</div>
-      </PopupLayout>
+      </Dialog>
     );
     expect(screen.getByText("Custom Header")).toBeInTheDocument();
   });
 
   it("prefers headerContent over title", () => {
     render(
-      <PopupLayout onClose={() => {}} title="Title" headerContent={<div>Custom Header</div>}>
+      <Dialog onClose={() => {}} title="Title" headerContent={<div>Custom Header</div>}>
         <div>Content</div>
-      </PopupLayout>
+      </Dialog>
     );
     expect(screen.getByText("Custom Header")).toBeInTheDocument();
     expect(screen.queryByText("Title")).not.toBeInTheDocument();
@@ -98,9 +98,9 @@ describe("PopupLayout", () => {
 
   it("applies default maxWidth of 2xl", () => {
     render(
-      <PopupLayout onClose={() => {}}>
+      <Dialog onClose={() => {}}>
         <div>Content</div>
-      </PopupLayout>
+      </Dialog>
     );
     const popup = document.querySelector(".max-w-2xl");
     expect(popup).toBeInTheDocument();
@@ -108,23 +108,23 @@ describe("PopupLayout", () => {
 
   it("applies custom maxWidth", () => {
     const { rerender } = render(
-      <PopupLayout onClose={() => {}} maxWidth="sm">
+      <Dialog onClose={() => {}} maxWidth="sm">
         <div>Content</div>
-      </PopupLayout>
+      </Dialog>
     );
     expect(document.querySelector(".max-w-sm")).toBeInTheDocument();
 
     rerender(
-      <PopupLayout onClose={() => {}} maxWidth="lg">
+      <Dialog onClose={() => {}} maxWidth="lg">
         <div>Content</div>
-      </PopupLayout>
+      </Dialog>
     );
     expect(document.querySelector(".max-w-lg")).toBeInTheDocument();
 
     rerender(
-      <PopupLayout onClose={() => {}} maxWidth="4xl">
+      <Dialog onClose={() => {}} maxWidth="4xl">
         <div>Content</div>
-      </PopupLayout>
+      </Dialog>
     );
     expect(document.querySelector(".max-w-4xl")).toBeInTheDocument();
   });

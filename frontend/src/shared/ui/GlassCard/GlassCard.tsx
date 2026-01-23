@@ -8,8 +8,8 @@ import { FC, ReactNode, useState } from "react";
 import { useAuth } from "@/features/auth/hook/use-auth";
 
 import { Button } from "../Button";
+import { Dialog } from "../Dialog";
 import { MalangEE } from "../MalangEE";
-import { PopupLayout } from "../PopupLayout";
 
 interface GlassCardProps {
   children: ReactNode;

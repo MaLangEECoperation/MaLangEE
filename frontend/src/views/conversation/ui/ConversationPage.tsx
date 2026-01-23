@@ -15,7 +15,7 @@ import {
   MalangEE,
   MalangEEStatus,
   ConfirmPopup,
-  PopupLayout,
+  Dialog,
   SettingsPopup,
   SettingsTrigger,
   DebugStatus,
@@ -464,7 +464,7 @@ function ConversationContent() {
 
       {/* SessionId 에러 팝업 */}
       {showSessionErrorPopup && (
-        <PopupLayout onClose={() => {}} showCloseButton={false} maxWidth="sm">
+        <Dialog onClose={() => {}} showCloseButton={false} maxWidth="sm">
           <div className="flex flex-col items-center gap-6 py-2">
             <MalangEE status="humm" size={120} />
             <div className="text-xl font-bold text-[#1F1C2B]">세션을 찾을 수 없어요</div>
@@ -480,7 +480,7 @@ function ConversationContent() {
               </Button>
             </div>
           </div>
-        </PopupLayout>
+        </Dialog>
       )}
     </>
   );

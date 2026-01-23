@@ -7,7 +7,7 @@ export { MalangEE } from "./MalangEE";
 export type { MalangEEStatus } from "./MalangEE";
 export { MicButton } from "./MicButton/MicButton";
 export { ChatMicButton } from "./MicButton/ChatMicButton";
-export { PopupLayout } from "./PopupLayout";
+export { Dialog } from "./Dialog";
 export { FullLayout } from "./FullLayout";
 export { SplitViewLayout } from "./SplitViewLayout";
 export { PageBackground } from "./PageBackground";

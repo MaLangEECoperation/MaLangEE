@@ -3,8 +3,8 @@
 import type { FC, ReactNode } from "react";
 
 import { Button } from "./Button";
+import { Dialog } from "./Dialog";
 import { MalangEE, type MalangEEStatus } from "./MalangEE";
-import { PopupLayout } from "./PopupLayout";
 
 interface ConfirmPopupProps {
   /** 팝업 메시지 (문자열 또는 ReactNode) */
@@ -42,7 +42,7 @@ export const ConfirmPopup: FC<ConfirmPopupProps> = ({
   disableBackdropClick = false,
 }) => {
   return (
-    <PopupLayout
+    <Dialog
       onClose={onCancel}
       maxWidth={maxWidth}
       showCloseButton={false}
@@ -71,6 +71,6 @@ export const ConfirmPopup: FC<ConfirmPopupProps> = ({
           </Button>
         </div>
       </div>
-    </PopupLayout>
+    </Dialog>
   );
 };

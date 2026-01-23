@@ -9,7 +9,7 @@ import { type Scenario, useScenarios } from "@/features/chat/api/scenarios";
 import { useCreateChatSession } from "@/features/chat/api/use-chat-sessions";
 import { STORAGE_KEYS } from "@/shared/config";
 import { Button, Toggle, MalangEE } from "@/shared/ui";
-import { PopupLayout } from "@/shared/ui/PopupLayout";
+import { Dialog } from "@/shared/ui/Dialog";
 
 interface VoiceOption {
   id: string;
@@ -206,7 +206,7 @@ export function TopicSuggestionPage() {
       </div>
 
       {showDetailPopup && selectedScenario && (
-        <PopupLayout onClose={() => setShowDetailPopup(false)} maxWidth="md" showCloseButton={true}>
+        <Dialog onClose={() => setShowDetailPopup(false)} maxWidth="md" showCloseButton={true}>
           <div className="flex flex-col gap-6 py-6">
             <div id="detail-title" className="flex items-start gap-4 px-2">
               <div className="flex flex-shrink-0 items-center justify-center">
@@ -286,7 +286,7 @@ export function TopicSuggestionPage() {
               </Button>
             </div>
           </div>
-        </PopupLayout>
+        </Dialog>
       )}
     </>
   );

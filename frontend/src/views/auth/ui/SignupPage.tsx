@@ -16,8 +16,8 @@ import {
 } from "@/features/auth";
 import { useSyncGuestSession } from "@/features/chat/api/use-chat-sessions";
 import { MalangEE, Button } from "@/shared/ui";
+import { Dialog } from "@/shared/ui/Dialog";
 import { FullLayout } from "@/shared/ui/FullLayout";
-import { PopupLayout } from "@/shared/ui/PopupLayout";
 
 // safeParse를 사용하는 커스텀 resolver (콘솔 에러 방지)
 const safeZodResolver: Resolver<RegisterFormData> = async (values) => {
@@ -277,7 +277,7 @@ export function SignupPage() {
       </FullLayout>
 
       {showSuccess && (
-        <PopupLayout onClose={() => {}} showCloseButton={false} maxWidth="sm">
+        <Dialog onClose={() => {}} showCloseButton={false} maxWidth="sm">
           <div className="flex flex-col items-center gap-6 py-2">
             <MalangEE size={120} />
             <div className="text-primary text-xl font-bold">회원이 된걸 축하해요!</div>
@@ -285,7 +285,7 @@ export function SignupPage() {
               로그인하기
             </Button>
           </div>
-        </PopupLayout>
+        </Dialog>
       )}
     </>
   );
