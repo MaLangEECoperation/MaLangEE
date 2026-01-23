@@ -22,13 +22,28 @@ done
 rm -f .next/dev/lock || true
 
 # Start Next dev, forcing PORT=3000
-export PORT=$TARGET_PORT
-export NODE_ENV=development
+# Check for mode argument (default: development)
+MODE=${1:-development}
 
-# Use yarn if available, otherwise npm
-if command -v yarn >/dev/null 2>&1; then
-  exec yarn dev
+if [ "$MODE" = "production" ]; then
+  echo "Starting in PRODUCTION mode..."
+  export NODE_ENV=production
+  export PORT=$TARGET_PORT
+  
+  if command -v yarn >/dev/null 2>&1; then
+    exec yarn start
+  else
+    exec npm run start
+  fi
 else
-  exec npm run dev
+  echo "Starting in DEVELOPMENT mode..."
+  export NODE_ENV=development
+  export PORT=$TARGET_PORT
+  
+  if command -v yarn >/dev/null 2>&1; then
+    exec yarn dev
+  else
+    exec npm run dev
+  fi
 fi
 
