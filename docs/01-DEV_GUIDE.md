@@ -36,7 +36,7 @@ cd MaLangEE
 
 ```sql
 CREATE DATABASE malangee;
-CREATE USER aimaster WITH PASSWORD 'password';
+CREATE USER aimaster WITH PASSWORD 'your_password';
 GRANT ALL PRIVILEGES ON DATABASE malangee TO aimaster;
 -- PostgreSQL 15 이상에서는 public 스키마 권한도 필요할 수 있음
 GRANT ALL ON SCHEMA public TO aimaster;
@@ -93,7 +93,7 @@ npm run dev
 ### Backend (.env) 예시
 ```ini
 # Database
-DATABASE_URL=postgresql+asyncpg://aimaster:aimaster123@localhost:5432/malangee
+DATABASE_URL=postgresql+asyncpg://aimaster:your_password@localhost:5432/malangee
 
 # Security
 SECRET_KEY=dev_secret_key_change_me

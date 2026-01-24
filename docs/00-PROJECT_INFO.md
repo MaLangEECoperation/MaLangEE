@@ -37,10 +37,9 @@
 
 | 구분 | 기술 | 버전 | 비고 |
 |---|---|---|---|
-| **Language** | Java | **JDK 17** | OpenJDK 17.0.17 |
-| | Node.js | **v20.x** | v20.19.6 (LTS) |
-| | Python | **3.12+** | 3.12.3 |
-| **Framework** | Spring Boot | **3.2.0** | Maven 빌드 |
+| **Language** | Python | **3.11+** | Poetry 사용 |
+| | Node.js | **v20.x** | v20 LTS |
+| **Framework** | FastAPI | **0.109+** | Python Backend |
 | | Next.js | **16.1.0** | React 기반, TypeScript |
 | **Database** | PostgreSQL | **15+** | 15.15 |
 
