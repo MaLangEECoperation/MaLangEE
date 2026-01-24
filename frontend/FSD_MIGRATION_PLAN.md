@@ -87,39 +87,75 @@ export function useChatMessages(sessionId: string) {
 
 ### 5. 상태 관리 전략
 
-- **서버 상태**: React Query (TanStack Query) - 클라이언트 컴포넌트에서 사용
+- **HTTP 클라이언트**: `fetch` API 기반 (`axios` 사용하지 않음)
+- **서버 상태 (클라이언트)**: React Query (TanStack Query) - 클라이언트 컴포넌트에서만 사용 (무한스크롤, mutation 등)
+- **서버 데이터 패치**: `app/page.tsx` (서버 컴포넌트)에서 `fetchClient` 직접 호출 → views로 props 전달
 - **클라이언트 전역 상태**: Zustand (레이아웃 단위에서만)
-- **초기 데이터 패치**: app 라우터 (서버 컴포넌트)에서 진행 → views로 props 전달
+- **컨텐츠 분리**: 다국어/텍스트 데이터는 `contents` prop 객체로 views에 전달 (컴포넌트와 컨텐츠 분리)
 
 ```tsx
-// ✅ app 라우터 - 서버 컴포넌트 (데이터 패치)
+// ✅ app 라우터 - 서버 컴포넌트 (데이터 패치 + 컨텐츠 분리)
 // app/chat/conversation/page.tsx
-import { serverFetch } from "@/shared/api";
-import { ConversationPage } from "@/views/chat/ConversationPage";
+import { fetchClient } from "@/shared/api";
+import { ConversationPage } from "@/views/chat/ui/ConversationPage";
 
 export default async function Page({ params }: { params: { id: string } }) {
-  const session = await serverFetch<ChatSession>(`/api/v1/chat/sessions/${params.id}`);
-  return <ConversationPage initialData={session} />;
+  const session = await fetchClient.get<ChatSession>(`/chat/sessions/${params.id}`);
+
+  // 다국어/텍스트 컨텐츠 객체 (컴포넌트와 분리)
+  const contents = {
+    heading: "대화하기",
+    startButton: "대화 시작",
+    endButton: "대화 종료",
+    placeholder: "메시지를 입력하세요...",
+  };
+
+  return <ConversationPage initialData={session} contents={contents} />;
 }
 
-// ✅ views - 클라이언트 컴포넌트 (React Query로 상태 관리)
-// views/chat/ConversationPage.tsx
+// ✅ views - 클라이언트 컴포넌트 (React Query는 클라이언트 전용 데이터에만)
+// views/chat/ui/ConversationPage.tsx
 ("use client");
-import { useGetChatSession } from "@/features/chat/api/use-chat-sessions";
 
-export function ConversationPage({ initialData }: Props) {
-  // initialData를 React Query의 초기값으로 사용
-  const { data } = useGetChatSession(initialData.id, { initialData });
-  return <div>...</div>;
+interface ConversationPageProps {
+  initialData: ChatSession;
+  contents: {
+    heading: string;
+    startButton: string;
+    endButton: string;
+    placeholder: string;
+  };
+}
+
+export function ConversationPage({ initialData, contents }: ConversationPageProps) {
+  // React Query는 클라이언트에서 추가 데이터가 필요할 때만 사용
+  // (무한스크롤, 실시간 업데이트, mutation 등)
+  return (
+    <div>
+      <h1>{contents.heading}</h1>
+      <button>{contents.startButton}</button>
+    </div>
+  );
 }
 
 // ✅ 클라이언트 전역 상태 - Zustand (레이아웃에서만)
-// shared/model/store/use-ui-store.ts
+// shared/lib/store/use-ui-store.ts
 export const useUIStore = create<UIState>((set) => ({
   sidebarOpen: false,
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 }));
 ```
+
+**데이터 흐름 정리**:
+
+| 용도                       | 방식                    | 위치                                  |
+| -------------------------- | ----------------------- | ------------------------------------- |
+| **초기 페이지 데이터**     | `fetchClient` 직접 호출 | `app/**/page.tsx` (서버 컴포넌트)     |
+| **클라이언트 동적 데이터** | React Query hooks       | `features/*/query/` (클라이언트 전용) |
+| **다국어/텍스트**          | `contents` prop 객체    | `app/**/page.tsx` → views props       |
+| **UI 상태**                | Zustand                 | `shared/lib/store/`                   |
+
+> ⚠️ **axios 사용 금지**: 프로젝트 전체에서 `axios`를 사용하지 않으며, 기존 `axios` 코드는 `fetchClient`로 마이그레이션
 
 ### 5-1. 인증 전략 (HttpOnly Cookie 기반 듀얼 인증)
 
@@ -776,9 +812,24 @@ src/
 ├── widgets/       # 복합 UI 컴포넌트
 ├── features/      # 기능별 모듈
 │   └── <feature>/
-│       ├── api/       # React Query hooks (클라이언트용)
+│       ├── api/       # API 함수 (엔드포인트별 폴더)
+│       │   └── <action>/
+│       │       ├── <action>.ts          # API 함수
+│       │       ├── <Action>Params.ts    # Zod 요청 파라미터
+│       │       └── <Action>Response.ts  # Zod 응답 타입
+│       ├── query/     # React Query 상태 관리 (클라이언트 전용)
+│       │   ├── <Feature>Query.ts        # Query Factory (queryOptions)
+│       │   ├── useCreate<Entity>.ts     # Create Mutation Hook
+│       │   ├── useRead<Entity>.ts       # Read Query Hook (단일)
+│       │   ├── useRead<Entity>List.ts   # Read Query Hook (목록)
+│       │   ├── useUpdate<Entity>.ts     # Update Mutation Hook
+│       │   ├── useDelete<Entity>.ts     # Delete Mutation Hook
+│       │   └── util/
+│       │       └── transform<Entity>.ts # DTO → Entity 변환
 │       ├── config/    # feature별 상수
-│       ├── model/     # 타입, Zod 스키마, 상태
+│       ├── model/     # 타입, Zod 스키마
+│       │   ├── <Entity>.ts              # Entity 타입 (Zod 스키마)
+│       │   └── <Entity>Dto.ts           # DTO 타입 (API 응답 형태)
 │       ├── ui/        # UI 컴포넌트
 │       ├── hook/      # 비즈니스 로직 hooks
 │       └── index.ts   # Public API

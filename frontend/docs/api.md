@@ -1142,7 +1142,7 @@ console.log(sessions);
 ### WebSocket API
 
 실시간 대화 기능을 위해서는 WebSocket API를 사용합니다.
-자세한 내용은 별도 문서를 참조하세요: [real_time_conversation_ws_guide.md](./real_time_conversation_ws_guide.md)
+자세한 내용은 별도 문서를 참조하세요: [WEBSOCKET.md](./WEBSOCKET.md)
 
 ### 음성 프로필
 

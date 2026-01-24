@@ -1,13 +1,13 @@
 # 📘 MaLangEE 프로젝트 핵심 정보
 
-> **모든 팀원이 가장 먼저 확인해야 할 프로젝트 필수 정보입니다.**  
+> **모든 팀원이 가장 먼저 확인해야 할 프로젝트 필수 정보입니다.**
 > IP, 포트, 계정 정보가 변경되면 이 문서만 업데이트하세요.
 
 ---
 
 ## 🌐 서비스 접속 정보 (Production)
 
-> **중요**: 모든 서비스는 **Nginx**(`malangee.kro.kr`)를 통해 **HTTPS**로 서빙됩니다.  
+> **중요**: 모든 서비스는 **Nginx**(`malangee.kro.kr`)를 통해 **HTTPS**로 서빙됩니다.
 > `docker-compose` 설정상 백엔드/프론트엔드 컨테이너의 포트(3000, 8080)는 호스트에 직접 노출되지 않으며, 오직 Nginx를 통해서만 접근 가능합니다.
 
 | 서비스 | URL | 설명 |
@@ -37,11 +37,11 @@
 
 | 구분 | 기술 | 버전 | 비고 |
 |---|---|---|---|
-| **Language** | Python | **3.11+** | Poetry 사용 |
-| | Node.js | **v20.x** | v20 LTS |
-| **Framework** | FastAPI | **0.109+** | Python Backend |
-| | Next.js | **16.1.0** | React 기반, TypeScript |
-| **Database** | PostgreSQL | **15+** | 15.15 |
+| **Language** | Python | **^3.11** | Poetry 사용 |
+| | Node.js | **20.18.0** | `.nvmrc` 참조, `nvm use` 권장 |
+| **Framework** | FastAPI | **^0.109.0** | Uvicorn, Poetry 빌드 |
+| | Next.js | **16.1.0** | React 19, TypeScript |
+| **Database** | PostgreSQL | **15+** | 로컬 개발 시 SQLite 사용 가능 (`USE_SQLITE=True`) |
 
 ---
 
@@ -67,10 +67,21 @@
 
 ## 🔄 포트 맵 (Port Map)
 
+### Production (Docker + Nginx)
+
 | 내부 포트 | 호스트 노출 | 서비스 | 비고 |
 |:---:|:---:|---|---|
 | **3000** | ❌ (Internal) | Frontend | Nginx가 리버스 프록시 처리 |
 | **8080** | ❌ (Internal) | Backend | Nginx가 `/api/v1`으로 프록시 |
-
+| **5000** | ❌ (Internal) | AI Engine | 헬스체크용 Python HTTP Server |
 | **80/443** | ✅ 80/443 | **Nginx** | **외부 진입점 (Entrypoint)** |
 | **5432** | ✅ 5432 | PostgreSQL | Host Process |
+
+### Local Development
+
+| 포트 | 용도 | 비고 |
+|:---:|---|---|
+| **3000** | Frontend | Next.js Dev Server (`yarn dev`) |
+| **8080** | Backend | FastAPI + Uvicorn |
+| **5000** | AI Engine | Python HTTP Server (헬스체크) |
+| **5432** | Database | PostgreSQL (또는 SQLite 사용) |
