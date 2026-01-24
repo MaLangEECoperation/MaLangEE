@@ -346,7 +346,32 @@ AI 음성 응답이 끝났음을 알립니다.
 
 ---
 
-##### (5) `response.audio_transcript.done` - AI 응답 텍스트
+---
+
+##### (5) `response.audio_transcript.delta` - AI 응답 텍스트 (스트리밍)
+
+AI가 말하는 내용의 텍스트가 실시간으로 전송됩니다.
+
+**수신:**
+
+```json
+{
+  "type": "response.audio_transcript.delta",
+  "transcript_delta": "Hello"
+}
+```
+
+**필드:**
+
+- `transcript_delta`: 추가된 텍스트 조각
+
+**처리 방법:**
+
+- 자막 UI에 실시간으로 추가 (`prev + delta`)
+
+---
+
+##### (6) `response.audio_transcript.done` - AI 응답 텍스트 (완료)
 
 AI가 말한 내용의 텍스트입니다.
 
@@ -599,6 +624,7 @@ AI의 응답을 강제로 요청합니다.
 
 **발생 시점:**
 
+- **현재 서버 정책상 이 이벤트는 무시됩니다.** (불필요한 응답 생성 및 로직 간섭 방지)
 - 사용자가 응답을 기다리는 상황 (일반적으로 자동 처리되므로 드물게 사용)
 
 ---
@@ -784,6 +810,37 @@ AI가 말한 내용의 텍스트 자막입니다.
 
 ---
 
+---
+
+##### (7) `disconnected` - 연결 종료 알림
+
+대화 세션이 종료되었음을 알립니다. 세션 리포트가 포함됩니다.
+
+**수신:**
+
+```json
+{
+  "type": "disconnected",
+  "reason": "Session ended",
+  "report": { ... }
+}
+```
+
+**필드:**
+
+- `report`: 대화 세션 분석 결과 (WPM, 발화 시간 등)
+
+**발생 시점:**
+
+- 클라이언트가 `disconnect` 요청을 보낸 후
+- 또는 서버에서 오류로 인해 연결을 닫을 때
+
+**처리 방법:**
+
+- 대화 화면 종료 및 결과 화면(리포트) 표시
+
+---
+
 ##### (6) `speech.stopped` - 사용자 발화 종료
 
 서버 VAD가 사용자의 발화 종료를 감지했습니다.
@@ -931,6 +988,48 @@ WebSocket 연결이 종료되고 세션 분석 리포트를 수신합니다.
 17. Backend → Frontend: disconnected (세션 리포트 + 피드백 포함)
 18. WebSocket 연결 종료
 ```
+
+---
+
+---
+
+### 3.3 자막 및 번역 처리 (Subtitle & Translation)
+
+대화하기(Chat) 기능은 **실시간 자막**과 **자동 번역**을 제공합니다. 이는 서버의 이벤트와 프론트엔드의 추가 로직(번역 API)이 결합되어 동작합니다.
+
+#### 3.3.1 처리 흐름
+
+1. **영어 자막 수신**:
+   - AI 발화: `transcript.done` 이벤트 수신
+   - 사용자 발화: `user.transcript` 이벤트 수신
+
+2. **자동 번역 요청 (Frontend)**:
+   - 프론트엔드는 위 이벤트를 수신하는 즉시 내부 유틸리티(`translateToKorean`)를 호출합니다.
+   - **Google Translate API** (현재 비공식 엔드포인트 사용)를 통해 텍스트를 국문으로 변환합니다.
+
+3. **UI 표시**:
+   - **영어 자막**: 수신된 `transcript`를 즉시 표시
+   - **국문 자막**: 번역 Promise가 완료되면 해당 텍스트를 업데이트하여 표시
+
+#### 3.3.2 데이터 흐름 예시
+
+```mermaid
+sequenceDiagram
+    participant S as Server (WebSocket)
+    participant F as Frontend Client
+    participant G as Translation API
+
+    S->>F: transcript.done ("Hello, how affect you?")
+    F->>F: Set AI Message ("Hello, how affect you?")
+    F->>G: Request Translation
+    G-->>F: Return ("안녕하세요, 어떠신가요?")
+    F->>F: Set AI Message KR ("안녕하세요, 어떠신가요?")
+    Note right of F: UI에 영문/국문 동시 표시
+```
+
+#### 3.3.3 주의사항
+- `show_text` 쿼리 파라미터를 `false`로 설정해도 서버는 항상 자막 이벤트를 보냅니다.
+- 프론트엔드는 이 설정값에 따라 단순 **"표시 여부(Visibility)"**만 제어합니다.
 
 ---
 

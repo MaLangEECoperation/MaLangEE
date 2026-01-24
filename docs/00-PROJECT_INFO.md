@@ -5,23 +5,24 @@
 
 ---
 
-## 🌐 서비스 접속 정보
+## 🌐 서비스 접속 정보 (Production)
+
+> **중요**: 모든 서비스는 **Nginx**(`malangee.kro.kr`)를 통해 **HTTPS**로 서빙됩니다.  
+> `docker-compose` 설정상 백엔드/프론트엔드 컨테이너의 포트(3000, 8080)는 호스트에 직접 노출되지 않으며, 오직 Nginx를 통해서만 접근 가능합니다.
 
 | 서비스 | URL | 설명 |
 |:---:|---|---|
-| **Frontend** | [https://lb-dev-web-ai-117002060-f11523401681.kr.lb.naverncp.com](https://lb-dev-web-ai-117002060-f11523401681.kr.lb.naverncp.com) | 사용자 웹 인터페이스 (Next.js, HTTPS) |
-| | [http://49.50.137.35:3000](http://49.50.137.35:3000) | Frontend 직접 접속 (개발용) |
-| **Backend API** | [http://49.50.137.35:8080/api](http://49.50.137.35:8080/api) | REST API 서버 (Health: `/api/health`) |
-| **AI Engine** | [http://49.50.137.35:5000](http://49.50.137.35:5000) | AI 분석 엔진 |
-| **Database** | `49.50.137.35:5432` | PostgreSQL 데이터베이스 |
+| **Frontend** | [https://malangee.kro.kr](https://malangee.kro.kr) | 사용자 웹 인터페이스 (Next.js) |
+| **Backend API** | [https://malangee.kro.kr/api/v1](https://malangee.kro.kr/api/v1) | REST API 서버 (ProxyPass) |
 
-**특징**: 프론트엔드는 네이버 클라우드 로드밸런서를 통해 HTTPS 제공
+| **Database** | `49.50.137.35:5432` | PostgreSQL (Host 직접 설치) |
 
 ---
 
 ## 🖥️ 서버 접속 정보 (SSH)
 
 - **Host IP**: `49.50.137.35`
+- **Domain**: `malangee.kro.kr`
 - **OS**: Ubuntu 24.04 LTS
 - **SSH 계정**: `aimaster`
 - **SSH 접속**:
@@ -52,23 +53,25 @@
 | `/home/aimaster/projects/MaLangEE` | **프로젝트 루트** (Git 저장소) |
 | `/home/aimaster/projects/MaLangEE/deploy.sh` | **배포 스크립트** |
 | `/var/log/MaLangEE_deploy.log` | **배포 로그** |
+| `/home/aimaster/projects/MaLangEE/nginx.conf` | **Nginx 설정** (Docker 마운트) |
 
 ---
 
 ## 🔐 데이터베이스 정보
 
 - **Database Name**: `malangee`
-- **User**: `aimaster` (또는 `malangee_user`)
-- **Password**: *(보안상 별도 공유)*
+- **User**: `aimaster`
+- **Password**: *(보안상 별도 공유 - docker.env 확인)*
 - **Port**: `5432`
 
 ---
 
 ## 🔄 포트 맵 (Port Map)
 
-| 포트 | 용도 | 비고 |
-|:---:|---|---|
-| **3000** | Frontend | Next.js Dev Server |
-| **8080** | Backend | Spring Boot Tomcat |
-| **5000** | AI Engine | Flask/FastAPI |
-| **5432** | Database | PostgreSQL |
+| 내부 포트 | 호스트 노출 | 서비스 | 비고 |
+|:---:|:---:|---|---|
+| **3000** | ❌ (Internal) | Frontend | Nginx가 리버스 프록시 처리 |
+| **8080** | ❌ (Internal) | Backend | Nginx가 `/api/v1`으로 프록시 |
+
+| **80/443** | ✅ 80/443 | **Nginx** | **외부 진입점 (Entrypoint)** |
+| **5432** | ✅ 5432 | PostgreSQL | Host Process |

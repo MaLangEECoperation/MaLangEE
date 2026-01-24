@@ -24,8 +24,8 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: poetry run python ../ai-engine/app.py
-    ports:
-      - "5000:5000"
+    # ports:
+    #   - "5000:5000"
 
   frontend:
     build:
