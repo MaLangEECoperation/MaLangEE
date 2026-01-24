@@ -4,9 +4,10 @@ import Link from "next/link";
 import { FC, useState, useMemo } from "react";
 
 import { useGetChatSession } from "@/features/chat";
-import type { ChatHistoryItem } from "@/shared/types/chat";
 import { Button, Tooltip } from "@/shared/ui";
 import { Dialog } from "@/shared/ui/Dialog";
+
+import type { ChatHistoryItem } from "../model/chat";
 
 import { ChatTranscriptPopup } from "./ChatTranscriptPopup";
 

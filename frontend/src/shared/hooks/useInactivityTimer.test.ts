@@ -136,9 +136,9 @@ describe("useInactivityTimer", () => {
 
     expect(result.current.showInactivityMessage).toBe(true);
 
-    // Default waitTime is 5000
+    // Default waitTime is 10000
     act(() => {
-      vi.advanceTimersByTime(4999);
+      vi.advanceTimersByTime(9999);
     });
 
     expect(result.current.showWaitPopup).toBe(false);

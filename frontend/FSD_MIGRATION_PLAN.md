@@ -439,7 +439,7 @@ localStorage.getItem(STORAGE_KEYS.conversationGoal); // 정상 작동
 - [ ] `entities/user/` - 사용자 엔티티 구축
 - [ ] `entities/scenario/` - 시나리오 엔티티 구축
 - [ ] `features/chat/model/` - 타입 분리 필요 (hook/types.ts 이동)
-- [ ] `features/chat/ui/` - 대시보드 팝업 컴포넌트 이동 (ChatDetailPopup, ChatTranscriptPopup)
+- [x] `features/chat/ui/` - 대시보드 팝업 컴포넌트 이동 (ChatDetailPopup, ChatTranscriptPopup)
 - [ ] `views/` - 페이지 로직 분리 필요
 - [ ] `shared/types/` → `shared/model/` 리네이밍
 
@@ -449,15 +449,15 @@ localStorage.getItem(STORAGE_KEYS.conversationGoal); // 정상 작동
 
 ### FSD 준수율: ~75%
 
-| 레이어           | 상태 | 설명                                                     |
-| ---------------- | ---- | -------------------------------------------------------- |
-| `app/`           | ⚠️   | 페이지 컴포넌트가 라우터 파일에 직접 포함됨              |
-| `features/auth/` | ✅   | 완전한 FSD 구조 (api/, hook/, model/, ui/ + 전체 테스트) |
-| `features/chat/` | ⚠️   | api/, hook/, ui/ 완성, model/ 누락 (types.ts 이동 필요)  |
-| `shared/`        | ⚠️   | config/ 완성, types/ → model/ 리네이밍 필요              |
-| `entities/`      | ⚠️   | 미생성 (현재 필요 없음)                                  |
-| `widgets/`       | ⚠️   | 미생성 (현재 필요 없음)                                  |
-| `views/`         | ❌   | 미생성 → 페이지 로직 분리 필요                           |
+| 레이어           | 상태 | 설명                                                                     |
+| ---------------- | ---- | ------------------------------------------------------------------------ |
+| `app/`           | ⚠️   | 페이지 컴포넌트가 라우터 파일에 직접 포함됨                              |
+| `features/auth/` | ✅   | 완전한 FSD 구조 (api/, hook/, model/, ui/ + 전체 테스트)                 |
+| `features/chat/` | ⚠️   | api/, hook/, ui/ 완성 (팝업 이동 완료), model/ 누락 (types.ts 이동 필요) |
+| `shared/`        | ⚠️   | config/ 완성, types/ → model/ 리네이밍 필요                              |
+| `entities/`      | ⚠️   | 미생성 (현재 필요 없음)                                                  |
+| `widgets/`       | ⚠️   | 미생성 (현재 필요 없음)                                                  |
+| `views/`         | ❌   | 미생성 → 페이지 로직 분리 필요                                           |
 
 ### 라우트 구조 (현재)
 
@@ -481,19 +481,16 @@ src/app/
 │   ├── signup/
 │   └── logout/
 ├── dashboard/
-│   ├── page.tsx
-│   ├── ChatDetailPopup.tsx    # ❌ FSD 위반
-│   ├── ChatTranscriptPopup.tsx # ❌ FSD 위반
-│   └── NicknameChangePopup.tsx # ❌ FSD 위반
+│   └── page.tsx               # ✅ views/dashboard 호출만
 └── ws-test/
 ```
 
 ### FSD 위반 파일
 
-1. `app/dashboard/ChatDetailPopup.tsx` → features/chat/ui/
-2. `app/dashboard/ChatTranscriptPopup.tsx` → features/chat/ui/
-3. `app/dashboard/NicknameChangePopup.tsx` → features/auth/ui/
-4. 모든 `app/**/page.tsx` → 로직을 `views/`로 분리 필요
+1. ~~`app/dashboard/ChatDetailPopup.tsx`~~ → ✅ features/chat/ui/ 이동 완료
+2. ~~`app/dashboard/ChatTranscriptPopup.tsx`~~ → ✅ features/chat/ui/ 이동 완료
+3. ~~`app/dashboard/NicknameChangePopup.tsx`~~ → ✅ features/auth/ui/ 이동 완료
+4. ~~모든 `app/**/page.tsx`~~ → ✅ `views/`로 분리 완료
 5. `shared/types/` → `shared/model/`로 변경 필요
 6. `features/chat/hook/types.ts` → `features/chat/model/`로 이동 필요
 
@@ -571,8 +568,8 @@ src/features/chat/ui/
 ├── RealtimeHint.test.tsx             # ✅ 완료
 ├── LanguageNotRecognizedDialog.tsx    # ✅ 완료 (테스트 포함)
 ├── LanguageNotRecognizedDialog.test.tsx # ✅ 완료
-├── ChatDetailPopup.tsx               # ⬜ app/dashboard/에서 이동 필요
-├── ChatTranscriptPopup.tsx           # ⬜ app/dashboard/에서 이동 필요
+├── ChatDetailPopup.tsx               # ✅ views/dashboard/에서 이동 완료
+├── ChatTranscriptPopup.tsx           # ✅ views/dashboard/에서 이동 완료
 ├── index.ts                          # ✅ 완료 (export 추가 필요)
 ```
 
@@ -701,11 +698,11 @@ src/app/chat/
 
 5. [ ] `features/chat/model/` 생성 및 `hook/types.ts` 이동
 6. [x] `features/chat/ui/` 생성 (RealtimeHint, LanguageNotRecognizedDialog + 테스트)
-7. [ ] `app/dashboard/ChatDetailPopup.tsx` → `features/chat/ui/` 이동
-8. [ ] `app/dashboard/ChatTranscriptPopup.tsx` → `features/chat/ui/` 이동
-9. [ ] `app/dashboard/NicknameChangePopup.tsx` → `features/auth/ui/` 이동
-10. [ ] `features/chat/index.ts` - model, ui(팝업) export 추가
-11. [ ] `features/auth/ui/index.ts` - NicknameChangePopup export 추가
+7. [x] `views/dashboard/ChatDetailPopup.tsx` → `features/chat/ui/` 이동
+8. [x] `views/dashboard/ChatTranscriptPopup.tsx` → `features/chat/ui/` 이동
+9. [x] `views/dashboard/NicknameChangePopup.tsx` → `features/auth/ui/` 이동 (Phase 2에서 완료)
+10. [x] `features/chat/index.ts` - ui(팝업) export 추가
+11. [x] `features/auth/ui/index.ts` - NicknameChangePopup export 추가 (Phase 2에서 완료)
 
 ### Phase 3: shared 레이어 정리 + API 클라이언트 + config
 

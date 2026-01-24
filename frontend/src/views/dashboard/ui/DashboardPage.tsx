@@ -5,16 +5,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AuthGuard, NicknameChangePopup, useCurrentUser } from "@/features/auth";
+import { ChatDetailPopup } from "@/features/chat";
+import type { ChatHistoryItem } from "@/features/chat";
 import { useInfiniteChatSessions } from "@/features/chat/api/use-chat-sessions";
+import { CHAT_PAGINATION } from "@/features/chat/config";
 import { STORAGE_KEYS } from "@/shared/config";
 import { usePopupStore } from "@/shared/lib/store";
-import type { ChatHistoryItem } from "@/shared/types/chat";
 import { Button } from "@/shared/ui";
 import { SplitViewLayout } from "@/shared/ui/SplitViewLayout";
 
-import { ChatDetailPopup } from "./ChatDetailPopup";
-
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = CHAT_PAGINATION.DEFAULT_PAGE_SIZE;
 
 interface UserProfile {
   nickname: string;

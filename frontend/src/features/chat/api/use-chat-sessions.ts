@@ -4,8 +4,10 @@
 
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { CHAT_QUERY_CONFIG, CHAT_PAGINATION } from "@/features/chat/config";
 import { apiClient } from "@/shared/lib/api-client";
-import type { ChatSession, ChatSessionDetail, ChatSessionsResponse } from "@/shared/types/chat";
+
+import type { ChatSession, ChatSessionDetail, ChatSessionsResponse } from "../model/chat";
 
 /**
  * 대화 세션 생성 요청 타입
@@ -54,7 +56,7 @@ export function useGetChatSessions(skip: number = 0, limit: number = 20, userId?
       // 객체인 경우 (변경된 API: { items: [], total: 100 })
       return response;
     },
-    staleTime: 1000 * 60 * 5, // 5분
+    staleTime: CHAT_QUERY_CONFIG.SESSION_STALE_TIME,
   });
 }
 
@@ -63,7 +65,10 @@ export function useGetChatSessions(skip: number = 0, limit: number = 20, userId?
  * @param limit - 페이지당 항목 수 (기본값: 10)
  * @param userId - 사용자 ID 필터 (선택)
  */
-export function useInfiniteChatSessions(limit: number = 10, userId?: number) {
+export function useInfiniteChatSessions(
+  limit: number = CHAT_PAGINATION.DEFAULT_PAGE_SIZE,
+  userId?: number
+) {
   return useInfiniteQuery({
     queryKey: ["chatSessions", "infinite", limit, userId],
     queryFn: async ({ pageParam = 0 }) => {
@@ -101,7 +106,7 @@ export function useInfiniteChatSessions(limit: number = 10, userId?: number) {
       return allPages.length * limit;
     },
     initialPageParam: 0,
-    staleTime: 1000 * 60 * 5, // 5분
+    staleTime: CHAT_QUERY_CONFIG.SESSION_STALE_TIME,
     enabled: !!userId, // userId가 있을 때만 실행 (선택 사항)
   });
 }
@@ -117,7 +122,7 @@ export function useGetChatSession(sessionId: string | null) {
       return data;
     },
     enabled: !!sessionId,
-    staleTime: 1000 * 60 * 5, // 5분
+    staleTime: CHAT_QUERY_CONFIG.SESSION_STALE_TIME,
   });
 }
 
@@ -130,7 +135,7 @@ export function useGetRecentSession() {
     queryFn: async () => {
       return await apiClient.get<ChatSessionDetail | null>("/chat/recent");
     },
-    staleTime: 1000 * 60, // 1분
+    staleTime: CHAT_QUERY_CONFIG.HINTS_STALE_TIME,
   });
 }
 
