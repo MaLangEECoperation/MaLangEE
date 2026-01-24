@@ -3,15 +3,12 @@
 import { FC, useEffect, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 
-import {
-  type NicknameUpdateFormData,
-  nicknameUpdateSchema,
-  useCurrentUser,
-  useNicknameCheck,
-  useUpdateNickname,
-} from "@/features/auth";
 import { Button, MalangEE } from "@/shared/ui";
 import { Dialog } from "@/shared/ui/Dialog";
+
+import { useCurrentUser, useUpdateNickname } from "../api";
+import { useNicknameCheck } from "../hook";
+import { type NicknameUpdateFormData, nicknameUpdateSchema } from "../model";
 
 // safeParse를 사용하는 커스텀 resolver (콘솔 에러 방지)
 const nicknameUpdateResolver: Resolver<NicknameUpdateFormData> = async (values) => {

@@ -38,6 +38,7 @@ export { useAuth, useLoginIdCheck, useNicknameCheck, usePasswordValidation } fro
 export {
   AuthGuard,
   GuestGuard,
+  NicknameChangePopup,
   SignupPromptDialog,
   type SignupPromptDialogProps,
   TokenKeepAlive,

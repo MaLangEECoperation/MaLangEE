@@ -4,7 +4,7 @@ import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { AuthGuard, useCurrentUser } from "@/features/auth";
+import { AuthGuard, NicknameChangePopup, useCurrentUser } from "@/features/auth";
 import { useInfiniteChatSessions } from "@/features/chat/api/use-chat-sessions";
 import { STORAGE_KEYS } from "@/shared/config";
 import { usePopupStore } from "@/shared/lib/store";
@@ -13,7 +13,6 @@ import { Button } from "@/shared/ui";
 import { SplitViewLayout } from "@/shared/ui/SplitViewLayout";
 
 import { ChatDetailPopup } from "./ChatDetailPopup";
-import { NicknameChangePopup } from "./NicknameChangePopup";
 
 const ITEMS_PER_PAGE = 10;
 
