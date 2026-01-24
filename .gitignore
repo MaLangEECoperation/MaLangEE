@@ -231,3 +231,13 @@ yarn.lock
 .agent/
 /CLAUDE.md
 .mcp.json
+
+# Docker Environment Secrets
+docker.env
+!docker.env.example
+
+
+# SSL Certificates
+*.key
+*.crt
+*.pem
