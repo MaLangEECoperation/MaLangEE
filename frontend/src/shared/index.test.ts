@@ -19,4 +19,12 @@ describe("shared/index barrel export", () => {
     expect(shared.debugLog).toBeTypeOf("function");
     expect(shared.decodeJWT).toBeTypeOf("function");
   });
+
+  it("should export api utilities", async () => {
+    const shared = await import("./index");
+    expect(shared.fetchClient).toBeDefined();
+    expect(shared.ApiError).toBeDefined();
+    expect(shared.createQueryClient).toBeTypeOf("function");
+    expect(shared.API_BASE_URL).toBeDefined();
+  });
 });
