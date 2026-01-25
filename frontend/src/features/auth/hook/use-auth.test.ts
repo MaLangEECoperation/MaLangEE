@@ -33,11 +33,9 @@ vi.mock("../model", () => ({
   },
 }));
 
-// Mock authApi
-vi.mock("../api/auth-api", () => ({
-  authApi: {
-    getCurrentUser: () => mockGetCurrentUser(),
-  },
+// Mock getCurrentUser
+vi.mock("../api/get-current-user/get-current-user", () => ({
+  getCurrentUser: () => mockGetCurrentUser(),
 }));
 
 // Import after mocks

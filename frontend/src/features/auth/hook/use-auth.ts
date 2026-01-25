@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useSyncExternalStore } from "react";
 
-import { authApi } from "../api/auth-api";
+import { getCurrentUser } from "../api/get-current-user/get-current-user";
 import { tokenStorage, userStorage } from "../model";
 
 /**
@@ -61,7 +61,7 @@ export function useAuth() {
 
   const refreshUser = useCallback(async () => {
     try {
-      const freshUser = await authApi.getCurrentUser();
+      const freshUser = await getCurrentUser();
       userStorage.set(freshUser);
       return { data: freshUser };
     } catch (error) {

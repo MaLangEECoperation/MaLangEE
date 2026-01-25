@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { SignupPromptDialog, useAuth } from "@/features/auth";
-import { useGetChatSession } from "@/features/chat/api/use-chat-sessions";
+import { useReadChatSession } from "@/features/chat/query";
 import { STORAGE_KEYS } from "@/shared/config";
 import { Button, MalangEE } from "@/shared/ui";
 
@@ -25,7 +25,7 @@ export function CompletePage() {
   const sessionId = useMemo(() => getInitialSessionId(), []);
 
   // 세션 상세 정보 조회
-  const { data: sessionDetail, isLoading } = useGetChatSession(sessionId);
+  const { data: sessionDetail, isLoading } = useReadChatSession(sessionId);
 
   // 세션 정보에서 직접 duration 값 추출 (상태 없이)
   const totalDuration = sessionDetail?.total_duration_sec ?? 0;

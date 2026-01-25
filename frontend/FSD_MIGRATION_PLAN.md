@@ -5,6 +5,62 @@
 
 ---
 
+## 📊 통합 마이그레이션 현황 (ROADMAP + FSD)
+
+> **마지막 업데이트**: 2026-01-25
+> **참조**: `docs/ROADMAP.md` (기능 로드맵), 이 문서 (FSD 구조 마이그레이션)
+
+### 전체 Phase 개요
+
+| Phase  | 제목                | 상태 | 우선순위 | 완료/전체 | 진행률  |
+| :----: | ------------------- | :--: | :------: | :-------: | :-----: |
+| **R**  | ROADMAP 기능 (2-7)  |  ✅  |    -     |    6/6    |  100%   |
+| **1**  | API 인프라          |  🔄  | 🔴 높음  |   8/10    |   80%   |
+| **2**  | 스키마 콜로케이션   |  🔄  | 🔴 높음  |   15/21   |   71%   |
+| **3**  | localStorage 버그   |  🔄  | 🔴 높음  |    1/2    |   50%   |
+| **4**  | views 서버 컴포넌트 |  ⬜  | 🟡 중간  |    0/5    |   0%    |
+| **5**  | 라우터 구조 재편    |  ⬜  | 🟡 중간  |    0/4    |   0%    |
+| **6**  | 에러 바운더리       |  ⬜  | 🟡 중간  |    0/2    |   0%    |
+| **7**  | 반응형 디자인       |  ⬜  | 🟡 중간  |    0/4    |   0%    |
+| **8**  | 접근성 개선         |  ⬜  | 🟡 중간  |    0/5    |   0%    |
+| **9**  | Custom Hook 분리    |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
+| **10** | 버튼/링크 리팩토링  |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
+| **11** | 매직넘버 상수화     |  ⬜  | 🟢 낮음  |    0/3    |   0%    |
+| **12** | ESLint FSD 강제     |  ⬜  | 🟢 낮음  |    0/2    |   0%    |
+| **13** | 텍스트 입력 모드    |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
+|        | **전체**            |      |          | **30/67** | **45%** |
+
+### ROADMAP 완료 기능 (Phase R)
+
+| Phase | 기능                 | 파일                                               | 상태 |
+| :---: | -------------------- | -------------------------------------------------- | :--: |
+|  R-2  | 음성/WebSocket       | `features/chat/hook/useWebSocketBase.ts` 등        |  ✅  |
+|  R-3  | 언어인지 불가 팝업   | `features/chat/ui/LanguageNotRecognizedDialog.tsx` |  ✅  |
+|  R-4  | 대화종료 재확인 팝업 | `shared/ui/ConfirmPopup.tsx`                       |  ✅  |
+|  R-5  | 회원가입 권유 팝업   | `features/auth/ui/SignupPromptDialog.tsx`          |  ✅  |
+|  R-6  | 실시간 힌트 UI       | `features/chat/ui/RealtimeHint.tsx`                |  ✅  |
+|  R-7  | 테스트/품질          | 673개 단위 + 143개 E2E                             |  ✅  |
+
+### 🎯 권장 작업 순서
+
+```
+1️⃣ Phase 3: localStorage 버그 수정 (🔴 높음, 데이터 손실 방지)
+   └─ direct-speech/page.tsx snake_case → camelCase
+
+2️⃣ Phase 2-C: Chat 스키마 콜로케이션 (🔴 높음, 7개 API)
+   └─ get-chat-sessions, delete-chat-session 등
+
+3️⃣ Phase 2-D: 스키마 정리 (🔴 높음)
+   └─ model/schema.ts, model/schemas.ts 정리
+
+4️⃣ Phase 1 마무리 (🟡 중간)
+   └─ shared/model 리네이밍, axios 마이그레이션
+
+5️⃣ Phase 4+: views, 라우터, 반응형, 접근성...
+```
+
+---
+
 ## 코드 작성 규칙
 
 ### 1. 단일 Export 원칙
@@ -171,24 +227,25 @@ export const useUIStore = create<UIState>((set) => ({
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│  2. 이후 모든 요청 (자동 인증)                                │
+│  2. 이후 모든 요청 (자동 인증) - fetchClient 통합              │
 │                                                             │
-│     서버 컴포넌트 (serverFetch)  ───┐                        │
-│                                    ├──► 쿠키 자동 포함 ✅    │
-│     클라이언트 (apiClient)       ───┘                        │
+│     서버 (typeof window === "undefined")                     │
+│       → cookies()로 토큰 읽기 → Authorization 헤더    ───┐  │
+│                                                          ├► │
+│     클라이언트 (typeof window !== "undefined")               │
+│       → credentials: 'include' → 쿠키 자동 첨부       ───┘  │
 │                                                             │
 │     ⚠️ JavaScript: 토큰 접근 불가 (XSS 방어)                 │
 │     ✅ 브라우저: 모든 요청에 자동 첨부                         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**API 클라이언트 구조**:
+**API 클라이언트 구조** (`fetch` 기반, `axios` 사용하지 않음):
 
 ```
 shared/api/
 ├── config.ts           # 공통 설정 (API_BASE_URL, ApiError)
-├── server-fetch.ts     # 서버 컴포넌트용 (cookies() 사용)
-├── client-fetch.ts     # 클라이언트용 (credentials: 'include')
+├── fetch-client.ts     # fetch 기반 통합 클라이언트 (서버/클라이언트 공용, 토큰 인증 포함)
 └── index.ts            # Public API
 ```
 
@@ -209,22 +266,47 @@ export class ApiError extends Error {
 ```
 
 ```typescript
-// shared/api/server-fetch.ts (서버 컴포넌트용)
-import { cookies } from "next/headers";
+// shared/api/fetch-client.ts (서버/클라이언트 공용)
 import { API_BASE_URL, ApiError } from "./config";
 
-export async function serverFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("access_token")?.value;
+interface FetchClientConfig extends Omit<RequestInit, "body"> {
+  params?: Record<string, string>;
+}
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
+async function request<T>(
+  endpoint: string,
+  options?: RequestInit & { params?: Record<string, string> }
+): Promise<T> {
+  const { params, ...fetchOptions } = options || {};
+
+  // URL 쿼리 파라미터 처리
+  let url = `${API_BASE_URL}${endpoint}`;
+  if (params) {
+    const searchParams = new URLSearchParams(params);
+    url += `?${searchParams.toString()}`;
+  }
+
+  // 서버 환경에서는 cookies()로 토큰 획득
+  let authHeader: Record<string, string> = {};
+  if (typeof window === "undefined") {
+    // 서버 환경: next/headers의 cookies() 사용
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    const token = cookieStore.get("access_token")?.value;
+    if (token) authHeader = { Authorization: `Bearer ${token}` };
+  }
+
+  const response = await fetch(url, {
+    ...fetchOptions,
     headers: {
       "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options?.headers,
+      ...authHeader,
+      ...fetchOptions?.headers,
     },
-    cache: options?.cache ?? "no-store",
+    // 클라이언트 환경: 쿠키 자동 포함
+    ...(typeof window !== "undefined" && { credentials: "include" }),
+    // 서버 환경: 캐시 비활성화 (기본)
+    ...(typeof window === "undefined" && !fetchOptions?.cache && { cache: "no-store" }),
   });
 
   if (!response.ok) {
@@ -233,53 +315,25 @@ export async function serverFetch<T>(endpoint: string, options?: RequestInit): P
 
   return response.json();
 }
-```
 
-```typescript
-// shared/api/client-fetch.ts (클라이언트 컴포넌트용)
-"use client";
-
-import { API_BASE_URL, ApiError } from "./config";
-
-async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-    credentials: "include", // ✅ HttpOnly 쿠키 자동 포함
-  });
-
-  if (!response.ok) {
-    throw new ApiError(response.status, `API Error: ${response.statusText}`);
-  }
-
-  return response.json();
-}
-
-export const apiClient = {
-  get: <T>(endpoint: string, config?: RequestInit) =>
+export const fetchClient = {
+  get: <T>(endpoint: string, config?: FetchClientConfig) =>
     request<T>(endpoint, { ...config, method: "GET" }),
 
-  post: <T>(endpoint: string, body?: unknown, config?: RequestInit) =>
+  post: <T>(endpoint: string, body?: unknown, config?: FetchClientConfig) =>
     request<T>(endpoint, { ...config, method: "POST", body: JSON.stringify(body) }),
 
-  put: <T>(endpoint: string, body?: unknown, config?: RequestInit) =>
+  put: <T>(endpoint: string, body?: unknown, config?: FetchClientConfig) =>
     request<T>(endpoint, { ...config, method: "PUT", body: JSON.stringify(body) }),
 
-  patch: <T>(endpoint: string, body?: unknown, config?: RequestInit) =>
-    request<T>(endpoint, { ...config, method: "PATCH", body: JSON.stringify(body) }),
-
-  del: <T>(endpoint: string, config?: RequestInit) =>
+  del: <T>(endpoint: string, config?: FetchClientConfig) =>
     request<T>(endpoint, { ...config, method: "DELETE" }),
 };
 ```
 
 ```typescript
 // shared/api/index.ts
-export { serverFetch } from "./server-fetch";
-export { apiClient } from "./client-fetch";
+export { fetchClient } from "./fetch-client";
 export { ApiError, API_BASE_URL } from "./config";
 ```
 
@@ -339,29 +393,32 @@ export async function logout() {
 }
 ```
 
-**사용 예시 (무한스크롤)**:
+**사용 예시 (무한스크롤 - Query 패턴)**:
 
 ```typescript
-// features/chat/api/queries.ts
-import { apiClient } from "@/shared/api";
+// features/chat/query/useReadChatSessionList.ts
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { getChatSessions } from "../api/get-chat-sessions/get-chat-sessions";
+import { ChatQueries } from "./ChatQuery";
 
-export function useInfiniteChatSessions() {
+export function useReadChatSessionList(size: number, userId?: string) {
   return useInfiniteQuery({
-    queryKey: ["chatSessions"],
-    queryFn: ({ pageParam = 1 }) =>
-      apiClient.get<ChatSessionsResponse>(`/api/v1/chat/sessions?page=${pageParam}`),
-    getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined,
+    queryKey: [...ChatQueries.all(), "sessions", "infinite", userId],
+    queryFn: ({ pageParam = 1 }) => getChatSessions({ page: pageParam, size, userId }),
+    getNextPageParam: (lastPage) => {
+      const hasMore = lastPage.page * lastPage.size < lastPage.total;
+      return hasMore ? lastPage.page + 1 : undefined;
+    },
     initialPageParam: 1,
   });
 }
 ```
 
-| 용도                                  | API                      | 인증 방식                        |
-| ------------------------------------- | ------------------------ | -------------------------------- |
-| **서버 컴포넌트** (초기 데이터)       | `serverFetch()`          | `cookies()` → Authorization 헤더 |
-| **클라이언트** (무한스크롤, mutation) | `apiClient.get/post/...` | `credentials: 'include'`         |
-| **인증** (로그인/로그아웃)            | Server Actions           | HttpOnly 쿠키 설정/삭제          |
+| 용도                                  | API                             | 인증 방식                        |
+| ------------------------------------- | ------------------------------- | -------------------------------- |
+| **서버 컴포넌트** (초기 데이터)       | `fetchClient.get/post/...`      | `cookies()` → Authorization 헤더 |
+| **클라이언트** (무한스크롤, mutation) | `fetchClient` (via Query hooks) | `credentials: 'include'`         |
+| **인증** (로그인/로그아웃)            | Server Actions                  | HttpOnly 쿠키 설정/삭제          |
 
 ### 6. 인터셉터 라우터 (정보성 팝업)
 
@@ -457,7 +514,83 @@ localStorage.getItem(STORAGE_KEYS.conversationGoal); // 정상 작동
 
 ---
 
-## 현재 구현 상태 (2026-01-23)
+## 현재 구현 상태 (2026-01-25)
+
+### Phase 1: API 인프라 🔄 (8/10)
+
+|  #  | 작업                                 | 상태 | 비고                                   |
+| :-: | ------------------------------------ | :--: | -------------------------------------- |
+|  1  | `shared/api/config.ts`               |  ✅  | API_BASE_URL, ApiError                 |
+|  2  | `shared/api/fetch-client.ts`         |  ✅  | 서버/클라이언트 공용                   |
+|  3  | `shared/api/query-client.ts`         |  ✅  | React Query 설정                       |
+|  4  | `shared/api/index.ts`                |  ✅  | Public API export                      |
+|  5  | `features/auth/api/` Zod 스키마      |  ✅  | 6개 API 콜로케이션                     |
+|  6  | `features/chat/api/` 구조 생성       |  ✅  | scenarios 등                           |
+|  7  | `features/auth/query/AuthQuery.ts`   |  ✅  | Full Object Key 패턴                   |
+|  8  | `features/chat/query/ChatQuery.ts`   |  ✅  | Full Object Key + QueryFunctionContext |
+|  9  | `shared/types/` → `shared/model/`    |  ⬜  | 리네이밍 필요                          |
+| 10  | `axios` → `fetchClient` 마이그레이션 |  ⬜  | 기존 코드 변환                         |
+
+### Phase 2: 스키마 콜로케이션 🔄 (15/21)
+
+#### 2-A: UI/Model 구조 (6/7)
+
+|  #  | 작업                                                          | 상태 |
+| :-: | ------------------------------------------------------------- | :--: |
+|  1  | `features/chat/ui/` RealtimeHint, LanguageNotRecognizedDialog |  ✅  |
+|  2  | `ChatDetailPopup` → `features/chat/ui/`                       |  ✅  |
+|  3  | `ChatTranscriptPopup` → `features/chat/ui/`                   |  ✅  |
+|  4  | `NicknameChangePopup` → `features/auth/ui/`                   |  ✅  |
+|  5  | `features/chat/index.ts` export 추가                          |  ✅  |
+|  6  | `features/auth/ui/index.ts` export 추가                       |  ✅  |
+|  7  | `features/chat/model/` 생성 + types.ts 이동                   |  ⬜  |
+
+#### 2-B: Auth 스키마 콜로케이션 (6/6) ✅
+
+| API                 | Params | Response |
+| ------------------- | :----: | :------: |
+| login               |   ✅   |    ✅    |
+| signup              |   ✅   |    ✅    |
+| check-login-id      |   ✅   |    ✅    |
+| check-nickname      |   ✅   |    ✅    |
+| get-current-user    |   -    |    ✅    |
+| update-current-user |   ✅   |    ✅    |
+
+#### 2-C: Chat 스키마 콜로케이션 (1/7) ⬜
+
+| API                 | Params | Response | 우선순위 |
+| ------------------- | :----: | :------: | :------: |
+| get-chat-sessions   |   ⬜   |    ⬜    |    🔴    |
+| get-chat-session    |   -    |    ⬜    |    🔴    |
+| create-chat-session |   ✅   |    ⬜    |    🟡    |
+| delete-chat-session |   ⬜   |    -     |    🔴    |
+| get-hints           |   -    |    ⬜    |    🟡    |
+| sync-guest-session  |   -    |    ⬜    |    🟡    |
+| create-feedback     |   ⬜   |    ⬜    |    🟢    |
+
+#### 2-D: 스키마 정리 (0/2) ⬜
+
+| 작업                    | 상태 | 설명                  |
+| ----------------------- | :--: | --------------------- |
+| `model/schema.ts` 정리  |  ⬜  | 폼 검증 스키마만 유지 |
+| `model/schemas.ts` 정리 |  ⬜  | Entity 스키마만 유지  |
+
+### Phase 3: localStorage 버그 수정 🔄 (1/2) 🔴
+
+> **ROADMAP 버그**: `direct-speech/page.tsx`에서 snake_case 사용으로 데이터 손실
+> 참조: `docs/ROADMAP.md` - "알려진 버그" 섹션
+
+|  #  | 작업                                 | 상태 | 영향                   |
+| :-: | ------------------------------------ | :--: | ---------------------- |
+|  1  | `shared/config/storage-keys.ts` 생성 |  ✅  | 상수 정의됨            |
+|  2  | `direct-speech/page.tsx` 수정        |  ⬜  | snake_case → camelCase |
+
+**데이터 손실 시나리오**:
+
+```
+Direct Speech → conversation_goal (snake_case) 저장
+Welcome Back → conversationGoal (camelCase) 읽기 시도 → undefined!
+```
 
 ### 완료된 FSD 구조
 
@@ -465,19 +598,19 @@ localStorage.getItem(STORAGE_KEYS.conversationGoal); // 정상 작동
 - [x] `shared/hooks/` - useAudioRecorder, useInactivityTimer (테스트 포함)
 - [x] `shared/lib/` - api-client, websocket-client, utils, jwt, debug 등 (테스트 포함)
 - [x] `shared/config/` - storage-keys.ts (localStorage 키 상수화, 테스트 포함)
+- [x] `shared/api/` - fetchClient, ApiError, queryClient
 - [x] `features/auth/` - 인증 기능 완전 구현 (api, hook, model, ui + 전체 테스트)
-- [x] `features/chat/api/` - scenarios, use-chat-sessions (테스트 포함)
 - [x] `features/chat/hook/` - useConversationChatNew, useScenarioChatNew, useWebSocketBase (테스트 포함)
-- [x] `features/chat/ui/` - RealtimeHint, LanguageNotRecognizedDialog (테스트 포함)
+- [x] `features/chat/ui/` - RealtimeHint, LanguageNotRecognizedDialog, ChatDetailPopup, ChatTranscriptPopup
 
-### 미완료 항목
+### 미완료 항목 (Phase 4+)
 
 - [ ] `entities/user/` - 사용자 엔티티 구축
 - [ ] `entities/scenario/` - 시나리오 엔티티 구축
-- [ ] `features/chat/model/` - 타입 분리 필요 (hook/types.ts 이동)
-- [x] `features/chat/ui/` - 대시보드 팝업 컴포넌트 이동 (ChatDetailPopup, ChatTranscriptPopup)
 - [ ] `views/` - 페이지 로직 분리 필요
-- [ ] `shared/types/` → `shared/model/` 리네이밍
+- [ ] Route Group 재편 (public, protected, chat-flow)
+- [ ] 반응형 디자인 (모바일 퍼스트)
+- [ ] 접근성 개선 (WCAG AA)
 
 ---
 
@@ -540,63 +673,354 @@ src/app/
 
 ## 마이그레이션 계획
 
-### Phase 0: views 폴더 구조 생성 (nextjs-fsd-starter 패턴)
+> **의존성 순서**: Phase 1(API) → Phase 2(features) → Phase 3(views) → Phase 4(라우터) → Phase 5(에러) → Phase 6(Hook) → Phase 7(버튼/링크) → Phase 8(상수) → Phase 9(localStorage) → Phase 10(반응형) → Phase 11(접근성) → Phase 12(ESLint) → Phase 13(신규 기능)
 
-**0.1 `views/` 폴더 생성**
+### Phase 1: API 인프라 (fetchClient + Query + Zod)
 
-> 현재 라우트 구조: `(chat-flow)` Route Group 사용 중
+> **의존**: 없음 (최우선 기반 작업)
+> **이유**: 모든 데이터 패칭의 기초. views, router 등이 fetchClient에 의존
+
+**1.1 shared/api/ 폴더 구조 (fetchClient 통합 패턴)**
 
 ```
-src/views/
-├── home/
-│   └── HomePage.tsx           # app/page.tsx 로직 분리
-├── auth/
-│   ├── LoginPage.tsx          # app/auth/login/page.tsx 로직 분리
-│   ├── SignupPage.tsx         # app/auth/signup/page.tsx 로직 분리
-│   └── LogoutPage.tsx         # app/auth/logout/page.tsx 로직 분리
-├── dashboard/
-│   └── DashboardPage.tsx      # app/dashboard/page.tsx 로직 분리
-├── chat/
-│   ├── ConversationPage.tsx   # app/(chat-flow)/chat/conversation/page.tsx 로직 분리
-│   ├── CompletePage.tsx       # app/(chat-flow)/chat/complete/page.tsx 로직 분리
-│   ├── WelcomeBackPage.tsx    # app/(chat-flow)/chat/welcome-back/page.tsx 로직 분리
-│   └── scenario-select/
-│       ├── TopicSuggestionPage.tsx  # app/(chat-flow)/scenario-select/topic-suggestion/
-│       ├── VoiceSelectionPage.tsx   # app/(chat-flow)/scenario-select/voice-selection/
-│       ├── DirectSpeechPage.tsx     # app/(chat-flow)/scenario-select/direct-speech/
-│       └── SubtitleSettingsPage.tsx # app/(chat-flow)/scenario-select/subtitle-settings/
-└── index.ts                   # Public API export
+src/shared/api/
+├── config.ts           # API_BASE_URL, ApiError 클래스
+├── fetch-client.ts     # fetch 기반 통합 클라이언트 (서버/클라이언트 공용)
+├── query-client.ts     # React Query QueryClient 설정
+└── index.ts            # Public API export
 ```
 
-**0.2 app/ 라우터 파일 - 서버 컴포넌트로 데이터 패치**
+> ⚠️ **`axios` 사용하지 않음**: 기존 `axios` import는 모두 `fetchClient`로 마이그레이션
 
-```tsx
-// app/dashboard/page.tsx (변경 후) - 서버 컴포넌트
-import { getDashboardData } from "@/features/dashboard/api/get-dashboard-data";
-import { DashboardPage } from "@/views/dashboard/DashboardPage";
+**1.2 shared/model/ (types/ → model/ 변경)**
 
-export default async function Page() {
-  const data = await getDashboardData(); // 서버에서 데이터 패치
-  return <DashboardPage initialData={data} />;
+```
+src/shared/model/
+├── chat.ts      # shared/types/chat.ts 이동
+├── index.ts     # Public API export
+```
+
+**1.3 feature별 API 폴더 구조 (Zod 스키마 + fetchClient + 테스트 콜로케이션)**
+
+```
+src/features/<feature>/api/
+├── <action>/
+│   ├── <action>.ts          # API 함수 (fetchClient 사용)
+│   ├── <action>.test.ts     # 테스트 파일 (콜로케이션, NOT __tests__/)
+│   ├── <Action>Params.ts    # Zod 요청 파라미터 스키마
+│   └── <Action>Response.ts  # Zod 응답 타입 스키마
+└── index.ts                 # API Public exports
+```
+
+> **⚠️ 테스트 파일 콜로케이션 규칙**: 테스트 파일은 `__tests__/` 폴더가 아닌 소스 파일과 같은 위치에 배치
+> 예: `get-chat-session.ts` 옆에 `get-chat-session.test.ts`
+
+> **⚠️ API 객체 파라미터 규칙**: 모든 API 함수는 단일 값도 객체로 래핑해야 함
+
+```typescript
+// ❌ 잘못된 방식: 단일 값 직접 전달
+export async function deleteChatSession(sessionId: string): Promise<void> {
+  return fetchClient.del(`/api/v1/chat/sessions/${sessionId}`);
 }
 
-// 데이터 패치가 필요 없는 경우
-// app/auth/login/page.tsx
-import { LoginPage } from "@/views/auth/LoginPage";
-export default LoginPage;
+// ✅ 올바른 방식: 객체 파라미터 사용
+export async function deleteChatSession({ sessionId }: DeleteChatSessionParams): Promise<void> {
+  return fetchClient.del(`/api/v1/chat/sessions/${sessionId}`);
+}
+
+// DeleteChatSessionParams.ts
+import { z } from "zod";
+export const deleteChatSessionParamsSchema = z.object({
+  sessionId: z.string(),
+});
+export type DeleteChatSessionParams = z.infer<typeof deleteChatSessionParamsSchema>;
 ```
 
-### Phase 1: features/chat 구조 보완
+예시:
 
-**1.1 model/ 폴더 생성**
+```typescript
+// features/chat/api/get-chat-sessions/GetChatSessionsParams.ts
+import { z } from "zod";
+
+export const getChatSessionsParamsSchema = z.object({
+  page: z.number().default(1),
+  size: z.number().default(10),
+  userId: z.string().optional(),
+});
+
+export type GetChatSessionsParams = z.infer<typeof getChatSessionsParamsSchema>;
+
+// features/chat/api/get-chat-sessions/GetChatSessionsResponse.ts
+import { z } from "zod";
+
+export const chatSessionSchema = z.object({
+  session_id: z.string(),
+  title: z.string().nullable(),
+  started_at: z.string(),
+  total_duration_sec: z.number(),
+  user_speech_duration_sec: z.number(),
+});
+
+export const getChatSessionsResponseSchema = z.object({
+  items: z.array(chatSessionSchema),
+  total: z.number(),
+  page: z.number(),
+  size: z.number(),
+});
+
+export type GetChatSessionsResponse = z.infer<typeof getChatSessionsResponseSchema>;
+
+// features/chat/api/get-chat-sessions/get-chat-sessions.ts
+import { fetchClient } from "@/shared/api";
+import type { GetChatSessionsParams } from "./GetChatSessionsParams";
+import type { GetChatSessionsResponse } from "./GetChatSessionsResponse";
+
+export async function getChatSessions(
+  params: GetChatSessionsParams
+): Promise<GetChatSessionsResponse> {
+  return fetchClient.get<GetChatSessionsResponse>("/api/v1/chat/sessions", {
+    params: {
+      page: String(params.page),
+      size: String(params.size),
+      ...(params.userId && { user_id: params.userId }),
+    },
+  });
+}
+```
+
+**1.4 feature별 Query 폴더 구조 (React Query - 클라이언트 전용)**
+
+```
+src/features/<feature>/query/
+├── <Feature>Query.ts          # Query Factory (queryOptions + Object QueryKey)
+├── useCreate<Entity>.ts       # Create Mutation Hook
+├── useRead<Entity>.ts         # Read Query Hook (단일)
+├── useRead<Entity>List.ts     # Read Query Hook (목록, Select Transform)
+├── useUpdate<Entity>.ts       # Update Mutation Hook (Optimistic Update)
+├── useDelete<Entity>.ts       # Delete Mutation Hook
+└── util/
+    └── transform<Entity>.ts   # DTO → Entity 변환
+```
+
+**1.4.1 Object QueryKey 패턴 (Full Object Key)**
+
+> TkDodo 블로그 분석 기반: Array Key 대신 Object Key 사용으로 타입 안전성 + 가독성 + Fuzzy Matching 개선
+> 참조: https://tkdodo.eu/blog/leveraging-the-query-function-context
+
+**왜 Full Object Key인가?**
+
+| 특성                     | Array Key                      | Full Object Key                                    |
+| ------------------------ | ------------------------------ | -------------------------------------------------- |
+| **타입 안전성**          | 인덱스 기반 (오류 발생 가능)   | 구조분해 기반 (컴파일 타임 검증)                   |
+| **가독성**               | `["chat", "sessions", params]` | `{ scope: "chat", entity: "sessions", ...params }` |
+| **Fuzzy Matching**       | 배열 prefix 매칭               | `{ scope: "chat" }` 으로 관련 쿼리 일괄 무효화     |
+| **DevTools 가독성**      | 중간 (배열 형태)               | 높음 (의미 명확)                                   |
+| **QueryFunctionContext** | 인덱스 추출                    | 구조분해 할당                                      |
+
+```typescript
+// features/chat/query/ChatQuery.ts
+import { QueryFunctionContext, queryOptions } from "@tanstack/react-query";
+import { getChatSessions } from "../api/get-chat-sessions/get-chat-sessions";
+import { getChatSession } from "../api/get-chat-session/get-chat-session";
+import type { GetChatSessionsParams } from "../api/get-chat-sessions/GetChatSessionsParams";
+
+export const ChatQueries = {
+  // 1. 최상위 키: scope로 fuzzy matching 지원
+  all: () => [{ scope: "chat" }] as const,
+
+  // 2. 목록 조회: Object Key로 파라미터 포함
+  sessions: (params: GetChatSessionsParams = {}) =>
+    queryOptions({
+      queryKey: [{ scope: "chat", entity: "sessions", ...params }] as const,
+      queryFn: ({
+        queryKey: [{ skip, limit }],
+      }: QueryFunctionContext<ReturnType<typeof ChatQueries.sessions>["queryKey"]>) =>
+        getChatSessions({ skip, limit }),
+      staleTime: 1000 * 60 * 1,
+    }),
+
+  // 3. 단일 조회: sessionId 포함
+  session: (sessionId: string) =>
+    queryOptions({
+      queryKey: [{ scope: "chat", entity: "session", sessionId }] as const,
+      queryFn: ({
+        queryKey: [{ sessionId }],
+      }: QueryFunctionContext<ReturnType<typeof ChatQueries.session>["queryKey"]>) =>
+        getChatSession(sessionId),
+    }),
+
+  // 4. 힌트 조회: 인증 불필요
+  hints: (sessionId: string) =>
+    queryOptions({
+      queryKey: [{ scope: "chat", entity: "hints", sessionId }] as const,
+      queryFn: ({
+        queryKey: [{ sessionId }],
+      }: QueryFunctionContext<ReturnType<typeof ChatQueries.hints>["queryKey"]>) =>
+        getHints(sessionId),
+    }),
+};
+```
+
+**QueryFunctionContext의 장점**:
+
+- 클로저 대신 queryKey에서 직접 파라미터 추출 → 의존성 불일치 방지
+- 타입 안전한 구조분해 할당 (컴파일 타임 검증)
+- 파라미터와 queryKey의 완벽한 동기화 보장
+
+**1.4.2 Select Transform 패턴 (DTO → Entity)**
+
+> 서버 응답(DTO)을 UI 친화적 Entity로 캐시 레벨에서 변환
+> select 함수 결과는 자동 메모이제이션됨
+
+```typescript
+// features/chat/query/useReadChatSessionList.ts
+import { useQuery } from "@tanstack/react-query";
+import { ChatQueries } from "./ChatQuery";
+import { transformChatSession } from "./util/transformChatSession";
+import type { ChatSession } from "../model/ChatSession";
+import type { ChatSessionDto } from "../model/ChatSessionDto";
+
+export function useReadChatSessionList<T = ChatSession[]>(
+  params: GetChatSessionsParams = {},
+  // 기본 select: DTO 배열 → Entity 배열
+  select = (data: ChatSessionDto[]): T => data.map(transformChatSession) as T
+) {
+  return useQuery({
+    ...ChatQueries.sessions(params),
+    select,
+  });
+}
+
+// 사용 예시 1: 기본 (Entity 배열 반환)
+const { data } = useReadChatSessionList();
+// data: ChatSession[]
+
+// 사용 예시 2: 커스텀 select (ID만 추출)
+const { data: ids } = useReadChatSessionList({}, (response) => response.map((s) => s.session_id));
+// data: string[]
+```
+
+**1.4.3 Optimistic Update 패턴 (3단계 구조)**
+
+> onMutate → onError → onSettled 구조로 낙관적 업데이트 + 롤백 + 동기화
+
+```typescript
+// features/chat/query/useUpdateChatSession.ts
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateChatSession } from "../api/update-chat-session/update-chat-session";
+import { ChatQueries } from "./ChatQuery";
+
+export function useUpdateChatSession() {
+  const queryClient = useQueryClient(); // ✅ 훅 사용 (테스트 용이)
+
+  return useMutation({
+    mutationKey: ["chat", "session", "update"],
+    mutationFn: updateChatSession,
+
+    // 1️⃣ 낙관적 업데이트 시작
+    onMutate: async ({ sessionId, ...updates }) => {
+      const sessionQueryKey = ChatQueries.session(sessionId).queryKey;
+      const listQueryKey = ChatQueries.sessions().queryKey;
+
+      // 진행 중인 쿼리 취소 (낙관적 업데이트 덮어쓰기 방지)
+      await queryClient.cancelQueries({ queryKey: sessionQueryKey });
+      await queryClient.cancelQueries({ queryKey: listQueryKey });
+
+      // 이전 상태 스냅샷 저장 (롤백용)
+      const previousSession = queryClient.getQueryData(sessionQueryKey);
+      const previousList = queryClient.getQueryData(listQueryKey);
+
+      // 캐시에 낙관적 업데이트 적용
+      queryClient.setQueryData(sessionQueryKey, (old: any) => ({
+        ...old,
+        ...updates,
+      }));
+
+      // 롤백용 컨텍스트 반환
+      return { previousSession, previousList, sessionQueryKey, listQueryKey };
+    },
+
+    // 2️⃣ 에러 시 롤백
+    onError: (_err, _variables, context) => {
+      if (context?.previousSession) {
+        queryClient.setQueryData(context.sessionQueryKey, context.previousSession);
+      }
+      if (context?.previousList) {
+        queryClient.setQueryData(context.listQueryKey, context.previousList);
+      }
+    },
+
+    // 3️⃣ 완료 후 서버 데이터로 동기화
+    onSettled: (_data, _error, _variables, context) => {
+      queryClient.invalidateQueries({ queryKey: context?.sessionQueryKey });
+      queryClient.invalidateQueries({ queryKey: context?.listQueryKey });
+    },
+  });
+}
+```
+
+**Fuzzy Matching을 활용한 일괄 무효화**:
+
+```typescript
+// scope 기반 일괄 무효화 (Object Key의 장점)
+queryClient.invalidateQueries({
+  queryKey: [{ scope: "chat" }], // chat 관련 모든 쿼리 무효화
+});
+
+// 특정 entity만 무효화
+queryClient.invalidateQueries({
+  queryKey: [{ scope: "chat", entity: "sessions" }],
+});
+```
+
+**1.4.4 무한스크롤 패턴 (Infinite Query)**
+
+```typescript
+// features/chat/query/useReadChatSessionListInfinite.ts
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { getChatSessions } from "../api/get-chat-sessions/get-chat-sessions";
+
+export function useReadChatSessionListInfinite(size: number = 10) {
+  return useInfiniteQuery({
+    queryKey: [{ scope: "chat", entity: "sessions", type: "infinite", size }] as const,
+    queryFn: ({ pageParam = 0 }) => getChatSessions({ skip: pageParam, limit: size }),
+    getNextPageParam: (lastPage, allPages) => {
+      const totalFetched = allPages.length * size;
+      return totalFetched < lastPage.total ? totalFetched : undefined;
+    },
+    initialPageParam: 0,
+  });
+}
+```
+
+**1.5 axios 마이그레이션 (기존 코드 변환)**
+
+| 기존 패턴               | 변환 후                                       |
+| ----------------------- | --------------------------------------------- |
+| `import axios from ...` | `import { fetchClient } from "@/shared/api";` |
+| `axios.get(url)`        | `fetchClient.get<T>(endpoint)`                |
+| `axios.post(url, data)` | `fetchClient.post<T>(endpoint, data)`         |
+| `axios.put(url, data)`  | `fetchClient.put<T>(endpoint, data)`          |
+| `axios.delete(url)`     | `fetchClient.del<T>(endpoint)`                |
+| `response.data`         | 직접 반환 (fetchClient가 `.json()` 처리)      |
+| `axios.interceptors`    | `fetchClient` 내부 request 함수에서 처리      |
+
+**1.6 shared/index.ts 업데이트**
+
+- api, lib, ui, model, config 통합 export
+
+### Phase 2: features 구조 보완 (model + config + UI)
+
+> **의존**: Phase 1 (API 구조)
+> **이유**: feature 구조가 갖춰져야 views에서 올바르게 import 가능
+
+**2.1 features/chat 구조 보완**
 
 ```
 src/features/chat/model/
 ├── types.ts      # features/chat/hook/types.ts 이동
 ├── index.ts      # Public API export
 ```
-
-**1.2 ui/ 폴더 - 대시보드 팝업 컴포넌트 이동** _(ui/ 폴더 자체는 생성 완료)_
 
 ```
 src/features/chat/ui/
@@ -609,14 +1033,7 @@ src/features/chat/ui/
 ├── index.ts                          # ✅ 완료 (export 추가 필요)
 ```
 
-**1.3 index.ts 업데이트**
-
-- model export 추가 필요
-- ui export에 이동된 팝업 추가 필요
-
-### Phase 2: features/auth 구조 보완
-
-**2.1 NicknameChangePopup 이동**
+**2.2 features/auth 구조 보완**
 
 ```
 src/features/auth/ui/
@@ -625,27 +1042,7 @@ src/features/auth/ui/
 ├── index.ts                 # export 추가
 ```
 
-### Phase 3: shared 레이어 정리
-
-**3.1 types/ → model/ 변경**
-
-```
-src/shared/model/
-├── chat.ts      # shared/types/chat.ts 이동
-├── index.ts     # Public API export
-```
-
-**3.2 api/ 폴더 구조 (듀얼 인증 패턴)**
-
-```
-src/shared/api/
-├── config.ts           # API_BASE_URL, ApiError 클래스
-├── server-fetch.ts     # 서버 컴포넌트용 (cookies() 사용)
-├── client-fetch.ts     # 클라이언트용 (credentials: 'include')
-└── index.ts            # Public API export
-```
-
-**3.3 config/ 폴더 생성 (segment별)** _(shared/config/ 생성 완료)_
+**2.3 config/ 폴더 생성 (segment별)** _(shared/config/ 생성 완료)_
 
 ```
 # 공용 상수 ✅ 생성됨
@@ -662,140 +1059,642 @@ src/features/chat/config/
 └── message.ts   # ⬜ 메시지 관련 상수
 ```
 
-**3.4 shared/index.ts 생성**
+**2.4 index.ts 업데이트**
 
-- api, lib, ui, model, config 통합 export
+- `features/chat/index.ts` - model, ui(팝업) export 추가
+- `features/auth/ui/index.ts` - NicknameChangePopup export 추가
 
-### Phase 4: 에러 바운더리 구조
+### Phase 3: views 서버 컴포넌트 패턴 (contents prop)
 
-**4.1 전역 에러 바운더리 생성**
+> **의존**: Phase 1 (fetchClient), Phase 2 (feature 구조)
+> **이유**: views는 fetchClient와 feature import에 의존
+
+**3.1 `views/` 폴더 생성**
+
+> 현재 라우트 구조: `(chat-flow)` Route Group 사용 중
+
+```
+src/views/
+├── auth/
+│   └── ui/
+│       ├── LoginPage.tsx
+│       ├── SignupPage.tsx
+│       └── LogoutPage.tsx
+├── dashboard/
+│   └── ui/
+│       └── DashboardPage.tsx
+├── conversation/
+│   └── ui/
+│       ├── ConversationPage.tsx
+│       ├── CompletePage.tsx
+│       └── WelcomeBackPage.tsx
+├── scenario-select/
+│   └── ui/
+│       ├── ScenarioSelectPage.tsx
+│       ├── TopicSuggestionPage.tsx
+│       ├── VoiceSelectionPage.tsx
+│       ├── DirectSpeechPage.tsx
+│       └── SubtitleSettingsPage.tsx
+└── index.ts                   # Public API export
+```
+
+**3.2 app/ 라우터 파일 - 서버 컴포넌트 데이터 패치 + contents 분리**
+
+모든 `app/**/page.tsx`는 서버 컴포넌트로:
+
+1. `fetchClient`로 초기 데이터 패치
+2. `contents` 객체로 다국어/텍스트 데이터 분리
+3. views 컴포넌트에 props로 전달
+
+```tsx
+// app/dashboard/page.tsx (서버 컴포넌트)
+import { fetchClient } from "@/shared/api";
+import { DashboardPage } from "@/views/dashboard/ui/DashboardPage";
+
+export default async function Page() {
+  const sessions = await fetchClient.get<ChatSessions>("/api/v1/chat/sessions");
+
+  const contents = {
+    title: "대화 내역",
+    newChatButton: "말랭이랑 새로운 대화를 해볼까요?",
+    emptyMessage: "말랭이와 대화한 이력이 없어요.",
+    logoutButton: "로그아웃",
+    timeWithMalang: "말랭이와 함께한 시간",
+    myTalkTime: "내가 말한 시간",
+  };
+
+  return <DashboardPage initialData={sessions} contents={contents} />;
+}
+
+// app/scenario-select/page.tsx (서버 컴포넌트 - 데이터 패치 없는 경우)
+import { ScenarioSelectPage } from "@/views/scenario-select/ui/ScenarioSelectPage";
+
+export default function Page() {
+  const contents = {
+    heading: "어떤 방법으로 상황을 알려줄까요?",
+    topicButton: "주제 추천",
+    directButton: "직접 말하기",
+  };
+
+  return <ScenarioSelectPage contents={contents} />;
+}
+```
+
+**3.3 views 컴포넌트 - contents prop 패턴**
+
+```tsx
+// views/dashboard/ui/DashboardPage.tsx
+"use client";
+
+interface DashboardContents {
+  title: string;
+  newChatButton: string;
+  emptyMessage: string;
+  logoutButton: string;
+  timeWithMalang: string;
+  myTalkTime: string;
+}
+
+interface DashboardPageProps {
+  initialData: ChatSessions;
+  contents: DashboardContents;
+}
+
+export function DashboardPage({ initialData, contents }: DashboardPageProps) {
+  // React Query는 클라이언트 동적 데이터에만 사용 (무한스크롤 등)
+  return (
+    <div>
+      <h2>{contents.title}</h2>
+      <Button>{contents.newChatButton}</Button>
+    </div>
+  );
+}
+```
+
+### Phase 4: 라우터 구조 재편 (Next.js 16 Advanced Routing)
+
+> **의존**: Phase 3 (views 구조)
+> **이유**: Route Group 재편은 views 구조가 확정된 후 진행
+
+**4.1 서비스 흐름 분석**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Landing (/) → /auth/login or /auth/signup                          │
+│       │                                                             │
+│       ├── 비회원 (게스트) ──► /scenario-select ──► /chat/conversation│
+│       │                                                             │
+│       └── 회원 ──► /dashboard ──► /chat/welcome-back               │
+│                         │              └──► /chat/conversation      │
+│                         │                                           │
+│                         └──► /scenario-select (새 대화)              │
+│                                                                     │
+│  /chat/conversation ──► /chat/complete                              │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**4.2 라우터 구조 (재편 후)**
+
+```
+src/app/
+├── (public)/                      # Route Group: 비인증 페이지
+│   ├── page.tsx                   # Landing (→ /auth/login 리다이렉트)
+│   └── auth/
+│       ├── login/page.tsx
+│       ├── signup/page.tsx
+│       └── logout/page.tsx
+│
+├── (protected)/                   # Route Group: 인증 필요
+│   ├── layout.tsx                 # AuthGuard 적용
+│   └── dashboard/
+│       ├── page.tsx               # 대시보드 메인
+│       ├── layout.tsx             # children + @modal 슬롯
+│       ├── @modal/                # Parallel Route (팝업 슬롯)
+│       │   ├── default.tsx        # 기본값 (null)
+│       │   ├── (.)detail/[sessionId]/
+│       │   │   └── page.tsx       # Intercepted: 대화 상세 팝업
+│       │   └── (.)transcript/[sessionId]/
+│       │       └── page.tsx       # Intercepted: 대화 전문 팝업
+│       ├── detail/[sessionId]/
+│       │   └── page.tsx           # 직접 접근 시 전체 페이지
+│       └── transcript/[sessionId]/
+│           └── page.tsx           # 직접 접근 시 전체 페이지
+│
+├── (chat-flow)/                   # Route Group: 대화 플로우
+│   ├── layout.tsx                 # 대화 종료 확인 등 공통 로직
+│   ├── scenario-select/
+│   │   ├── page.tsx               # 시나리오 선택 메인
+│   │   ├── topic-suggestion/
+│   │   │   └── page.tsx
+│   │   ├── direct-speech/
+│   │   │   └── page.tsx
+│   │   ├── subtitle-settings/
+│   │   │   └── page.tsx
+│   │   └── voice-selection/
+│   │       └── page.tsx
+│   └── chat/
+│       ├── welcome-back/
+│       │   └── page.tsx           # ?sessionId=xxx (URL 상태)
+│       ├── conversation/
+│       │   └── page.tsx           # ?sessionId=xxx&voice=shimmer&subtitle=true
+│       └── complete/
+│           └── page.tsx           # ?sessionId=xxx
+│
+├── layout.tsx                     # 루트 레이아웃
+├── global-error.tsx
+└── not-found.tsx
+```
+
+**4.3 URL 기반 상태관리 (localStorage → searchParams 전환)**
+
+| 현재 (localStorage)                | 변환 후 (URL searchParams)                          |
+| ---------------------------------- | --------------------------------------------------- |
+| `localStorage.chatSessionId`       | `/chat/conversation?sessionId=xxx`                  |
+| `localStorage.selectedVoice`       | `/chat/conversation?voice=shimmer`                  |
+| `localStorage.subtitleEnabled`     | `/chat/conversation?subtitle=true`                  |
+| `localStorage.place`               | `/scenario-select/voice-selection?place=카페`       |
+| `localStorage.conversationPartner` | `/scenario-select/voice-selection?partner=바리스타` |
+| `localStorage.conversationGoal`    | `/scenario-select/voice-selection?goal=주문하기`    |
+| `localStorage.entryType`           | Route Group으로 구분 (`(protected)` vs `(public)`)  |
+
+```typescript
+// ✅ URL 기반 상태 접근 (searchParams)
+// app/(chat-flow)/chat/conversation/page.tsx
+import { ConversationPage } from "@/views/conversation/ui/ConversationPage";
+
+interface PageProps {
+  searchParams: Promise<{
+    sessionId?: string;
+    voice?: string;
+    subtitle?: string;
+  }>;
+}
+
+export default async function Page({ searchParams }: PageProps) {
+  const { sessionId, voice = "alloy", subtitle = "true" } = await searchParams;
+
+  const contents = {
+    endButton: "대화 종료",
+    subtitle: subtitle === "true",
+  };
+
+  return (
+    <ConversationPage
+      sessionId={sessionId}
+      voice={voice}
+      subtitle={subtitle === "true"}
+      contents={contents}
+    />
+  );
+}
+```
+
+**4.4 Parallel Route - 대시보드 모달**
+
+```tsx
+// app/(protected)/dashboard/layout.tsx
+export default function DashboardLayout({
+  children,
+  modal,
+}: {
+  children: React.ReactNode;
+  modal: React.ReactNode;
+}) {
+  return (
+    <>
+      {children}
+      {modal}
+    </>
+  );
+}
+
+// app/(protected)/dashboard/@modal/default.tsx
+export default function Default() {
+  return null;
+}
+
+// app/(protected)/dashboard/@modal/(.)detail/[sessionId]/page.tsx
+import { ChatDetailPopup } from "@/features/chat";
+
+interface PageProps {
+  params: Promise<{ sessionId: string }>;
+}
+
+export default async function DetailModal({ params }: PageProps) {
+  const { sessionId } = await params;
+  return <ChatDetailPopup sessionId={sessionId} />;
+}
+```
+
+**4.5 시나리오 데이터 전달 (라우트 간 상태 전파)**
+
+```typescript
+// 시나리오 완료 시 → voice-selection으로 이동 (URL로 상태 전달)
+router.push(
+  `/scenario-select/voice-selection?` +
+    `place=${encodeURIComponent(place)}` +
+    `&partner=${encodeURIComponent(partner)}` +
+    `&goal=${encodeURIComponent(goal)}`
+);
+
+// voice-selection 완료 시 → conversation으로 이동
+router.push(
+  `/chat/conversation?` +
+    `sessionId=${sessionId}` +
+    `&voice=${selectedVoice}` +
+    `&subtitle=${subtitleEnabled}`
+);
+```
+
+### Phase 5: 에러 바운더리 구조
+
+> **의존**: Phase 4 (라우터 구조)
+> **이유**: Route Group별 에러 바운더리는 라우터 재편 후 배치
+
+**5.1 전역 에러 바운더리 생성**
 
 ```
 src/app/
 ├── global-error.tsx    # 전역 에러 (layout 포함)
 ├── error.tsx           # 루트 에러
-├── chat/
-│   └── error.tsx       # /chat 에러
-└── auth/
-    └── error.tsx       # /auth 에러
+├── (chat-flow)/
+│   ├── chat/
+│   │   └── error.tsx   # /chat 에러
+│   └── scenario-select/
+│       └── error.tsx   # /scenario-select 에러
+├── (protected)/
+│   └── dashboard/
+│       └── error.tsx   # /dashboard 에러
+└── (public)/
+    └── auth/
+        └── error.tsx   # /auth 에러
 ```
 
-### Phase 5: 인터셉터 라우터 설정 (정보성 팝업)
+### Phase 6: Custom Hook 분리
 
-**5.1 채팅 상세 팝업**
+> **의존**: Phase 1~5 완료 후
+> **이유**: 구조 변경 완료 후 비즈니스 로직 정리
 
-```
-src/app/chat/
-├── @modal/
-│   ├── (.)detail/[id]/
-│   │   └── page.tsx
-│   └── default.tsx
-├── detail/[id]/
-│   └── page.tsx
-└── layout.tsx
-```
+**6.1 연관 로직 hook 분리**
 
-### Phase 6: ESLint FSD 규칙 강제 적용
-
-**6.1 eslint.config.mjs 수정**
-
-- 모든 FSD 관련 `no-restricted-imports` 규칙을 `"warn"` → `"error"`로 변경
+- 각 페이지의 비즈니스 로직을 custom hook으로 분리
+- 재사용성을 고려한 추상적 파라미터 네이밍
+- 옵션 파라미터는 option 객체 형태로 인터페이스 구축
 
 ### Phase 7: 버튼/링크 리팩토링
+
+> **의존**: Phase 6 (Hook 분리 후 네비게이션 정리)
+> **이유**: Hook 분리로 네비게이션 로직이 명확해진 후 Link 패턴 적용
 
 **7.1 Link 버튼 변환**
 
 - 모든 네비게이션 버튼을 `asChild` + `Link` 패턴으로 변환
 
-### Phase 8: Custom Hook 분리
+### Phase 8: 매직넘버 상수화
 
-**8.1 연관 로직 hook 분리**
+> **의존**: Phase 6~7 (로직 정리 완료 후)
+> **이유**: 리팩토링된 코드에서 매직넘버 식별이 용이
 
-- 각 페이지의 비즈니스 로직을 custom hook으로 분리
-
-### Phase 9: 상수 추출
-
-**9.1 매직넘버 상수화**
+**8.1 코드베이스 스캔**
 
 - 코드베이스 전체 스캔하여 매직넘버를 config/로 이동
+
+### Phase 9: localStorage 키 정리
+
+> **의존**: Phase 4 (URL searchParams 전환 완료 후)
+> **이유**: Phase 4에서 URL로 전환 후 불필요한 키 제거
+
+**9.1 잔여 키 정리**
+
+- Phase 4에서 URL searchParams로 전환 후 불필요한 localStorage 키 제거
+- 잔여 키 camelCase 통일 및 상수 사용
+
+### Phase 10: 반응형 디자인 (모바일 퍼스트)
+
+> **의존**: Phase 6~9 (리팩토링 완료 후 UI 작업)
+> **이유**: 구조/로직이 확정된 후 반응형 작업
+
+**10.1 모바일 퍼스트 전환**
+
+- 모든 views 컴포넌트를 모바일 퍼스트 기준으로 재작성
+- Tailwind CSS 브레이크포인트 체계: `base(mobile)` → `md` → `lg` → `xl`
+- 터치 인터랙션 최적화 (최소 터치 영역 44x44px)
+
+```tsx
+// ✅ 모바일 퍼스트 (Tailwind)
+<div className="flex flex-col gap-2 md:flex-row md:gap-4 lg:gap-6">
+  <button className="w-full py-3 md:w-auto md:py-2">시작하기</button>
+</div>
+
+// ❌ 데스크탑 퍼스트 (안티패턴)
+<div className="flex flex-row gap-6 sm:flex-col sm:gap-2">
+  <button className="w-auto py-2 sm:w-full sm:py-3">시작하기</button>
+</div>
+```
+
+**10.2 반응형 레이아웃 구조**
+
+| 컴포넌트       | 모바일          | 태블릿 (md)    | 데스크탑 (lg+)         |
+| -------------- | --------------- | -------------- | ---------------------- |
+| 대시보드       | 1컬럼 세로 스택 | 2컬럼 (5:7)    | 2컬럼 + 고정 높이      |
+| 시나리오 선택  | 전체 화면       | 중앙 정렬 카드 | 중앙 정렬 카드 (max-w) |
+| 대화 화면      | 전체 화면       | 전체 화면      | 중앙 정렬 (max-w-2xl)  |
+| 대화 상세 팝업 | 풀스크린 모달   | 센터 모달      | 센터 모달              |
+
+**10.3 미디어 쿼리 및 디바이스 대응**
+
+```typescript
+// shared/config/breakpoints.ts
+export const BREAKPOINTS = {
+  sm: 640, // 소형 모바일
+  md: 768, // 태블릿
+  lg: 1024, // 소형 데스크탑
+  xl: 1280, // 대형 데스크탑
+} as const;
+```
+
+### Phase 11: 접근성 개선 (WCAG AA)
+
+> **의존**: Phase 10 (반응형 완료 후)
+> **이유**: UI 구조 확정 후 접근성 보강
+
+**11.1 시멘틱 HTML**
+
+- 모든 페이지에 적절한 landmark 요소 사용 (`<main>`, `<nav>`, `<aside>`, `<header>`, `<footer>`)
+- 헤딩 계층 구조 준수 (`h1` → `h2` → `h3`, 스킵 없음)
+- 대화형 요소에 올바른 HTML 태그 사용 (`<button>`, `<a>`, `<input>`)
+
+```tsx
+// ✅ 시멘틱 구조
+<main aria-label="대시보드">
+  <section aria-labelledby="profile-heading">
+    <h2 id="profile-heading">프로필</h2>
+    ...
+  </section>
+  <section aria-labelledby="history-heading">
+    <h2 id="history-heading">대화 내역</h2>
+    ...
+  </section>
+</main>
+
+// ❌ div soup
+<div className="dashboard">
+  <div className="profile"><span className="title">프로필</span></div>
+  <div className="history"><span className="title">대화 내역</span></div>
+</div>
+```
+
+**11.2 키보드 네비게이션**
+
+- 모든 인터랙티브 요소 키보드로 접근 가능
+- Focus trap: 모달/팝업 내부에서 탭 순환
+- Skip navigation 링크 제공
+- focus-visible 스타일 적용 (outline 제거 금지)
+
+```tsx
+// shared/ui/SkipNavigation.tsx
+export function SkipNavigation() {
+  return (
+    <a
+      href="#main-content"
+      className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4"
+    >
+      메인 콘텐츠로 건너뛰기
+    </a>
+  );
+}
+```
+
+**11.3 ARIA 속성**
+
+| 컴포넌트    | 필수 ARIA                               | 설명             |
+| ----------- | --------------------------------------- | ---------------- |
+| 마이크 버튼 | `aria-pressed`, `aria-label`            | 녹음 상태 표시   |
+| 대화 메시지 | `role="log"`, `aria-live="polite"`      | 실시간 대화 읽기 |
+| 모달/팝업   | `role="dialog"`, `aria-modal="true"`    | 접근성 모달      |
+| 로딩 스피너 | `role="status"`, `aria-label`           | 로딩 상태 안내   |
+| 토스트 알림 | `role="alert"`, `aria-live="assertive"` | 즉시 읽기        |
+
+**11.4 색상 대비 및 시각적 접근성**
+
+- 텍스트/배경 대비율: 최소 4.5:1 (일반), 3:1 (대형 텍스트)
+- 색상만으로 정보를 전달하지 않음 (아이콘/텍스트 병용)
+- `prefers-reduced-motion` 미디어 쿼리 대응
+
+```css
+/* 모션 감소 선호 사용자 대응 */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .animate-bounce {
+    animation: none;
+  }
+}
+```
+
+**11.5 음성 대화 접근성**
+
+- 오디오 상태 변경 시 시각적 피드백 (마이크 상태, AI 응답 상태)
+- 자막 옵션 기본 제공 (청각 장애 사용자)
+- 힌트/피드백 텍스트를 스크린 리더가 읽을 수 있도록 aria-live 처리
+
+### Phase 12: ESLint FSD 규칙 강제 적용
+
+> **의존**: Phase 1~11 완료 (모든 구조 변경 완료 후)
+> **이유**: 모든 마이그레이션 완료 후 규칙 강제화해야 위반 0개 가능
+
+**12.1 eslint.config.mjs 수정**
+
+- 모든 FSD 관련 `no-restricted-imports` 규칙을 `"warn"` → `"error"`로 변경
+
+### Phase 13: 미구현 기능 (텍스트 입력 모드)
+
+> **의존**: 독립적 (Phase 1~12 완료 후 추가)
+> **이유**: 신규 기능이므로 마이그레이션과 독립적으로 진행 가능
+
+**13.1 텍스트 입력 모드 (언어인지 불가 시 대체)**
+
+- 음성 인식 실패 시 텍스트 입력으로 전환하는 기능
+- `LanguageNotRecognizedDialog`에서 "텍스트로 입력" 선택 시 활성화
+- 텍스트 입력 → STT 대체 → 대화 계속 진행
 
 ---
 
 ## 작업 순서
 
-### Phase 0: views 폴더 구조 (우선순위 높음)
+### Phase 1: API 인프라 (fetchClient + Query + Zod) ✅ 완료
 
-1. [ ] `views/` 폴더 생성
-2. [ ] 페이지 컴포넌트 분리 및 이동
-3. [ ] `app/**/page.tsx` 파일들 단순화 (import + re-export만)
-4. [ ] `views/index.ts` Public API 생성
+1. [ ] `shared/types/` → `shared/model/` 폴더 리네이밍
+2. [x] `shared/api/` fetchClient 통합 패턴 구현
+   - [x] `config.ts` - API_BASE_URL, ApiError
+   - [x] `fetch-client.ts` - 서버/클라이언트 공용 (typeof window 분기)
+   - [x] `query-client.ts` - React Query 전역 설정
+   - [x] `index.ts` - Public API export
+3. [x] feature별 API 폴더 구조 생성
+   - [x] `features/chat/api/<action>/` - Zod 스키마 + API 함수
+   - [x] `features/auth/api/<action>/` - Zod 스키마 + API 함수
+4. [x] feature별 Query 폴더 구조 생성 (클라이언트 전용)
+   - [x] `features/chat/query/ChatQuery.ts` - Query Factory (Full Object Key 패턴)
+   - [x] `features/auth/query/AuthQuery.ts` - Query Factory (Full Object Key 패턴)
+   - [x] `features/chat/query/useRead*.ts` - CRUD hooks
+5. [ ] `features/auth/api/actions.ts` - 로그인/로그아웃 Server Actions (HttpOnly 쿠키 설정)
+6. [x] `shared/config/` 폴더 생성 + `storage-keys.ts` (테스트 포함)
+7. [ ] `shared/config/api.ts` - API 관련 상수
+8. [ ] `features/chat/config/` 폴더 생성 (feature별 상수)
+9. [ ] 기존 `axios` import 모두 `fetchClient`로 마이그레이션
+10. [ ] `shared/index.ts` 업데이트 (api, lib, ui, model, config 통합 export)
 
-### Phase 1-2: features 구조 보완
+### Phase 2: features 구조 보완 + 스키마 콜로케이션 🔄 진행중
 
-5. [ ] `features/chat/model/` 생성 및 `hook/types.ts` 이동
-6. [x] `features/chat/ui/` 생성 (RealtimeHint, LanguageNotRecognizedDialog + 테스트)
-7. [x] `views/dashboard/ChatDetailPopup.tsx` → `features/chat/ui/` 이동
-8. [x] `views/dashboard/ChatTranscriptPopup.tsx` → `features/chat/ui/` 이동
-9. [x] `views/dashboard/NicknameChangePopup.tsx` → `features/auth/ui/` 이동 (Phase 2에서 완료)
-10. [x] `features/chat/index.ts` - ui(팝업) export 추가
-11. [x] `features/auth/ui/index.ts` - NicknameChangePopup export 추가 (Phase 2에서 완료)
+**2-A. UI/Model 구조 보완** 11. [ ] `features/chat/model/` 생성 및 `hook/types.ts` 이동 12. [x] `features/chat/ui/` 생성 (RealtimeHint, LanguageNotRecognizedDialog + 테스트) 13. [x] `views/dashboard/ChatDetailPopup.tsx` → `features/chat/ui/` 이동 14. [x] `views/dashboard/ChatTranscriptPopup.tsx` → `features/chat/ui/` 이동 15. [x] `views/dashboard/NicknameChangePopup.tsx` → `features/auth/ui/` 이동 16. [x] `features/chat/index.ts` - ui(팝업) export 추가 17. [x] `features/auth/ui/index.ts` - NicknameChangePopup export 추가
 
-### Phase 3: shared 레이어 정리 + API 클라이언트 + config
+**2-B. Auth 스키마 콜로케이션 (6개)** ✅ 완료
 
-12. [ ] `shared/types/` → `shared/model/` 폴더 리네이밍
-13. [ ] `shared/api/` 듀얼 인증 패턴 구현
-    - [ ] `config.ts` - API_BASE_URL, ApiError
-    - [ ] `server-fetch.ts` - 서버 컴포넌트용 (cookies() 사용)
-    - [ ] `client-fetch.ts` - 클라이언트용 (credentials: 'include', apiClient 객체)
-    - [ ] `index.ts` - Public API export
-14. [ ] `features/auth/api/actions.ts` - 로그인/로그아웃 Server Actions (HttpOnly 쿠키 설정)
-15. [x] `shared/config/` 폴더 생성 + `storage-keys.ts` (테스트 포함)
-16. [ ] `shared/config/api.ts` - API 관련 상수
-17. [ ] `features/chat/config/` 폴더 생성 (feature별 상수)
-18. [ ] `shared/index.ts` 생성 (api, lib, ui, model, config 통합 export)
+- [x] `api/login/LoginParams.ts`, `LoginResponse.ts`
+- [x] `api/signup/SignupParams.ts`, `SignupResponse.ts`
+- [x] `api/check-login-id/CheckLoginIdParams.ts`, `CheckLoginIdResponse.ts`
+- [x] `api/check-nickname/CheckNicknameParams.ts`, `CheckNicknameResponse.ts`
+- [x] `api/get-current-user/GetCurrentUserResponse.ts`
+- [x] `api/update-current-user/UpdateCurrentUserParams.ts`, `UpdateCurrentUserResponse.ts`
+- [x] `query/AuthQuery.ts` - Full Object Key 패턴 적용
 
-### Phase 4: 에러 바운더리
+**2-C. Chat 스키마 콜로케이션 (7개)** ⬜ 예정
 
-19. [ ] `app/global-error.tsx` 생성
-20. [ ] 각 라우트별 `error.tsx` 생성
+- [ ] `api/get-chat-sessions/GetChatSessionsParams.ts`, `GetChatSessionsResponse.ts`
+- [ ] `api/get-chat-session/GetChatSessionResponse.ts`
+- [x] `api/create-chat-session/CreateChatSessionParams.ts` (기존)
+- [ ] `api/delete-chat-session/DeleteChatSessionParams.ts` (객체 파라미터)
+- [ ] `api/get-hints/GetHintsResponse.ts`
+- [ ] `api/sync-guest-session/SyncGuestSessionResponse.ts`
+- [ ] `api/create-feedback/CreateFeedbackResponse.ts`
+- [x] `query/ChatQuery.ts` - Full Object Key + QueryFunctionContext 적용
 
-### Phase 5: 인터셉터 라우터
+**2-D. 스키마 정리** ⬜ 예정
 
-21. [ ] 정보성 팝업 인터셉터 라우터 구조 생성
+- [ ] `model/schema.ts` - 폼 검증 스키마만 유지
+- [ ] `model/schemas.ts` - Entity 스키마만 유지
 
-### Phase 6: ESLint 강제 적용
+### Phase 3: views 서버 컴포넌트 패턴
 
-22. [ ] `eslint.config.mjs` - FSD 규칙 `"warn"` → `"error"` 변경
-23. [ ] `yarn lint` 실행하여 FSD 위반 없음 확인
+18. [ ] `views/` 폴더 구조 생성 (도메인별 `ui/` 하위)
+19. [ ] 각 `app/**/page.tsx` → 서버 컴포넌트로 전환 (데이터 패치 + contents 분리)
+20. [ ] 페이지 컴포넌트를 views로 이동 (클라이언트 컴포넌트)
+21. [ ] views 컴포넌트에 `contents` prop 인터페이스 추가
+22. [ ] `views/index.ts` Public API 생성
+
+### Phase 4: 라우터 구조 재편
+
+23. [ ] Route Group 재편: `(public)`, `(protected)`, `(chat-flow)`
+24. [ ] `(protected)/dashboard/` - Parallel Route (`@modal`) 구조 생성
+    - [ ] `@modal/default.tsx`
+    - [ ] `@modal/(.)detail/[sessionId]/page.tsx` - Intercepted Route
+    - [ ] `@modal/(.)transcript/[sessionId]/page.tsx` - Intercepted Route
+    - [ ] `detail/[sessionId]/page.tsx` - 직접 접근 페이지
+    - [ ] `transcript/[sessionId]/page.tsx` - 직접 접근 페이지
+25. [ ] localStorage → URL searchParams 마이그레이션
+    - [ ] `chatSessionId` → `?sessionId=xxx`
+    - [ ] `selectedVoice` → `?voice=shimmer`
+    - [ ] `subtitleEnabled` → `?subtitle=true`
+    - [ ] 시나리오 데이터 (place, partner, goal) → URL 전달
+26. [ ] 각 Route Group별 layout.tsx 생성
+    - [ ] `(protected)/layout.tsx` - AuthGuard
+    - [ ] `(chat-flow)/layout.tsx` - 대화 종료 확인
+
+### Phase 5: 에러 바운더리
+
+27. [ ] `app/global-error.tsx` 생성
+28. [ ] 각 Route Group별 `error.tsx` 생성
+
+### Phase 6: Custom Hook 분리
+
+29. [ ] 각 페이지 비즈니스 로직 hook 분리
 
 ### Phase 7: 버튼/링크 리팩토링
 
-24. [ ] 네비게이션 버튼 → `asChild` + `Link` 패턴 적용
+30. [ ] 네비게이션 버튼 → `asChild` + `Link` 패턴 적용
 
-### Phase 8: Custom Hook 분리
+### Phase 8: 매직넘버 상수화
 
-25. [ ] 각 페이지 비즈니스 로직 hook 분리
+31. [ ] 코드베이스 매직넘버 스캔
+32. [ ] 공용 상수 → `shared/config/`
+33. [ ] feature별 상수 → `features/<feature>/config/`
 
-### Phase 9: 매직넘버 상수화
+### Phase 9: localStorage 키 정리
 
-26. [ ] 코드베이스 매직넘버 스캔
-27. [ ] 공용 상수 → `shared/config/`
-28. [ ] feature별 상수 → `features/<feature>/config/`
+34. [x] `shared/config/storage-keys.ts` 생성 (모든 localStorage 키 상수화, 테스트 포함)
+35. [ ] Phase 4에서 URL searchParams로 전환 후 불필요한 localStorage 키 제거
+36. [ ] 잔여 localStorage 키 camelCase 통일 및 상수 사용
 
-### Phase 10: localStorage 키 일관성 수정
+### Phase 10: 반응형 디자인 (모바일 퍼스트)
 
-29. [x] `shared/config/storage-keys.ts` 생성 (모든 localStorage 키 상수화, 테스트 포함)
-30. [ ] `direct-speech/page.tsx` - snake_case → camelCase 수정
-    - [ ] `conversation_goal` → `conversationGoal`
-    - [ ] `conversation_partner` → `conversationPartner`
-31. [ ] 전체 코드베이스 localStorage 키 상수 사용으로 교체
+37. [ ] 모바일 퍼스트 Tailwind 브레이크포인트 체계 적용 (`base` → `md` → `lg`)
+38. [ ] views 컴포넌트 반응형 재작성 (대시보드 1컬럼→2컬럼, 팝업 풀스크린→센터)
+39. [ ] 터치 인터랙션 최적화 (최소 44x44px 터치 영역)
+40. [ ] `shared/config/breakpoints.ts` 브레이크포인트 상수 생성
 
-### 검증
+### Phase 11: 접근성 개선 (WCAG AA)
 
-32. [ ] 타입 체크 (`yarn tsc --noEmit`)
-33. [ ] ESLint 검사 (`yarn lint`) - 에러 0개 확인
-34. [ ] 빌드 검증 (`yarn build`)
-35. [ ] 테스트 실행 (`yarn test`)
+41. [ ] 시멘틱 HTML 적용 (landmark, 헤딩 계층, 올바른 대화형 태그)
+42. [ ] 키보드 네비게이션 (focus trap, skip nav, focus-visible)
+43. [ ] ARIA 속성 추가 (마이크 상태, 대화 로그, 모달, 로딩)
+44. [ ] 색상 대비 검증 (4.5:1 이상) + `prefers-reduced-motion` 대응
+45. [ ] 음성 대화 접근성 (aria-live 피드백, 자막 기본 제공)
+
+### Phase 12: ESLint 강제 적용
+
+46. [ ] `eslint.config.mjs` - FSD 규칙 `"warn"` → `"error"` 변경
+47. [ ] `yarn lint` 실행하여 FSD 위반 없음 확인
+
+### Phase 13: 미구현 기능
+
+48. [ ] 텍스트 입력 모드 구현 (언어인지 불가 시 대체 입력)
+
+### 검증 (각 Phase 완료 후)
+
+49. [ ] 타입 체크 (`yarn tsc --noEmit`)
+50. [ ] ESLint 검사 (`yarn lint`) - 에러 0개 확인
+51. [ ] 빌드 검증 (`yarn build`)
+52. [ ] 테스트 실행 (`yarn test`)
+53. [ ] Lighthouse 접근성 점수 확인 (Phase 11 완료 후, 목표: 90+)
 
 ---
 
@@ -835,10 +1734,10 @@ src/
 │       └── index.ts   # Public API
 ├── entities/      # 비즈니스 엔티티
 └── shared/        # 공용 유틸리티
-    ├── api/       # API 클라이언트 (듀얼 인증 패턴)
+    ├── api/       # API 클라이언트 (fetchClient 통합)
     │   ├── config.ts        # API_BASE_URL, ApiError
-    │   ├── server-fetch.ts  # 서버 컴포넌트용 (cookies())
-    │   ├── client-fetch.ts  # 클라이언트용 (apiClient)
+    │   ├── fetch-client.ts  # 서버/클라이언트 공용 (typeof window 분기)
+    │   ├── query-client.ts  # React Query QueryClient 설정
     │   └── index.ts
     ├── config/    # 공용 상수
     ├── lib/       # 유틸리티 함수
@@ -859,12 +1758,12 @@ src/
            └─► HttpOnly 쿠키 설정 (access_token, refresh_token)
 
 2. 서버 컴포넌트 데이터 패치
-   └─► serverFetch() (shared/api/server-fetch.ts)
-       └─► cookies()로 토큰 읽기 → Authorization 헤더 추가
+   └─► fetchClient.get/post/... (shared/api/fetch-client.ts)
+       └─► typeof window === "undefined" → cookies()로 토큰 읽기 → Authorization 헤더
 
 3. 클라이언트 데이터 패치 (무한스크롤 등)
-   └─► apiClient.get/post/... (shared/api/client-fetch.ts)
-       └─► credentials: 'include' → 브라우저가 쿠키 자동 첨부
+   └─► fetchClient.get/post/... (동일 클라이언트, Query hooks 경유)
+       └─► typeof window !== "undefined" → credentials: 'include' → 쿠키 자동 첨부
 
 4. 로그아웃
    └─► Server Action

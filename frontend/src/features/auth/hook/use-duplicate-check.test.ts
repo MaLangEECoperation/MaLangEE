@@ -3,15 +3,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { useLoginIdCheck, useNicknameCheck, usePasswordValidation } from "./use-duplicate-check";
 
-// Mock authApi
-vi.mock("../api", () => ({
-  authApi: {
-    checkLoginId: vi.fn(),
-    checkNickname: vi.fn(),
-  },
+// Mock API functions
+const mockCheckLoginId = vi.fn();
+const mockCheckNickname = vi.fn();
+
+vi.mock("../api/check-login-id/check-login-id", () => ({
+  checkLoginId: (...args: unknown[]) => mockCheckLoginId(...args),
 }));
 
-import { authApi } from "../api";
+vi.mock("../api/check-nickname/check-nickname", () => ({
+  checkNickname: (...args: unknown[]) => mockCheckNickname(...args),
+}));
 
 describe("useLoginIdCheck", () => {
   beforeEach(() => {
@@ -39,12 +41,12 @@ describe("useLoginIdCheck", () => {
       vi.advanceTimersByTime(2000);
     });
 
-    expect(authApi.checkLoginId).not.toHaveBeenCalled();
+    expect(mockCheckLoginId).not.toHaveBeenCalled();
     expect(result.current.isAvailable).toBeNull();
   });
 
   it("should check after debounce when value is valid", async () => {
-    vi.mocked(authApi.checkLoginId).mockResolvedValue({ is_available: true });
+    mockCheckLoginId.mockResolvedValue({ is_available: true });
 
     renderHook(() => useLoginIdCheck("test@test.com"));
 
@@ -52,11 +54,11 @@ describe("useLoginIdCheck", () => {
       vi.advanceTimersByTime(1000);
     });
 
-    expect(authApi.checkLoginId).toHaveBeenCalledWith("test@test.com");
+    expect(mockCheckLoginId).toHaveBeenCalledWith("test@test.com");
   });
 
   it("should set isAvailable to true when available", async () => {
-    vi.mocked(authApi.checkLoginId).mockResolvedValue({ is_available: true });
+    mockCheckLoginId.mockResolvedValue({ is_available: true });
 
     const { result } = renderHook(() => useLoginIdCheck("test@test.com"));
 
@@ -70,7 +72,7 @@ describe("useLoginIdCheck", () => {
   });
 
   it("should set error when not available", async () => {
-    vi.mocked(authApi.checkLoginId).mockResolvedValue({ is_available: false });
+    mockCheckLoginId.mockResolvedValue({ is_available: false });
 
     const { result } = renderHook(() => useLoginIdCheck("taken@test.com"));
 
@@ -84,7 +86,7 @@ describe("useLoginIdCheck", () => {
   });
 
   it("should handle API error", async () => {
-    vi.mocked(authApi.checkLoginId).mockRejectedValue(new Error("Network error"));
+    mockCheckLoginId.mockRejectedValue(new Error("Network error"));
 
     const { result } = renderHook(() => useLoginIdCheck("test@test.com"));
 
@@ -130,11 +132,11 @@ describe("useNicknameCheck", () => {
       vi.advanceTimersByTime(2000);
     });
 
-    expect(authApi.checkNickname).not.toHaveBeenCalled();
+    expect(mockCheckNickname).not.toHaveBeenCalled();
   });
 
   it("should check after debounce when value is valid", async () => {
-    vi.mocked(authApi.checkNickname).mockResolvedValue({ is_available: true });
+    mockCheckNickname.mockResolvedValue({ is_available: true });
 
     // 닉네임 규칙: 2~6자, 영문 또는 한글만 허용
     renderHook(() => useNicknameCheck("테스터"));
@@ -143,11 +145,11 @@ describe("useNicknameCheck", () => {
       vi.advanceTimersByTime(1000);
     });
 
-    expect(authApi.checkNickname).toHaveBeenCalledWith("테스터");
+    expect(mockCheckNickname).toHaveBeenCalledWith("테스터");
   });
 
   it("should set error when nickname is taken", async () => {
-    vi.mocked(authApi.checkNickname).mockResolvedValue({ is_available: false });
+    mockCheckNickname.mockResolvedValue({ is_available: false });
 
     // 닉네임 규칙: 2~6자, 영문 또는 한글만 허용
     const { result } = renderHook(() => useNicknameCheck("사용중"));

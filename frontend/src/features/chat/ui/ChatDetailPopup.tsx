@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FC, useState, useMemo } from "react";
 
-import { useGetChatSession } from "@/features/chat";
+import { useReadChatSession } from "@/features/chat/query";
 import { Button, Tooltip } from "@/shared/ui";
 import { Dialog } from "@/shared/ui/Dialog";
 
@@ -20,7 +20,7 @@ export const ChatDetailPopup: FC<ChatDetailPopupProps> = ({ session, onClose }) 
   const [showTranscript, setShowTranscript] = useState(false);
 
   // 실제 API에서 세션 상세 정보 조회
-  const { data: sessionDetail, isLoading, isError, error } = useGetChatSession(session.id);
+  const { data: sessionDetail, isLoading, isError, error } = useReadChatSession(session.id);
 
   // 메시지 데이터 변환
   const messages = useMemo(() => {

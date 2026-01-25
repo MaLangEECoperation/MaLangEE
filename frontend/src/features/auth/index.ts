@@ -1,35 +1,34 @@
-// Model
+// Model (Form validation schemas)
 export {
   // Schemas
   loginSchema,
   registerSchema,
   nicknameUpdateSchema,
-  tokenSchema,
   userSchema,
   // Types
   type LoginFormData,
   type RegisterFormData,
   type NicknameUpdateFormData,
-  type Token,
   type User,
-  type CheckAvailabilityResponse,
   // Token utilities
   tokenStorage,
 } from "./model";
 
-// API
+// API (Response/Request schemas - collocated)
+export { loginResponseSchema as tokenSchema, type LoginResponse, type Token } from "./api";
+
+// Query (React Query hooks)
 export {
-  authApi,
+  AuthQueries,
   useLogin,
-  useRegister,
+  useSignup,
   useLogout,
-  useDeleteAccount,
+  useDeleteUser,
   useCheckLoginId,
   useCheckNickname,
-  useUpdateNickname,
+  useUpdateUser,
   useCurrentUser,
-  useDeleteUser,
-} from "./api";
+} from "./query";
 
 // Hooks
 export { useAuth, useLoginIdCheck, useNicknameCheck, usePasswordValidation } from "./hook";

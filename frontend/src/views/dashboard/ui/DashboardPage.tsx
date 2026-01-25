@@ -7,8 +7,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AuthGuard, NicknameChangePopup, useCurrentUser } from "@/features/auth";
 import { ChatDetailPopup } from "@/features/chat";
 import type { ChatHistoryItem } from "@/features/chat";
-import { useInfiniteChatSessions } from "@/features/chat/api/use-chat-sessions";
 import { CHAT_PAGINATION } from "@/features/chat/config";
+import { useReadChatSessionList } from "@/features/chat/query";
 import { STORAGE_KEYS } from "@/shared/config";
 import { usePopupStore } from "@/shared/lib/store";
 import { Button } from "@/shared/ui";
@@ -40,7 +40,7 @@ export function DashboardPage() {
     hasNextPage,
     isFetchingNextPage,
     isLoading: isSessionsLoading,
-  } = useInfiniteChatSessions(ITEMS_PER_PAGE, currentUser?.id);
+  } = useReadChatSessionList({ limit: ITEMS_PER_PAGE, userId: currentUser?.id });
 
   // 전체 세션 데이터 플랫트닝
   const allSessions = useMemo<ChatHistoryItem[]>(() => {

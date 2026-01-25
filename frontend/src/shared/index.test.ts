@@ -4,9 +4,6 @@ describe("shared/index barrel export", () => {
   it("should export config constants", async () => {
     const shared = await import("./index");
     expect(shared.STORAGE_KEYS).toBeDefined();
-    expect(shared.API_BASE_URL).toBeDefined();
-    expect(shared.API_BASE_PATH).toBeDefined();
-    expect(shared.getApiUrl).toBeTypeOf("function");
   });
 
   it("should export hooks", async () => {

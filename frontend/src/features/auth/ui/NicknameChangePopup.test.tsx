@@ -32,10 +32,10 @@ vi.mock("react-hook-form", () => ({
   }),
 }));
 
-// Mock features/auth hooks
+// Mock features/auth query hooks
 const mockMutate = vi.fn();
-vi.mock("../api", () => ({
-  useUpdateNickname: () => ({
+vi.mock("../query", () => ({
+  useUpdateUser: () => ({
     mutate: mockMutate,
     isPending: false,
   }),

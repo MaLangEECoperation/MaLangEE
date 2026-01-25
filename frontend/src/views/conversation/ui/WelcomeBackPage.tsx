@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 
 import { AuthGuard, useCurrentUser } from "@/features/auth";
-import { useGetChatSession } from "@/features/chat/api/use-chat-sessions";
+import { useReadChatSession } from "@/features/chat/query";
 import { STORAGE_KEYS } from "@/shared/config";
 import { Button, MalangEE } from "@/shared/ui";
 
@@ -42,7 +42,7 @@ function WelcomeBackContent() {
   }
 
   // 1. 특정 세션 ID가 있을 경우 해당 세션 조회
-  const { data: sessionDetail, isLoading } = useGetChatSession(sessionId);
+  const { data: sessionDetail, isLoading } = useReadChatSession(sessionId);
 
   // 세션 정보 로컬 스토리지 저장 (voice, subtitleEnabled, scenario info)
   useEffect(() => {

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { type Scenario, useScenarios } from "@/features/chat/api/scenarios";
-import { useCreateChatSession } from "@/features/chat/api/use-chat-sessions";
+import { useCreateChatSession } from "@/features/chat/query";
 import { STORAGE_KEYS } from "@/shared/config";
 import { Button, Toggle, MalangEE } from "@/shared/ui";
 import { Dialog } from "@/shared/ui/Dialog";

@@ -10,12 +10,10 @@ vi.mock("@/features/auth", () => ({
   },
 }));
 
-// Mock config
-vi.mock("./config", () => ({
-  config: {
-    apiBaseUrl: "http://localhost:8080",
-    apiBasePath: "/api/v1",
-  },
+// Mock shared/api config
+vi.mock("@/shared/api", () => ({
+  API_BASE_URL: "http://localhost:8080",
+  API_BASE_PATH: "/api/v1",
 }));
 
 // Mock WebSocket

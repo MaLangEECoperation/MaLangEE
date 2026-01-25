@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 
 import {
-  authApi,
   useLogin,
   useLoginIdCheck,
   useNicknameCheck,
@@ -14,7 +13,8 @@ import {
   registerSchema,
   type RegisterFormData,
 } from "@/features/auth";
-import { useSyncGuestSession } from "@/features/chat/api/use-chat-sessions";
+import { signup } from "@/features/auth/api/signup/signup";
+import { useSyncGuestSession } from "@/features/chat/query";
 import { MalangEE, Button } from "@/shared/ui";
 import { Dialog } from "@/shared/ui/Dialog";
 import { FullLayout } from "@/shared/ui/FullLayout";
@@ -88,7 +88,8 @@ export function SignupPage() {
 
   // 회원가입 mutation
   const registerMutation = useMutation({
-    mutationFn: (data: RegisterFormData) => authApi.register(data),
+    mutationFn: (data: RegisterFormData) =>
+      signup({ login_id: data.login_id, nickname: data.nickname, password: data.password }),
     onError: (error) => {
       if (error instanceof Error) {
         const message = error.message;

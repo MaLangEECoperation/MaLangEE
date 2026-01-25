@@ -4,8 +4,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 import { useAuth } from "@/features/auth";
-import { useGetHints } from "@/features/chat/api/use-chat-sessions";
 import { useConversationChatNew } from "@/features/chat/hook/useConversationChatNew";
+import { useReadHints } from "@/features/chat/query";
 import { LanguageNotRecognizedDialog, RealtimeHint } from "@/features/chat/ui";
 import { STORAGE_KEYS } from "@/shared/config";
 import { debugLog, debugError } from "@/shared/lib";
@@ -125,9 +125,10 @@ function ConversationContent() {
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const waitPopupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { data: hints, isLoading: isHintsLoading } = useGetHints(
+  const { data: hintsData, isLoading: isHintsLoading } = useReadHints(
     shouldFetchHint ? sessionId : null
   );
+  const hints = hintsData?.hints;
 
   // 마이크 상태
   const [isMuted, _setIsMuted] = useState(false);

@@ -6,9 +6,9 @@ import { useForm, type Resolver } from "react-hook-form";
 import { Button, MalangEE } from "@/shared/ui";
 import { Dialog } from "@/shared/ui/Dialog";
 
-import { useCurrentUser, useUpdateNickname } from "../api";
 import { useNicknameCheck } from "../hook";
 import { type NicknameUpdateFormData, nicknameUpdateSchema } from "../model";
+import { useCurrentUser, useUpdateUser } from "../query";
 
 // safeParse를 사용하는 커스텀 resolver (콘솔 에러 방지)
 const nicknameUpdateResolver: Resolver<NicknameUpdateFormData> = async (values) => {
@@ -79,7 +79,7 @@ export const NicknameChangePopup: FC<NicknameChangePopupProps> = ({ onClose, onS
   const nicknameCheck = useNicknameCheck(watchNewNickname, { minLength: 2 });
 
   // 닉네임 변경 mutation
-  const updateNicknameMutation = useUpdateNickname();
+  const updateNicknameMutation = useUpdateUser();
 
   // 기존 닉네임과 동일한지 실시간 체크
   const isSameAsCurrent = !!(

@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 
-import { authApi } from "../api";
+import { checkLoginId } from "../api/check-login-id/check-login-id";
+import { checkNickname } from "../api/check-nickname/check-nickname";
 import { nicknameValidation, registerSchema } from "../model/schema";
 
 interface UseDuplicateCheckOptions {
@@ -49,7 +50,7 @@ export function useLoginIdCheck(
 
       setIsChecking(true);
       try {
-        const result = await authApi.checkLoginId(val);
+        const result = await checkLoginId(val);
         if (signal.aborted) return;
 
         setIsAvailable(result.is_available);
@@ -157,7 +158,7 @@ export function useNicknameCheck(
 
       setIsChecking(true);
       try {
-        const result = await authApi.checkNickname(val);
+        const result = await checkNickname(val);
         if (signal.aborted) return;
 
         setIsAvailable(result.is_available);
