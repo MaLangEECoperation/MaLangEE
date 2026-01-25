@@ -1,1 +1,1 @@
-export { TopicSuggestionPage as default } from "@/views/scenario-select";
+export { TopicSuggestionPage as default } from "@/views/scenario-select/topic-suggestion";

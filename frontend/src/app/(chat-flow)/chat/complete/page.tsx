@@ -1,1 +1,1 @@
-export { CompletePage as default } from "@/views/conversation";
+export { CompletePage as default } from "@/views/conversation/complete";

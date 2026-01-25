@@ -1,1 +1,1 @@
-export { LogoutPage as default } from "@/views/auth";
+export { LogoutPage as default } from "@/views/auth/logout";

@@ -1,1 +1,1 @@
-export { ConversationPage as default } from "@/views/conversation";
+export { ConversationPage as default } from "@/views/conversation/chat";

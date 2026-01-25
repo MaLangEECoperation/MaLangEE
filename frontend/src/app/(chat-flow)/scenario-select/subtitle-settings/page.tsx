@@ -1,1 +1,1 @@
-export { SubtitleSettingsPage as default } from "@/views/scenario-select";
+export { SubtitleSettingsPage as default } from "@/views/scenario-select/subtitle-settings";

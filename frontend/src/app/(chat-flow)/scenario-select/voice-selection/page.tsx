@@ -1,1 +1,1 @@
-export { VoiceSelectionPage as default } from "@/views/scenario-select";
+export { VoiceSelectionPage as default } from "@/views/scenario-select/voice-selection";

@@ -1,1 +1,1 @@
-export { WelcomeBackPage as default } from "@/views/conversation";
+export { WelcomeBackPage as default } from "@/views/conversation/welcome-back";
