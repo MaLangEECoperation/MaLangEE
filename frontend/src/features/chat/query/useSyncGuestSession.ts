@@ -12,7 +12,7 @@ export function useSyncGuestSession() {
 
   return useMutation({
     mutationKey: [...ChatQueries.all(), "sync"],
-    mutationFn: (sessionId: string) => syncGuestSession(sessionId),
+    mutationFn: (sessionId: string) => syncGuestSession({ sessionId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ChatQueries.all() });
     },

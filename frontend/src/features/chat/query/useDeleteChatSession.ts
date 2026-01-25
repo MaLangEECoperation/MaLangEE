@@ -12,7 +12,7 @@ export function useDeleteChatSession() {
 
   return useMutation({
     mutationKey: [...ChatQueries.all(), "delete"],
-    mutationFn: (sessionId: string) => deleteChatSession(sessionId),
+    mutationFn: (sessionId: string) => deleteChatSession({ sessionId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ChatQueries.all() });
     },

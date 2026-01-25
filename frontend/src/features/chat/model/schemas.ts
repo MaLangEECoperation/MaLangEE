@@ -1,6 +1,8 @@
 /**
  * Chat Feature Zod 스키마
- * 도메인 Entity 스키마 + 아직 콜로케이션되지 않은 Response 스키마
+ * 도메인 Entity 스키마 (여러 API에서 재사용)
+ *
+ * API별 Params/Response 스키마는 각 API 폴더에 콜로케이션됨
  */
 
 import { z } from "zod";
@@ -64,28 +66,9 @@ export const chatSessionDetailSchema = z.object({
 });
 
 // ============================================
-// Response Schemas (아직 콜로케이션되지 않은 API)
-// ============================================
-
-export const feedbackResponseSchema = z.object({
-  feedback: z.string(),
-  session_id: z.string(),
-});
-
-export const syncSessionResponseSchema = z.object({
-  status: z.string(),
-  session_id: z.string(),
-});
-
-// ============================================
 // Type Exports
 // ============================================
 
-// Entity Types
 export type ChatMessage = z.infer<typeof chatMessageSchema>;
 export type ChatSessionSummary = z.infer<typeof chatSessionSummarySchema>;
 export type ChatSessionDetail = z.infer<typeof chatSessionDetailSchema>;
-
-// Response Types (아직 콜로케이션되지 않은 API)
-export type FeedbackResponse = z.infer<typeof feedbackResponseSchema>;
-export type SyncSessionResponse = z.infer<typeof syncSessionResponseSchema>;

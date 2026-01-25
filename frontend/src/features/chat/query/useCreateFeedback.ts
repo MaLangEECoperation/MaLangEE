@@ -10,6 +10,6 @@ import { ChatQueries } from "./ChatQuery";
 export function useCreateFeedback() {
   return useMutation({
     mutationKey: [...ChatQueries.all(), "feedback"],
-    mutationFn: (sessionId: string) => createFeedback(sessionId),
+    mutationFn: (sessionId: string) => createFeedback({ sessionId }),
   });
 }
