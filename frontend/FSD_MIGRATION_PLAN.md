@@ -7,7 +7,7 @@
 
 ## 📊 통합 마이그레이션 현황 (ROADMAP + FSD)
 
-> **마지막 업데이트**: 2026-01-26
+> **마지막 업데이트**: 2026-01-26 (Phase 4 완료)
 > **참조**: `docs/ROADMAP.md` (기능 로드맵), 이 문서 (FSD 구조 마이그레이션)
 
 ### 전체 Phase 개요
@@ -19,7 +19,7 @@
 |  **2**  | 스키마 콜로케이션         |  ✅  | 🔴 높음  |   21/21   |  100%   |
 |  **3**  | localStorage 버그         |  ✅  | 🔴 높음  |    2/2    |  100%   |
 | **3.5** | **views 페이지 슬라이스** |  ✅  | 🔴 높음  |   12/12   |  100%   |
-|  **4**  | views 서버 컴포넌트       |  🔄  | 🟡 중간  |   1/13    |   8%    |
+|  **4**  | views 서버 컴포넌트       |  ✅  | 🟡 중간  |   13/13   |  100%   |
 |  **5**  | 라우터 구조 재편          |  ⬜  | 🟡 중간  |    0/4    |   0%    |
 |  **6**  | 에러 바운더리             |  ⬜  | 🟡 중간  |    0/2    |   0%    |
 |  **7**  | 반응형 디자인             |  ⬜  | 🟡 중간  |    0/4    |   0%    |
@@ -29,7 +29,7 @@
 | **11**  | 매직넘버 상수화           |  ⬜  | 🟢 낮음  |    0/3    |   0%    |
 | **12**  | ESLint FSD 강제           |  ⬜  | 🟢 낮음  |    0/2    |   0%    |
 | **13**  | 텍스트 입력 모드          |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
-|         | **전체**                  |      |          | **53/79** | **67%** |
+|         | **전체**                  |      |          | **65/79** | **82%** |
 
 ### ROADMAP 완료 기능 (Phase R)
 
@@ -1711,7 +1711,7 @@ export function SkipNavigation() {
 - [ ] `model/schema.ts` - 폼 검증 스키마만 유지
 - [ ] `model/schemas.ts` - Entity 스키마만 유지
 
-### Phase 4: views 서버 컴포넌트 패턴 (contents prop)
+### Phase 4: views 서버 컴포넌트 패턴 (contents prop) ✅ (13/13)
 
 > 모든 페이지 컴포넌트에 contents prop 적용 (다국어/텍스트 분리)
 
@@ -1719,33 +1719,33 @@ export function SkipNavigation() {
 
 - [x] fetchClient 서버 모드 지원 (serverToken 옵션 추가)
 
-**4-1. dashboard (1/1)**
+**4-1. dashboard (1/1)** ✅
 
 - [x] DashboardPage contents prop 적용
 
-**4-2. auth (0/3)**
+**4-2. auth (3/3)** ✅
 
-- [ ] LoginPage contents prop 적용
-- [ ] SignupPage contents prop 적용
-- [ ] LogoutPage contents prop 적용
+- [x] LoginPage contents prop 적용
+- [x] SignupPage contents prop 적용
+- [x] LogoutPage contents prop 적용
 
-**4-3. scenario-select (0/5)**
+**4-3. scenario-select (5/5)** ✅
 
-- [ ] ScenarioSelectPage contents prop 적용
-- [ ] TopicSuggestionPage contents prop 적용
-- [ ] VoiceSelectionPage contents prop 적용
-- [ ] SubtitleSettingsPage contents prop 적용
-- [ ] DirectSpeechPage contents prop 적용
+- [x] ScenarioSelectPage - 리다이렉트 전용 (contents 불필요)
+- [x] TopicSuggestionPage contents prop 적용
+- [x] VoiceSelectionPage contents prop 적용
+- [x] SubtitleSettingsPage contents prop 적용
+- [x] DirectSpeechPage contents prop 적용
 
-**4-4. conversation (0/3)**
+**4-4. conversation (3/3)** ✅
 
-- [ ] WelcomeBackPage contents prop 적용
-- [ ] CompletePage contents prop 적용
-- [ ] ConversationPage contents prop 적용
+- [x] WelcomeBackPage contents prop 적용
+- [x] CompletePage contents prop 적용
+- [x] ConversationPage contents prop 적용
 
 **4-5. Public API**
 
-- [ ] `views/index.ts` 전체 export 업데이트
+- [x] 각 views slice에서 개별 export (index.ts)
 
 ### Phase 5: 라우터 구조 재편
 
