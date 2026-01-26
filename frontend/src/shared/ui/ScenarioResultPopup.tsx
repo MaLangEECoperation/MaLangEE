@@ -42,7 +42,7 @@ export const ScenarioResultPopup: FC<ScenarioResultPopupProps> = ({
   subtitle = "연습할 시나리오 정보를 확인해주세요.",
 }) => {
   return (
-    <Dialog onClose={onCancel} maxWidth="md" showCloseButton={false}>
+    <Dialog onClose={onCancel} maxWidth="md" showCloseButton={false} ariaLabel="시나리오 결과 확인">
       <div className="flex flex-col items-center gap-8 py-6">
         <div className="w-full space-y-6">
           <div className="text-center">

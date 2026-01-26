@@ -39,16 +39,9 @@ export const SignupPromptDialog: FC<SignupPromptDialogProps> = ({
     return null;
   }
 
-  const dialogTitleId = "signup-prompt-title";
-
   return (
-    <Dialog onClose={onClose} showCloseButton={false} maxWidth="sm">
-      <div
-        role="dialog"
-        aria-labelledby={dialogTitleId}
-        aria-modal="true"
-        className="flex flex-col items-center gap-6 py-4"
-      >
+    <Dialog onClose={onClose} showCloseButton={false} maxWidth="sm" title={title}>
+      <div className="flex flex-col items-center gap-6 py-4">
         {/* MalangEE 캐릭터 */}
         <div data-testid="malangee-character">
           <MalangEE status="default" size={120} />
@@ -56,13 +49,7 @@ export const SignupPromptDialog: FC<SignupPromptDialogProps> = ({
 
         {/* 메시지 영역 */}
         <div className="text-center">
-          <h2
-            id={dialogTitleId}
-            className={cn("text-xl font-bold leading-relaxed", "text-[#1F1C2B]")}
-          >
-            {title}
-          </h2>
-          <p className={cn("mt-2 text-sm", "text-gray-600")}>{description}</p>
+          <p className={cn("text-sm", "text-gray-600")}>{description}</p>
         </div>
 
         {/* 버튼 영역 */}

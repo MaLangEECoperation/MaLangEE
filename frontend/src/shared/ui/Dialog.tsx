@@ -1,8 +1,11 @@
 "use client";
 
 import { X } from "lucide-react";
-import React, { type ReactNode, useEffect, useState } from "react";
+import React, { type ReactNode, useCallback, useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
+
+import { ARIA_ROLES } from "@/shared/config";
+import { useFocusTrap } from "@/shared/lib";
 
 interface DialogProps {
   children: ReactNode;
@@ -13,6 +16,8 @@ interface DialogProps {
   headerContent?: ReactNode; // 제목 대신 커스텀 헤더 컨텐츠
   /** 배경 클릭으로 닫기 비활성화 (버튼으로만 닫기) */
   disableBackdropClick?: boolean;
+  /** 다이얼로그 aria-label (title이 없을 때 사용) */
+  ariaLabel?: string;
 }
 
 const maxWidthClasses = {
@@ -33,8 +38,27 @@ export const Dialog: React.FC<DialogProps> = ({
   showCloseButton = true,
   headerContent,
   disableBackdropClick = false,
+  ariaLabel = "대화 상자",
 }) => {
   const [mounted, setMounted] = useState(false);
+  const titleId = useId();
+
+  // 포커스 트랩 설정 (모달 내에서만 포커스 이동)
+  const dialogRef = useFocusTrap<HTMLDivElement>({
+    enabled: mounted,
+    initialFocus: true,
+    restoreFocus: true,
+  });
+
+  // ESC 키로 닫기
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    },
+    [onClose]
+  );
 
   useEffect(() => {
     // 클라이언트 사이드 마운트 확인 (createPortal을 위한 필수 패턴)
@@ -42,10 +66,15 @@ export const Dialog: React.FC<DialogProps> = ({
     setMounted(true);
     // 팝업이 열릴 때 body 스크롤 방지
     document.body.style.overflow = "hidden";
+
+    // ESC 키 이벤트 리스너 등록
+    document.addEventListener("keydown", handleKeyDown);
+
     return () => {
       document.body.style.overflow = "unset";
+      document.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [handleKeyDown]);
 
   if (!mounted) return null;
 
@@ -55,6 +84,11 @@ export const Dialog: React.FC<DialogProps> = ({
       onClick={disableBackdropClick ? undefined : onClose}
     >
       <div
+        ref={dialogRef}
+        role={ARIA_ROLES.DIALOG}
+        aria-modal="true"
+        aria-labelledby={title ? titleId : undefined}
+        aria-label={title ? undefined : ariaLabel}
         className={`relative mx-4 w-full ${maxWidthClasses[maxWidth]} rounded-[32px] border border-white/60 bg-white shadow-[0_20px_80px_rgba(123,108,246,0.3)] backdrop-blur-2xl`}
         onClick={(e) => e.stopPropagation()}
       >
@@ -76,7 +110,9 @@ export const Dialog: React.FC<DialogProps> = ({
               {headerContent ? (
                 headerContent
               ) : title ? (
-                <h2 className="text-2xl font-bold text-[#1F1C2B]">{title}</h2>
+                <h2 id={titleId} className="text-2xl font-bold text-[#1F1C2B]">
+                  {title}
+                </h2>
               ) : null}
             </div>
           )}

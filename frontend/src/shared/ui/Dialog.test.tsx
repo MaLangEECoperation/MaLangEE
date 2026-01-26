@@ -1,6 +1,8 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 
+import { ARIA_ROLES } from "@/shared/config";
+
 import { Dialog } from "./Dialog";
 
 describe("Dialog", () => {
@@ -127,5 +129,69 @@ describe("Dialog", () => {
       </Dialog>
     );
     expect(document.querySelector(".max-w-4xl")).toBeInTheDocument();
+  });
+
+  // === Accessibility Tests ===
+  describe("Accessibility", () => {
+    it("has role=dialog", () => {
+      render(
+        <Dialog onClose={() => {}}>
+          <div>Content</div>
+        </Dialog>
+      );
+
+      const dialog = screen.getByRole(ARIA_ROLES.DIALOG);
+      expect(dialog).toBeInTheDocument();
+    });
+
+    it("has aria-modal=true", () => {
+      render(
+        <Dialog onClose={() => {}}>
+          <div>Content</div>
+        </Dialog>
+      );
+
+      const dialog = screen.getByRole(ARIA_ROLES.DIALOG);
+      expect(dialog).toHaveAttribute("aria-modal", "true");
+    });
+
+    it("has aria-labelledby when title is provided", () => {
+      render(
+        <Dialog onClose={() => {}} title="Test Dialog">
+          <div>Content</div>
+        </Dialog>
+      );
+
+      const dialog = screen.getByRole(ARIA_ROLES.DIALOG);
+      expect(dialog).toHaveAttribute("aria-labelledby");
+
+      // The title element should have the matching id
+      const title = screen.getByText("Test Dialog");
+      const labelledById = dialog.getAttribute("aria-labelledby");
+      expect(title).toHaveAttribute("id", labelledById);
+    });
+
+    it("has aria-label when no title is provided", () => {
+      render(
+        <Dialog onClose={() => {}}>
+          <div>Content</div>
+        </Dialog>
+      );
+
+      const dialog = screen.getByRole(ARIA_ROLES.DIALOG);
+      expect(dialog).toHaveAttribute("aria-label");
+    });
+
+    it("closes on Escape key press", () => {
+      const handleClose = vi.fn();
+      render(
+        <Dialog onClose={handleClose}>
+          <div>Content</div>
+        </Dialog>
+      );
+
+      fireEvent.keyDown(document, { key: "Escape" });
+      expect(handleClose).toHaveBeenCalledTimes(1);
+    });
   });
 });

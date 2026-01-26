@@ -90,8 +90,9 @@ export const SplitViewLayout = ({
             )}
           </div>
 
-          {/* Right Content Section */}
-          <div
+          {/* Right Content Section - Main Content */}
+          <main
+            id="main-content"
             className={`flex items-start justify-center gap-6 md:items-center ${colSpans[rightColSpan] || "md:col-span-6"} ${rightClassName}`}
           >
             <GlassCard
@@ -100,7 +101,7 @@ export const SplitViewLayout = ({
             >
               {rightChildren}
             </GlassCard>
-          </div>
+          </main>
         </div>
       </div>
     </div>

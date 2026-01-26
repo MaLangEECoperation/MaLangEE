@@ -31,7 +31,8 @@ describe("LanguageNotRecognizedDialog", () => {
     it("에러 메시지가 표시됨", () => {
       render(<LanguageNotRecognizedDialog {...defaultProps} isOpen={true} />);
 
-      expect(screen.getByText(/이해하지 못했어요/i)).toBeInTheDocument();
+      // 제목이 Dialog의 title로 전달됨
+      expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(/이해하지 못했어요/i);
     });
 
     it("안내 메시지가 표시됨", () => {

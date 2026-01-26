@@ -24,3 +24,4 @@ export {
 } from "./jwt";
 export { usePopupStore } from "./store";
 export type { PopupType } from "./store";
+export { useFocusTrap } from "./use-focus-trap";

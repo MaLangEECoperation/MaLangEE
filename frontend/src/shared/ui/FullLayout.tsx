@@ -42,7 +42,8 @@ export const FullLayout = ({
         </div>
       )}
 
-      <div
+      <main
+        id="main-content"
         className={
           typeof maxWidth === "string" && maxWidth.trim().length > 0
             ? `w-[90vw] ${maxWidth}`
@@ -52,7 +53,7 @@ export const FullLayout = ({
         <GlassCard showHeader={showHeader} headerRight={headerRight}>
           {children}
         </GlassCard>
-      </div>
+      </main>
     </div>
   );
 };

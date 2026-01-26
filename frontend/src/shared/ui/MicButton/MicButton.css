@@ -1,12 +1,25 @@
 /* Microphone Button Styles */
 
-/* Microphone container - base */
+/* Microphone container - base (reset button styles for accessibility) */
 .mic-container {
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  /* Reset button default styles */
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  outline: none;
+}
+
+/* Focus visible for keyboard navigation */
+.mic-container:focus-visible .mic-main {
+  outline: 3px solid var(--primary-purple, #7e6cf3);
+  outline-offset: 4px;
 }
 
 /* Size variants */
@@ -103,6 +116,17 @@
 
 .is-muted .waves {
   display: none;
+}
+
+/* Disabled state (accessible) */
+.mic-container:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.is-disabled .mic-main {
+  background: #959494;
 }
 
 /* Responsive adjustments */

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Sans } from "next/font/google";
 
 import { GlobalPopup } from "@/features/auth/ui";
+import { SkipNavigation } from "@/shared/ui";
 
 import { Providers } from "./providers";
 
@@ -55,6 +56,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${notoSans.variable} h-full antialiased`}
         style={{ fontFamily: "var(--font-noto-sans)" }}
       >
+        <SkipNavigation />
         <Providers>
           {children}
           <GlobalPopup />

@@ -25,3 +25,5 @@ export type { SettingsPopupProps, VoiceOption } from "./SettingsPopup";
 export { Tooltip } from "./Tooltip";
 export { ErrorFallback } from "./ErrorFallback";
 export type { ErrorFallbackProps } from "./ErrorFallback";
+export { VisuallyHidden } from "./VisuallyHidden";
+export { SkipNavigation } from "./SkipNavigation";

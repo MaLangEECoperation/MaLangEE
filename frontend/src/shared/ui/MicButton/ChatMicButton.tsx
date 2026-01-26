@@ -45,7 +45,8 @@ export const ChatMicButton: React.FC<ChatMicButtonProps> = ({
       onClick={onClick || (() => {})}
       size={size}
       isMuted={muted}
-      className={`${isDisabled ? "pointer-events-none opacity-50" : ""} ${className}`}
+      disabled={isDisabled}
+      className={className}
     />
   );
 };

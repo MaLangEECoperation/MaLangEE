@@ -47,6 +47,7 @@ export const ConfirmPopup: FC<ConfirmPopupProps> = ({
       maxWidth={maxWidth}
       showCloseButton={false}
       disableBackdropClick={disableBackdropClick}
+      ariaLabel="확인 대화 상자"
     >
       <div className="flex flex-col items-center gap-6 py-4">
         {showMalangEE && <MalangEE status={malangEEStatus} size={120} />}
