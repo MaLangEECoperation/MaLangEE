@@ -122,8 +122,8 @@ export function LoginPage({ contents = defaultLoginContents }: LoginPageProps) {
         {contents.greeting.line2}
       </p>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5 sm:gap-6 ">
-        <div className="flex flex-col gap-4 sm:gap-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5 md:gap-6 ">
+        <div className="flex flex-col gap-4 md:gap-5">
           <div className="relative">
             <input
               id="username"
@@ -181,7 +181,7 @@ export function LoginPage({ contents = defaultLoginContents }: LoginPageProps) {
           </p>
         )}
 
-        <div className="flex flex-col gap-4 sm:gap-5">
+        <div className="flex flex-col gap-4 md:gap-5">
           <Button
             type="submit"
             variant="primary"

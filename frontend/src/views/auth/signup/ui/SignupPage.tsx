@@ -168,8 +168,8 @@ export function SignupPage({ contents = defaultSignupContents }: SignupPageProps
         </h1>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5 sm:gap-6">
-        <div className="flex flex-col gap-4 sm:gap-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5 md:gap-6">
+        <div className="flex flex-col gap-4 md:gap-5">
           {/* 이메일 입력 */}
           <div className="flex flex-col gap-2">
             <label htmlFor="login_id" className="text-text-primary px-1 text-sm font-medium">
@@ -262,7 +262,7 @@ export function SignupPage({ contents = defaultSignupContents }: SignupPageProps
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 sm:gap-5">
+        <div className="flex flex-col gap-4 md:gap-5">
           <Button
             type="submit"
             variant="primary"

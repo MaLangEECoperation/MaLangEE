@@ -74,7 +74,7 @@ export const SplitViewLayout = ({
                   <Image src="/images/logo.png" alt="MalangEE Logo" width={100} height={50} />
                 </Link>
               </div>
-              <div className="flex w-full items-center justify-center sm:p-10 md:justify-start md:p-0  ">
+              <div className="flex w-full items-center justify-center md:justify-start md:p-0">
                 <MalangEE size={120} />
               </div>
             </>

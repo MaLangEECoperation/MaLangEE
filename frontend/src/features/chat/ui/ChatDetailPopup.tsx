@@ -103,7 +103,7 @@ export const ChatDetailPopup: FC<ChatDetailPopupProps> = ({ session, onClose }) 
                 </div>
 
                 <div className="mb-6 space-y-3 rounded-2xl bg-gray-50 p-5">
-                  <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
                     {sessionDetail.scenario_partner && (
                       <div className="flex items-end gap-2">
                         <span className="font-medium text-[#6A667A]">대화 상대:</span>
@@ -130,7 +130,7 @@ export const ChatDetailPopup: FC<ChatDetailPopupProps> = ({ session, onClose }) 
             {/* 두 번째 행: 대화 요약 + 전문보기 버튼 */}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-[#1F1C2B]">대화 요약</h3>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <p className="flex-1 leading-relaxed text-[#6A667A]">
                   {sessionDetail?.scenario_summary ||
                     (messages.length > 0
