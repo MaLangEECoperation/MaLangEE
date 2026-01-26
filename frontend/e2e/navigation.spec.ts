@@ -43,7 +43,7 @@ async function mockChatSessionsApi(page: Page, sessions: MockChatSession[] = [])
 }
 
 // 로그인 API 모킹 헬퍼
-async function mockLoginApi(page: Page) {
+async function _mockLoginApi(page: Page) {
   await page.route("**/api/v1/auth/login", async (route) => {
     await route.fulfill({
       status: 200,

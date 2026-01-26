@@ -360,7 +360,6 @@ export function useWebSocketBase({
   }, [autoConnect]);
 
   // 함수들을 dependency에 포함하면 무한 루프가 발생하므로 상태값만 포함
-
   return useMemo(
     () => ({
       wsRef,
@@ -385,6 +384,7 @@ export function useWebSocketBase({
       startMicrophone,
       stopMicrophone,
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [isConnected, isReady, logs, isAiSpeaking, isUserSpeaking, isRecording]
   );
 }

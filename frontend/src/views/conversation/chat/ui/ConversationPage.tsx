@@ -262,7 +262,14 @@ function ConversationContent({ contents }: ConversationContentProps) {
     };
 
     startMic();
-  }, [state.isConnected, state.isReady, isMicEnabled, startMicrophone, requestResponse]);
+  }, [
+    state.isConnected,
+    state.isReady,
+    isMicEnabled,
+    startMicrophone,
+    requestResponse,
+    contents.errors.microphoneError,
+  ]);
 
   // 마이크 상태 관리
   useEffect(() => {

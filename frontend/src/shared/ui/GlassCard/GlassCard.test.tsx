@@ -5,6 +5,7 @@ import { GlassCard } from "./GlassCard";
 
 // Mock dependencies
 vi.mock("next/image", () => ({
+  // eslint-disable-next-line @next/next/no-img-element
   default: ({ alt, ...props }: { alt: string }) => <img alt={alt} {...props} />,
 }));
 

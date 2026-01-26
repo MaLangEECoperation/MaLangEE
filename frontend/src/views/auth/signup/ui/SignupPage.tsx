@@ -110,11 +110,11 @@ export function SignupPage({ contents = defaultSignupContents }: SignupPageProps
   });
 
   // 세션 동기화 훅
-  const syncGuestSession = useSyncGuestSession();
+  const _syncGuestSession = useSyncGuestSession();
 
   // 로그인 뮤테이션
-  const loginMutation = useLogin();
-  const [loginError, setLoginError] = useState<string | null>(null);
+  const _loginMutation = useLogin();
+  const [_loginError, setLoginError] = useState<string | null>(null);
   const registerPending = registerMutation.status === "pending";
 
   const onSubmit = (data: RegisterFormData) => {

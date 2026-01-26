@@ -4,9 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { FC, ReactNode } from "react";
 
-import { Dialog } from "../Dialog";
-import { MalangEE } from "../MalangEE";
-
 interface GlassCardProps {
   children: ReactNode;
   headerLeft?: ReactNode;

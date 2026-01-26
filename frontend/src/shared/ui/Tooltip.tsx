@@ -48,9 +48,10 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children, className =
         shiftX = margin - tooltipLeft;
       } else if (tooltipRight > viewportWidth - margin) {
         // 오른쪽으로 벗어남 -> 왼쪽으로 이동 (-)
-        shiftX = (viewportWidth - margin) - tooltipRight;
+        shiftX = viewportWidth - margin - tooltipRight;
       }
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTooltipStyle({
         opacity: 1,
         position: "absolute",

@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 
-import { MOCK_USER, setAuthStorage } from "./helpers/auth";
+import { MOCK_USER as _MOCK_USER, setAuthStorage as _setAuthStorage } from "./helpers/auth";
 
 /**
  * 시나리오 선택 플로우 E2E 테스트 (새 URL 구조)
@@ -341,7 +341,7 @@ test.describe("시나리오 선택 - 목소리 선택 페이지", () => {
 });
 
 test.describe("시나리오 선택 - 직접 말하기 페이지", () => {
-  test.beforeEach(async ({ page, context }) => {
+  test.beforeEach(async ({ page: _page, context }) => {
     // 마이크 권한 허용
     await context.grantPermissions(["microphone"]);
   });

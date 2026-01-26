@@ -44,7 +44,7 @@ export const ChatTranscriptPopup: FC<ChatTranscriptPopupProps> = ({
       const MM = String(date.getMinutes()).padStart(2, "0");
 
       return `${mm}/${dd} ${HH}:${MM}`;
-    } catch (e) {
+    } catch {
       return timestamp;
     }
   };

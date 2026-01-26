@@ -152,13 +152,13 @@ export function useScenarioChatNew() {
         );
       }
     },
-    [base.wsRef, base.encodeAudio]
+    [base]
   );
 
   // 마이크 시작 (base의 startMicrophone + sendAudioCallback)
   const startMicrophone = useCallback(() => {
     return base.startMicrophone(sendAudioCallback);
-  }, [base.startMicrophone, sendAudioCallback]);
+  }, [base, sendAudioCallback]);
 
   // 텍스트 전송
   const sendText = useCallback(
@@ -168,7 +168,7 @@ export function useScenarioChatNew() {
         base.addLog(`Sent Text: ${text}`);
       }
     },
-    [base.wsRef, base.addLog]
+    [base]
   );
 
   // 오디오 버퍼 초기화
@@ -177,7 +177,7 @@ export function useScenarioChatNew() {
       base.wsRef.current.send(JSON.stringify({ type: "input_audio_clear" }));
       base.addLog("Sent input_audio_clear");
     }
-  }, [base.wsRef, base.addLog]);
+  }, [base]);
 
   // 오디오 커밋
   const commitAudio = useCallback(() => {
@@ -185,7 +185,7 @@ export function useScenarioChatNew() {
       base.wsRef.current.send(JSON.stringify({ type: "input_audio_commit" }));
       base.addLog("Sent input_audio_commit");
     }
-  }, [base.wsRef, base.addLog]);
+  }, [base]);
 
   // 시나리오 세션 초기화 및 대화 시작
   // 서버에서 세션 설정 및 AI 응답을 자동으로 처리하므로 클라이언트에서는 별도 메시지를 보내지 않음
@@ -193,7 +193,7 @@ export function useScenarioChatNew() {
     if (base.wsRef.current?.readyState === WebSocket.OPEN && base.isReady) {
       base.addLog("Scenario session started (server handles initialization)");
     }
-  }, [base.wsRef, base.isReady, base.addLog]);
+  }, [base]);
 
   // ref에 함수 할당 (useEffect로 감싸서 렌더링 중 ref 접근 방지)
   useEffect(() => {

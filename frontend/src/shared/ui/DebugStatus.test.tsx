@@ -1,15 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+// Import the mocked module
+import * as debugModule from "@/shared/lib/debug";
+
 import { DebugStatus } from "./DebugStatus";
 
 // Mock debug module - isDev always returns false in current implementation
 vi.mock("@/shared/lib/debug", () => ({
   isDev: vi.fn(() => false),
 }));
-
-// Import the mocked module
-import * as debugModule from "@/shared/lib/debug";
 
 describe("DebugStatus", () => {
   beforeEach(() => {
@@ -36,7 +36,7 @@ describe("DebugStatus", () => {
     });
 
     it("should render when isDev returns true", () => {
-      const { container } = render(
+      const { container: _container } = render(
         <DebugStatus isConnected={true} lastEvent={null} isAiSpeaking={false} />
       );
 

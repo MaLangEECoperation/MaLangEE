@@ -15,7 +15,7 @@ const MOCK_SCENARIO_RESULT = {
 };
 
 // WebSocket 메시지 모킹 헬퍼
-async function mockWebSocketMessages(page: Page) {
+async function _mockWebSocketMessages(_page: Page) {
   // WebSocket 연결을 시뮬레이션하는 것은 복잡하므로
   // 여기서는 페이지의 상태만 테스트합니다.
   // 실제 WebSocket 테스트는 통합 테스트에서 수행하는 것이 좋습니다.

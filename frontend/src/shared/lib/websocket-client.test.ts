@@ -118,12 +118,11 @@ describe("WebSocketClient", () => {
     });
 
     it("should create WebSocket connection with auth token", () => {
-      mockGetToken.mockReturnValue("test-token");
-
       const config: WebSocketClientConfig = {
         endpoint: "/ws/chat",
         onMessage,
         requireAuth: true,
+        getToken: () => "test-token",
       };
 
       const client = new WebSocketClient(config);

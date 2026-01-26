@@ -36,8 +36,8 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
   const [aiMessageKR, setAiMessageKR] = useState("");
   const [userTranscript, setUserTranscript] = useState("");
   const [sessionReport, setSessionReport] = useState<SessionReport | null>(null);
-  const [feedback, setFeedback] = useState<string | undefined>(undefined);
-  const [scenarioSummary, setScenarioSummary] = useState<string | undefined>(undefined);
+  const [feedback, _setFeedback] = useState<string | undefined>(undefined);
+  const [scenarioSummary, _setScenarioSummary] = useState<string | undefined>(undefined);
   const [lastAiAudioDoneAt, setLastAiAudioDoneAt] = useState<number | null>(null);
 
   // WebSocket URL 생성
@@ -198,13 +198,13 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
         );
       }
     },
-    [base.wsRef, base.encodeAudio]
+    [base]
   );
 
   // 마이크 시작 (base의 startMicrophone + sendAudioCallback)
   const startMicrophone = useCallback(() => {
     return base.startMicrophone(sendAudioCallback);
-  }, [base.startMicrophone, sendAudioCallback]);
+  }, [base, sendAudioCallback]);
 
   // 텍스트 전송
   const sendText = useCallback(
@@ -217,7 +217,7 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
         base.addLog("Sent response.create (after text)");
       }
     },
-    [base.wsRef, base.addLog]
+    [base]
   );
 
   // 오디오 커밋
@@ -226,7 +226,7 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
       base.wsRef.current.send(JSON.stringify({ type: "input_audio_buffer.commit" }));
       base.addLog("Sent input_audio_buffer.commit");
     }
-  }, [base.wsRef, base.addLog]);
+  }, [base]);
 
   // 목소리 변경
   const updateVoice = useCallback(
@@ -243,7 +243,7 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
         base.addLog(`Sent session.update with voice: ${newVoice}`);
       }
     },
-    [base.wsRef, base.addLog]
+    [base]
   );
 
   // AI 응답 요청
@@ -252,7 +252,7 @@ export function useConversationChatNew(sessionId: string, voice: string = "alloy
       base.wsRef.current.send(JSON.stringify({ type: "response.create" }));
       base.addLog("Sent response.create (manual trigger)");
     }
-  }, [base.wsRef, base.addLog]);
+  }, [base]);
 
   // 연결 해제 시 disconnect 메시지 전송 (Promise 반환)
   const disconnect = useCallback((): Promise<SessionReport | null> => {

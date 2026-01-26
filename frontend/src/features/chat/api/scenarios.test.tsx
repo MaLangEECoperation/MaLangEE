@@ -3,6 +3,8 @@ import { renderHook, waitFor } from "@testing-library/react";
 import React, { ReactNode } from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+import { fetchClient } from "@/shared/api";
+
 import {
   useScenarios,
   useScenario,
@@ -18,8 +20,6 @@ vi.mock("@/shared/api", () => ({
     post: vi.fn(),
   },
 }));
-
-import { fetchClient } from "@/shared/api";
 
 const createTestQueryClient = () =>
   new QueryClient({
