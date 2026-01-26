@@ -47,4 +47,18 @@ export interface DashboardPageContents {
     /** 초 단위 */
     seconds: string;
   };
+
+  /** 대화 상세 모달 */
+  detail: {
+    /** 피드백 섹션 제목 */
+    feedbackTitle: string;
+    /** 피드백 없음 메시지 */
+    noFeedback: string;
+  };
+
+  /** 전문 스크립트 모달 */
+  transcript: {
+    /** 섹션 라벨 */
+    label: string;
+  };
 }

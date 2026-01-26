@@ -1,16 +1,12 @@
 "use client";
 
 import { Pencil } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AuthGuard, NicknameChangePopup, useCurrentUser } from "@/features/auth";
-import {
-  ChatDetailPopup,
-  CHAT_PAGINATION,
-  useReadChatSessionList,
-  type ChatHistoryItem,
-} from "@/features/chat";
+import { CHAT_PAGINATION, useReadChatSessionList, type ChatHistoryItem } from "@/features/chat";
 import { STORAGE_KEYS, usePopupStore, Button, SplitViewLayout } from "@/shared";
 
 import { defaultDashboardContents } from "../config";
@@ -32,8 +28,6 @@ export interface DashboardPageProps {
 export function DashboardPage({ contents = defaultDashboardContents }: DashboardPageProps) {
   const router = useRouter();
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  const [showDetailPopup, setShowDetailPopup] = useState(false);
-  const [selectedSession, setSelectedSession] = useState<ChatHistoryItem | null>(null);
   const [showNicknamePopup, setShowNicknamePopup] = useState(false);
   const { openPopup } = usePopupStore();
 
@@ -242,13 +236,10 @@ export function DashboardPage({ contents = defaultDashboardContents }: Dashboard
             </div>
             <div className="left-0 flex w-full flex-col items-start justify-start pr-2 md:h-[400px] md:overflow-y-auto">
               {allSessions.map((item) => (
-                <div
+                <Link
                   key={item.id}
-                  onClick={() => {
-                    setSelectedSession(item);
-                    setShowDetailPopup(true);
-                  }}
-                  className="flex w-full cursor-pointer items-center gap-2 border-b border-[#D5D2DE] px-0 py-3 transition-all"
+                  href={`/dashboard/detail/${item.id}`}
+                  className="flex w-full cursor-pointer items-center gap-2 border-b border-[#D5D2DE] px-0 py-3 transition-all hover:bg-gray-50"
                 >
                   {/* 날짜 */}
                   <div className="items-left text-primary flex min-w-20 flex-col justify-center text-sm">
@@ -277,7 +268,7 @@ export function DashboardPage({ contents = defaultDashboardContents }: Dashboard
                       </span>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
 
               {/* 로딩 트리거 및 스피너 */}
@@ -319,11 +310,6 @@ export function DashboardPage({ contents = defaultDashboardContents }: Dashboard
         glassClassName="p-6 md:p-10"
         glassMaxWidth="max-w-full md:max-w-2xl lg:max-w-4xl"
       />
-
-      {/* 대화 상세 팝업 */}
-      {showDetailPopup && selectedSession && (
-        <ChatDetailPopup session={selectedSession} onClose={() => setShowDetailPopup(false)} />
-      )}
 
       {/* 닉네임 변경 팝업 */}
       {showNicknamePopup && (

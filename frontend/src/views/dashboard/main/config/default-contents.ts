@@ -31,4 +31,13 @@ export const defaultDashboardContents: DashboardPageContents = {
     minutes: "분",
     seconds: "초",
   },
+
+  detail: {
+    feedbackTitle: "피드백",
+    noFeedback: "피드백이 없습니다.",
+  },
+
+  transcript: {
+    label: "전문 스크립트",
+  },
 };
