@@ -14,6 +14,8 @@ export interface FetchClientOptions {
   headers?: HeadersInit;
   contentType?: "json" | "form-urlencoded";
   skipAuth?: boolean;
+  /** 서버 사이드에서 사용할 토큰 (SSR/RSC용). 지정 시 localStorage 대신 사용 */
+  serverToken?: string;
 }
 
 function getToken(): string | null {
@@ -36,7 +38,7 @@ function buildUrl(endpoint: string, params?: Record<string, string>): string {
 
 function buildHeaders(options: FetchClientOptions = {}): Headers {
   const headers = new Headers();
-  const { contentType = "json", skipAuth = false } = options;
+  const { contentType = "json", skipAuth = false, serverToken } = options;
 
   if (contentType === "json") {
     headers.set("Content-Type", "application/json");
@@ -47,7 +49,8 @@ function buildHeaders(options: FetchClientOptions = {}): Headers {
   headers.set("Accept", "application/json");
 
   if (!skipAuth) {
-    const token = getToken();
+    // serverToken이 있으면 우선 사용 (SSR/RSC), 없으면 localStorage (CSR)
+    const token = serverToken ?? getToken();
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }

@@ -5,14 +5,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AuthGuard, NicknameChangePopup, useCurrentUser } from "@/features/auth";
-import { ChatDetailPopup } from "@/features/chat";
-import type { ChatHistoryItem } from "@/features/chat";
-import { CHAT_PAGINATION } from "@/features/chat/config";
-import { useReadChatSessionList } from "@/features/chat/query";
-import { STORAGE_KEYS } from "@/shared/config";
-import { usePopupStore } from "@/shared/lib/store";
-import { Button } from "@/shared/ui";
-import { SplitViewLayout } from "@/shared/ui/SplitViewLayout";
+import {
+  ChatDetailPopup,
+  CHAT_PAGINATION,
+  useReadChatSessionList,
+  type ChatHistoryItem,
+} from "@/features/chat";
+import { STORAGE_KEYS, usePopupStore, Button, SplitViewLayout } from "@/shared";
 
 import { defaultDashboardContents } from "../config";
 import type { DashboardPageContents } from "../model";

@@ -1,13 +1,9 @@
 "use client";
 
-import { History, LogOut } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { FC, ReactNode, useState } from "react";
+import { FC, ReactNode } from "react";
 
-import { useAuth } from "@/features/auth/hook/use-auth";
-
-import { Button } from "../Button";
 import { Dialog } from "../Dialog";
 import { MalangEE } from "../MalangEE";
 

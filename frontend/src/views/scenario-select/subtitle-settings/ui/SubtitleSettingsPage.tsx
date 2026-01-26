@@ -2,8 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { STORAGE_KEYS } from "@/shared/config";
-import { Button, MalangEE } from "@/shared/ui";
+import { STORAGE_KEYS, Button, MalangEE } from "@/shared";
 
 import { defaultSubtitleSettingsContents } from "../config";
 import type { SubtitleSettingsPageContents } from "../model";

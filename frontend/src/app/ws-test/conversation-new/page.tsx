@@ -3,8 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
-import { useConversationChatNew } from "@/features/chat/hook/useConversationChatNew";
-import { ChatQueries } from "@/features/chat/query";
+import { useConversationChatNew, ChatQueries } from "@/features/chat";
 
 export default function ConversationTestPage() {
   const [sessionId, setSessionId] = useState("");

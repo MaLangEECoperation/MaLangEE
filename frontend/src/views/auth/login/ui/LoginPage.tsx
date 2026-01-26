@@ -5,8 +5,7 @@ import { useEffect, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 
 import { type LoginFormData, loginSchema, useLogin } from "@/features/auth";
-import { Button } from "@/shared/ui";
-import { SplitViewLayout } from "@/shared/ui/SplitViewLayout";
+import { Button, SplitViewLayout } from "@/shared";
 
 import { defaultLoginContents } from "../config";
 import type { LoginPageContents } from "../model";

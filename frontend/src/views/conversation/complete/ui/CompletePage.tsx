@@ -4,9 +4,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { SignupPromptDialog, useAuth } from "@/features/auth";
-import { useReadChatSession } from "@/features/chat/query";
-import { STORAGE_KEYS } from "@/shared/config";
-import { Button, MalangEE } from "@/shared/ui";
+import { useReadChatSession } from "@/features/chat";
+import { STORAGE_KEYS, Button, MalangEE } from "@/shared";
 
 import { defaultCompleteContents } from "../config";
 import type { CompletePageContents } from "../model";

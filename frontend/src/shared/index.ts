@@ -1,11 +1,11 @@
 /**
  * shared layer barrel export
  *
- * UI 컴포넌트는 `@/shared/ui`에서 직접 import하세요.
- * (순환 참조 방지 및 트리셰이킹 최적화)
+ * FSD Public API - 모든 하위 모듈을 단일 진입점으로 제공
  */
 
 export * from "./api";
 export * from "./config";
 export * from "./hooks";
 export * from "./lib";
+export * from "./ui";

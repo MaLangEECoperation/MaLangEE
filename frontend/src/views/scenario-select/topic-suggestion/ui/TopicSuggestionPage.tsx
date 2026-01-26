@@ -5,11 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { type Scenario, useScenarios } from "@/features/chat/api/scenarios";
-import { useCreateChatSession } from "@/features/chat/query";
-import { STORAGE_KEYS } from "@/shared/config";
-import { Button, Toggle, MalangEE } from "@/shared/ui";
-import { Dialog } from "@/shared/ui/Dialog";
+import { type Scenario, useScenarios, useCreateChatSession } from "@/features/chat";
+import { STORAGE_KEYS, Button, Toggle, MalangEE, Dialog } from "@/shared";
 
 import { defaultTopicSuggestionContents } from "../config";
 import type { TopicSuggestionPageContents } from "../model";

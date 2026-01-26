@@ -1,4 +1,3 @@
-import { tokenStorage } from "@/features/auth";
 import { API_BASE_URL, API_BASE_PATH } from "@/shared/api";
 
 export type WebSocketMessageType =
@@ -28,6 +27,8 @@ export interface WebSocketClientConfig {
   onClose?: () => void;
   onError?: (error: Event) => void;
   requireAuth?: boolean;
+  /** 토큰을 가져오는 함수 (requireAuth가 true일 때 사용) */
+  getToken?: () => string | null;
 }
 
 /**
@@ -69,8 +70,8 @@ export class WebSocketClient {
     const fullUrl = `${wsUrl}${API_BASE_PATH}${this.config.endpoint}`;
 
     // 인증이 필요한 경우 토큰 추가
-    if (this.config.requireAuth) {
-      const token = tokenStorage.get();
+    if (this.config.requireAuth && this.config.getToken) {
+      const token = this.config.getToken();
       if (token) {
         return `${fullUrl}?token=${encodeURIComponent(token)}`;
       }

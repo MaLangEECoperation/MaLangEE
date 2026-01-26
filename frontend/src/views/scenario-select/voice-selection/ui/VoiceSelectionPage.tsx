@@ -4,9 +4,7 @@ import { ChevronLeft, ChevronRight, Volume2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, useRef, useEffect } from "react";
 
-import { STORAGE_KEYS } from "@/shared/config";
-import { debugError } from "@/shared/lib/debug";
-import { Button, MalangEE } from "@/shared/ui";
+import { STORAGE_KEYS, debugError, Button, MalangEE } from "@/shared";
 
 import { defaultVoiceSelectionContents } from "../config";
 import type { VoiceSelectionPageContents } from "../model";

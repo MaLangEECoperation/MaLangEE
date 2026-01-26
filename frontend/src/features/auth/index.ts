@@ -15,7 +15,7 @@ export {
 } from "./model";
 
 // API (Response/Request schemas - collocated)
-export { loginResponseSchema as tokenSchema, type LoginResponse, type Token } from "./api";
+export { loginResponseSchema as tokenSchema, type LoginResponse, type Token, signup } from "./api";
 
 // Query (React Query hooks)
 export {
@@ -36,6 +36,7 @@ export { useAuth, useLoginIdCheck, useNicknameCheck, usePasswordValidation } fro
 // UI
 export {
   AuthGuard,
+  GlobalPopup,
   GuestGuard,
   NicknameChangePopup,
   SignupPromptDialog,

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Sans } from "next/font/google";
 
+import { GlobalPopup } from "@/features/auth";
+
 import { Providers } from "./providers";
 
 import "./globals.css";
-import { GlobalPopup } from "@/shared/ui";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

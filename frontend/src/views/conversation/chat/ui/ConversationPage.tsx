@@ -4,12 +4,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 import { useAuth } from "@/features/auth";
-import { useConversationChatNew } from "@/features/chat/hook/useConversationChatNew";
-import { useReadHints } from "@/features/chat/query";
-import { LanguageNotRecognizedDialog, RealtimeHint } from "@/features/chat/ui";
-import { STORAGE_KEYS } from "@/shared/config";
-import { debugLog, debugError } from "@/shared/lib";
 import {
+  useConversationChatNew,
+  useReadHints,
+  LanguageNotRecognizedDialog,
+  RealtimeHint,
+} from "@/features/chat";
+import {
+  STORAGE_KEYS,
+  debugLog,
+  debugError,
   Button,
   ChatMicButton,
   MalangEE,
@@ -19,7 +23,7 @@ import {
   SettingsPopup,
   SettingsTrigger,
   DebugStatus,
-} from "@/shared/ui";
+} from "@/shared";
 
 import { defaultConversationContents } from "../config";
 import type { ConversationPageContents } from "../model";

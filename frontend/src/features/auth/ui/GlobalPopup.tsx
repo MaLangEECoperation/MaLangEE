@@ -1,11 +1,10 @@
 "use client";
 
-import { useAuth, useDeleteUser } from "@/features/auth";
-import { usePopupStore } from "@/shared/lib/store";
+import { usePopupStore } from "@/shared";
+import { Button, Dialog, MalangEE } from "@/shared/ui";
 
-import { Button } from "./Button";
-import { Dialog } from "./Dialog";
-import { MalangEE } from "./MalangEE";
+import { useAuth } from "../hook/use-auth";
+import { useDeleteUser } from "../query";
 
 export const GlobalPopup = () => {
   const { type, isOpen, closePopup } = usePopupStore();

@@ -7,9 +7,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect } from "react";
 
 import { AuthGuard, useCurrentUser } from "@/features/auth";
-import { useReadChatSession } from "@/features/chat/query";
-import { STORAGE_KEYS } from "@/shared/config";
-import { Button, MalangEE } from "@/shared/ui";
+import { useReadChatSession } from "@/features/chat";
+import { STORAGE_KEYS, Button, MalangEE } from "@/shared";
 
 import { defaultWelcomeBackContents } from "../config";
 import type { WelcomeBackPageContents } from "../model";

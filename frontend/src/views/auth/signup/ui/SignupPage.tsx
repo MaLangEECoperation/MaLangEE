@@ -11,13 +11,11 @@ import {
   useNicknameCheck,
   usePasswordValidation,
   registerSchema,
+  signup,
   type RegisterFormData,
 } from "@/features/auth";
-import { signup } from "@/features/auth/api/signup/signup";
-import { useSyncGuestSession } from "@/features/chat/query";
-import { MalangEE, Button } from "@/shared/ui";
-import { Dialog } from "@/shared/ui/Dialog";
-import { FullLayout } from "@/shared/ui/FullLayout";
+import { useSyncGuestSession } from "@/features/chat";
+import { MalangEE, Button, Dialog, FullLayout } from "@/shared";
 
 import { defaultSignupContents } from "../config";
 import type { SignupPageContents } from "../model";

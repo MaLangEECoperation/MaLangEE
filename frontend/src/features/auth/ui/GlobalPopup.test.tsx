@@ -8,7 +8,7 @@ const mockClosePopup = vi.fn();
 let mockType: string | null = null;
 let mockIsOpen = false;
 
-vi.mock("@/shared/lib/store", () => ({
+vi.mock("@/shared", () => ({
   usePopupStore: () => ({
     type: mockType,
     isOpen: mockIsOpen,
@@ -17,10 +17,13 @@ vi.mock("@/shared/lib/store", () => ({
 }));
 
 const mockLogout = vi.fn();
-vi.mock("@/features/auth", () => ({
+vi.mock("../hook/use-auth", () => ({
   useAuth: () => ({
     logout: mockLogout,
   }),
+}));
+
+vi.mock("../query", () => ({
   useDeleteUser: () => ({
     mutate: vi.fn(),
     isPending: false,
@@ -28,16 +31,12 @@ vi.mock("@/features/auth", () => ({
 }));
 
 // Mock Dialog
-vi.mock("./Dialog", () => ({
+vi.mock("@/shared/ui", () => ({
   Dialog: ({ children, onClose }: { children: React.ReactNode; onClose: () => void }) => (
     <div data-testid="popup-layout" onClick={onClose}>
       {children}
     </div>
   ),
-}));
-
-// Mock Button
-vi.mock("./Button", () => ({
   Button: ({
     children,
     onClick,
@@ -50,10 +49,6 @@ vi.mock("./Button", () => ({
       {children}
     </button>
   ),
-}));
-
-// Mock MalangEE
-vi.mock("./MalangEE", () => ({
   MalangEE: ({ status }: { status: string }) => (
     <div data-testid="malangee" data-status={status}>
       MalangEE

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { useScenarioChatNew } from "@/features/chat/hook/useScenarioChatNew";
+import { useScenarioChatNew } from "@/features/chat";
 
 export default function ScenarioTestPage() {
   const {

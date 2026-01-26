@@ -3,11 +3,16 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { MalangEE, ChatMicButton, ScenarioResultPopup, DebugStatus } from "@/shared/ui";
-import { STORAGE_KEYS } from "@/shared/config";
+import { useScenarioChatNew } from "@/features/chat";
+import {
+  MalangEE,
+  ChatMicButton,
+  ScenarioResultPopup,
+  DebugStatus,
+  STORAGE_KEYS,
+  useInactivityTimer,
+} from "@/shared";
 import "@/shared/styles/scenario.css";
-import { useScenarioChatNew } from "@/features/chat/hook/useScenarioChatNew";
-import { useInactivityTimer } from "@/shared/hooks";
 
 import { defaultDirectSpeechContents } from "../config";
 import type { DirectSpeechPageContents } from "../model";
