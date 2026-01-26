@@ -7,28 +7,29 @@
 
 ## 📊 통합 마이그레이션 현황 (ROADMAP + FSD)
 
-> **마지막 업데이트**: 2026-01-25
+> **마지막 업데이트**: 2026-01-26
 > **참조**: `docs/ROADMAP.md` (기능 로드맵), 이 문서 (FSD 구조 마이그레이션)
 
 ### 전체 Phase 개요
 
-| Phase  | 제목                | 상태 | 우선순위 | 완료/전체 | 진행률  |
-| :----: | ------------------- | :--: | :------: | :-------: | :-----: |
-| **R**  | ROADMAP 기능 (2-7)  |  ✅  |    -     |    6/6    |  100%   |
-| **1**  | API 인프라          |  ✅  | 🔴 높음  |   10/10   |  100%   |
-| **2**  | 스키마 콜로케이션   |  ✅  | 🔴 높음  |   21/21   |  100%   |
-| **3**  | localStorage 버그   |  🔄  | 🔴 높음  |    1/2    |   50%   |
-| **4**  | views 서버 컴포넌트 |  ⬜  | 🟡 중간  |    0/5    |   0%    |
-| **5**  | 라우터 구조 재편    |  ⬜  | 🟡 중간  |    0/4    |   0%    |
-| **6**  | 에러 바운더리       |  ⬜  | 🟡 중간  |    0/2    |   0%    |
-| **7**  | 반응형 디자인       |  ⬜  | 🟡 중간  |    0/4    |   0%    |
-| **8**  | 접근성 개선         |  ⬜  | 🟡 중간  |    0/5    |   0%    |
-| **9**  | Custom Hook 분리    |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
-| **10** | 버튼/링크 리팩토링  |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
-| **11** | 매직넘버 상수화     |  ⬜  | 🟢 낮음  |    0/3    |   0%    |
-| **12** | ESLint FSD 강제     |  ⬜  | 🟢 낮음  |    0/2    |   0%    |
-| **13** | 텍스트 입력 모드    |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
-|        | **전체**            |      |          | **38/67** | **57%** |
+|  Phase  | 제목                      | 상태 | 우선순위 | 완료/전체 | 진행률  |
+| :-----: | ------------------------- | :--: | :------: | :-------: | :-----: |
+|  **R**  | ROADMAP 기능 (2-7)        |  ✅  |    -     |    6/6    |  100%   |
+|  **1**  | API 인프라                |  ✅  | 🔴 높음  |   10/10   |  100%   |
+|  **2**  | 스키마 콜로케이션         |  ✅  | 🔴 높음  |   21/21   |  100%   |
+|  **3**  | localStorage 버그         |  ✅  | 🔴 높음  |    2/2    |  100%   |
+| **3.5** | **views 페이지 슬라이스** |  ✅  | 🔴 높음  |   12/12   |  100%   |
+|  **4**  | views 서버 컴포넌트       |  🔄  | 🟡 중간  |   1/13    |   8%    |
+|  **5**  | 라우터 구조 재편          |  ⬜  | 🟡 중간  |    0/4    |   0%    |
+|  **6**  | 에러 바운더리             |  ⬜  | 🟡 중간  |    0/2    |   0%    |
+|  **7**  | 반응형 디자인             |  ⬜  | 🟡 중간  |    0/4    |   0%    |
+|  **8**  | 접근성 개선               |  ⬜  | 🟡 중간  |    0/5    |   0%    |
+|  **9**  | Custom Hook 분리          |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
+| **10**  | 버튼/링크 리팩토링        |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
+| **11**  | 매직넘버 상수화           |  ⬜  | 🟢 낮음  |    0/3    |   0%    |
+| **12**  | ESLint FSD 강제           |  ⬜  | 🟢 낮음  |    0/2    |   0%    |
+| **13**  | 텍스트 입력 모드          |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
+|         | **전체**                  |      |          | **53/79** | **67%** |
 
 ### ROADMAP 완료 기능 (Phase R)
 
@@ -41,16 +42,84 @@
 |  R-6  | 실시간 힌트 UI       | `features/chat/ui/RealtimeHint.tsx`                |  ✅  |
 |  R-7  | 테스트/품질          | 673개 단위 + 143개 E2E                             |  ✅  |
 
+### Views 페이지 슬라이스 완료 (Phase 3.5) ✅
+
+> **목표**: 그룹 폴더(auth, conversation 등)를 단순 그룹핑 폴더로 변경하고, 각 페이지를 독립적인 FSD slice로 구성
+
+**변경 전 (그룹이 slice)**:
+
+```
+views/auth/
+├── ui/ (LoginPage, SignupPage, LogoutPage 혼합)
+├── model/ (모든 페이지 타입 혼합)
+├── config/ (모든 설정 혼합)
+└── index.ts
+```
+
+**변경 후 (페이지가 slice)**:
+
+```
+views/auth/              # 그룹핑 폴더 (index.ts 없음)
+├── login/               # slice
+│   ├── ui/LoginPage.tsx
+│   ├── model/LoginPageContents.ts
+│   ├── config/default-login-contents.ts
+│   └── index.ts
+├── signup/              # slice
+└── logout/              # slice
+```
+
+| 그룹            | 페이지               | 새 경로                                    | 상태 |
+| --------------- | -------------------- | ------------------------------------------ | :--: |
+| auth            | LoginPage            | `views/auth/login/`                        |  ✅  |
+| auth            | SignupPage           | `views/auth/signup/`                       |  ✅  |
+| auth            | LogoutPage           | `views/auth/logout/`                       |  ✅  |
+| conversation    | ConversationPage     | `views/conversation/chat/`                 |  ✅  |
+| conversation    | CompletePage         | `views/conversation/complete/`             |  ✅  |
+| conversation    | WelcomeBackPage      | `views/conversation/welcome-back/`         |  ✅  |
+| dashboard       | DashboardPage        | `views/dashboard/main/`                    |  ✅  |
+| scenario-select | ScenarioSelectPage   | `views/scenario-select/index/`             |  ✅  |
+| scenario-select | TopicSuggestionPage  | `views/scenario-select/topic-suggestion/`  |  ✅  |
+| scenario-select | VoiceSelectionPage   | `views/scenario-select/voice-selection/`   |  ✅  |
+| scenario-select | SubtitleSettingsPage | `views/scenario-select/subtitle-settings/` |  ✅  |
+| scenario-select | DirectSpeechPage     | `views/scenario-select/direct-speech/`     |  ✅  |
+
+**App Router Import 변경 (12개 파일)** ✅
+
+```typescript
+// auth
+export { LoginPage as default } from "@/views/auth/login";
+export { SignupPage as default } from "@/views/auth/signup";
+export { LogoutPage as default } from "@/views/auth/logout";
+
+// conversation
+export { ConversationPage as default } from "@/views/conversation/chat";
+export { CompletePage as default } from "@/views/conversation/complete";
+export { WelcomeBackPage as default } from "@/views/conversation/welcome-back";
+
+// dashboard
+export { DashboardPage as default } from "@/views/dashboard/main";
+
+// scenario-select
+export { ScenarioSelectPage as default } from "@/views/scenario-select/index";
+export { TopicSuggestionPage as default } from "@/views/scenario-select/topic-suggestion";
+export { VoiceSelectionPage as default } from "@/views/scenario-select/voice-selection";
+export { SubtitleSettingsPage as default } from "@/views/scenario-select/subtitle-settings";
+export { DirectSpeechPage as default } from "@/views/scenario-select/direct-speech";
+```
+
+**커밋**: `d1c36ef refactor(views): Views 레이어 페이지 단위 slice 재구성`
+
 ### 🎯 권장 작업 순서
 
 ```
-1️⃣ Phase 3: localStorage 버그 수정 (🔴 높음, 데이터 손실 방지)
-   └─ direct-speech/page.tsx snake_case → camelCase
-
-2️⃣ Phase 4: views 서버 컴포넌트 (🟡 중간)
+1️⃣ Phase 4: views 서버 컴포넌트 (🟡 중간)
    └─ fetchClient 직접 호출, contents prop 분리
 
-3️⃣ Phase 5+: 라우터, 반응형, 접근성...
+2️⃣ Phase 5: 라우터 구조 재편 (🟡 중간)
+   └─ app/ 라우팅 전용, views/ 실제 로직
+
+3️⃣ Phase 6+: 에러 바운더리, 반응형, 접근성...
 ```
 
 ---
@@ -508,7 +577,7 @@ localStorage.getItem(STORAGE_KEYS.conversationGoal); // 정상 작동
 
 ---
 
-## 현재 구현 상태 (2026-01-25)
+## 현재 구현 상태 (2026-01-26)
 
 ### Phase 1: API 인프라 ✅ (10/10)
 
@@ -581,6 +650,35 @@ localStorage.getItem(STORAGE_KEYS.conversationGoal); // 정상 작동
 
 **데이터 손실 시나리오**:
 
+### Phase 3.5: Views 페이지 슬라이스 ✅ (12/12)
+
+> **목표**: 그룹 폴더를 단순 그룹핑 폴더로 변경, 각 페이지를 독립적인 FSD slice로 구성
+> **커밋**: `d1c36ef refactor(views): Views 레이어 페이지 단위 slice 재구성`
+
+|      그룹       | 페이지               | 새 경로                                    | 상태 |
+| :-------------: | -------------------- | ------------------------------------------ | :--: |
+|      auth       | LoginPage            | `views/auth/login/`                        |  ✅  |
+|      auth       | SignupPage           | `views/auth/signup/`                       |  ✅  |
+|      auth       | LogoutPage           | `views/auth/logout/`                       |  ✅  |
+|  conversation   | ConversationPage     | `views/conversation/chat/`                 |  ✅  |
+|  conversation   | CompletePage         | `views/conversation/complete/`             |  ✅  |
+|  conversation   | WelcomeBackPage      | `views/conversation/welcome-back/`         |  ✅  |
+|    dashboard    | DashboardPage        | `views/dashboard/main/`                    |  ✅  |
+| scenario-select | ScenarioSelectPage   | `views/scenario-select/index/`             |  ✅  |
+| scenario-select | TopicSuggestionPage  | `views/scenario-select/topic-suggestion/`  |  ✅  |
+| scenario-select | VoiceSelectionPage   | `views/scenario-select/voice-selection/`   |  ✅  |
+| scenario-select | SubtitleSettingsPage | `views/scenario-select/subtitle-settings/` |  ✅  |
+| scenario-select | DirectSpeechPage     | `views/scenario-select/direct-speech/`     |  ✅  |
+
+**완료 내용**:
+
+- 12개 페이지를 독립적인 슬라이스로 분리 (ui/, model/, config/, index.ts)
+- 그룹 레벨 index.ts 삭제 (그룹은 단순 폴더링 역할만)
+- App Router 페이지 import 경로 업데이트 (`@/views/auth` → `@/views/auth/login`)
+- 84 files changed, 1157 insertions(+), 233 deletions(-)
+
+**데이터 손실 시나리오 (Phase 3)**:
+
 ```
 Direct Speech → conversation_goal (snake_case) 저장
 Welcome Back → conversationGoal (camelCase) 읽기 시도 → undefined!
@@ -596,12 +694,17 @@ Welcome Back → conversationGoal (camelCase) 읽기 시도 → undefined!
 - [x] `features/auth/` - 인증 기능 완전 구현 (api, hook, model, ui + 전체 테스트)
 - [x] `features/chat/hook/` - useConversationChatNew, useScenarioChatNew, useWebSocketBase (테스트 포함)
 - [x] `features/chat/ui/` - RealtimeHint, LanguageNotRecognizedDialog, ChatDetailPopup, ChatTranscriptPopup
+- [x] `views/` - 12개 페이지를 독립적인 FSD slice로 재구성 (Phase 3.5 완료)
+  - [x] `views/auth/` - login, signup, logout slices
+  - [x] `views/conversation/` - chat, complete, welcome-back slices
+  - [x] `views/dashboard/` - main slice
+  - [x] `views/scenario-select/` - index, topic-suggestion, voice-selection, subtitle-settings, direct-speech slices
 
 ### 미완료 항목 (Phase 4+)
 
 - [ ] `entities/user/` - 사용자 엔티티 구축
 - [ ] `entities/scenario/` - 시나리오 엔티티 구축
-- [ ] `views/` - 페이지 로직 분리 필요
+- [ ] `views/` contents prop 적용 - 서버 컴포넌트에서 텍스트/다국어 분리
 - [ ] Route Group 재편 (public, protected, chat-flow)
 - [ ] 반응형 디자인 (모바일 퍼스트)
 - [ ] 접근성 개선 (WCAG AA)
@@ -610,17 +713,17 @@ Welcome Back → conversationGoal (camelCase) 읽기 시도 → undefined!
 
 ## 현재 상태 분석
 
-### FSD 준수율: ~75%
+### FSD 준수율: ~85%
 
 | 레이어           | 상태 | 설명                                                                     |
 | ---------------- | ---- | ------------------------------------------------------------------------ |
-| `app/`           | ⚠️   | 페이지 컴포넌트가 라우터 파일에 직접 포함됨                              |
+| `app/`           | ✅   | 라우팅 전용, views import만 수행                                         |
 | `features/auth/` | ✅   | 완전한 FSD 구조 (api/, hook/, model/, ui/ + 전체 테스트)                 |
 | `features/chat/` | ⚠️   | api/, hook/, ui/ 완성 (팝업 이동 완료), model/ 누락 (types.ts 이동 필요) |
 | `shared/`        | ⚠️   | config/ 완성, types/ → model/ 리네이밍 필요                              |
 | `entities/`      | ⚠️   | 미생성 (현재 필요 없음)                                                  |
 | `widgets/`       | ⚠️   | 미생성 (현재 필요 없음)                                                  |
-| `views/`         | ❌   | 미생성 → 페이지 로직 분리 필요                                           |
+| `views/`         | ✅   | 12개 페이지 슬라이스 완성 (ui/, model/, config/, index.ts 구조)          |
 
 ### 라우트 구조 (현재)
 
@@ -653,9 +756,10 @@ src/app/
 1. ~~`app/dashboard/ChatDetailPopup.tsx`~~ → ✅ features/chat/ui/ 이동 완료
 2. ~~`app/dashboard/ChatTranscriptPopup.tsx`~~ → ✅ features/chat/ui/ 이동 완료
 3. ~~`app/dashboard/NicknameChangePopup.tsx`~~ → ✅ features/auth/ui/ 이동 완료
-4. ~~모든 `app/**/page.tsx`~~ → ✅ `views/`로 분리 완료
-5. `shared/types/` → `shared/model/`로 변경 필요
-6. `features/chat/hook/types.ts` → `features/chat/model/`로 이동 필요
+4. ~~모든 `app/**/page.tsx`~~ → ✅ `views/` 페이지 슬라이스로 분리 완료 (Phase 3.5)
+5. ~~그룹 레벨 `views/*/index.ts`~~ → ✅ 삭제 완료 (그룹은 단순 폴더링 역할만)
+6. `shared/types/` → `shared/model/`로 변경 필요
+7. `features/chat/hook/types.ts` → `features/chat/model/`로 이동 필요
 
 ### 테스트 현황
 
@@ -1607,15 +1711,43 @@ export function SkipNavigation() {
 - [ ] `model/schema.ts` - 폼 검증 스키마만 유지
 - [ ] `model/schemas.ts` - Entity 스키마만 유지
 
-### Phase 3: views 서버 컴포넌트 패턴
+### Phase 4: views 서버 컴포넌트 패턴 (contents prop)
 
-18. [ ] `views/` 폴더 구조 생성 (도메인별 `ui/` 하위)
-19. [ ] 각 `app/**/page.tsx` → 서버 컴포넌트로 전환 (데이터 패치 + contents 분리)
-20. [ ] 페이지 컴포넌트를 views로 이동 (클라이언트 컴포넌트)
-21. [ ] views 컴포넌트에 `contents` prop 인터페이스 추가
-22. [ ] `views/index.ts` Public API 생성
+> 모든 페이지 컴포넌트에 contents prop 적용 (다국어/텍스트 분리)
 
-### Phase 4: 라우터 구조 재편
+**4-0. 인프라**
+
+- [x] fetchClient 서버 모드 지원 (serverToken 옵션 추가)
+
+**4-1. dashboard (1/1)**
+
+- [x] DashboardPage contents prop 적용
+
+**4-2. auth (0/3)**
+
+- [ ] LoginPage contents prop 적용
+- [ ] SignupPage contents prop 적용
+- [ ] LogoutPage contents prop 적용
+
+**4-3. scenario-select (0/5)**
+
+- [ ] ScenarioSelectPage contents prop 적용
+- [ ] TopicSuggestionPage contents prop 적용
+- [ ] VoiceSelectionPage contents prop 적용
+- [ ] SubtitleSettingsPage contents prop 적용
+- [ ] DirectSpeechPage contents prop 적용
+
+**4-4. conversation (0/3)**
+
+- [ ] WelcomeBackPage contents prop 적용
+- [ ] CompletePage contents prop 적용
+- [ ] ConversationPage contents prop 적용
+
+**4-5. Public API**
+
+- [ ] `views/index.ts` 전체 export 업데이트
+
+### Phase 5: 라우터 구조 재편
 
 23. [ ] Route Group 재편: `(public)`, `(protected)`, `(chat-flow)`
 24. [ ] `(protected)/dashboard/` - Parallel Route (`@modal`) 구조 생성
@@ -1633,54 +1765,41 @@ export function SkipNavigation() {
     - [ ] `(protected)/layout.tsx` - AuthGuard
     - [ ] `(chat-flow)/layout.tsx` - 대화 종료 확인
 
-### Phase 5: 에러 바운더리
+### Phase 6: 에러 바운더리
 
 27. [ ] `app/global-error.tsx` 생성
 28. [ ] 각 Route Group별 `error.tsx` 생성
 
-### Phase 6: Custom Hook 분리
+### Phase 7: 반응형 디자인
 
-29. [ ] 각 페이지 비즈니스 로직 hook 분리
+29. [ ] 모바일 퍼스트 Tailwind 적용
 
-### Phase 7: 버튼/링크 리팩토링
+### Phase 8: 접근성 개선
 
-30. [ ] 네비게이션 버튼 → `asChild` + `Link` 패턴 적용
+30. [ ] 시멘틱 HTML 적용
 
-### Phase 8: 매직넘버 상수화
+### Phase 9: Custom Hook 분리
 
-31. [ ] 코드베이스 매직넘버 스캔
-32. [ ] 공용 상수 → `shared/config/`
-33. [ ] feature별 상수 → `features/<feature>/config/`
+31. [ ] 각 페이지 비즈니스 로직 hook 분리
 
-### Phase 9: localStorage 키 정리
+### Phase 10: 버튼/링크 리팩토링
 
-34. [x] `shared/config/storage-keys.ts` 생성 (모든 localStorage 키 상수화, 테스트 포함)
-35. [ ] Phase 4에서 URL searchParams로 전환 후 불필요한 localStorage 키 제거
-36. [ ] 잔여 localStorage 키 camelCase 통일 및 상수 사용
+32. [ ] 네비게이션 버튼 → `asChild` + `Link` 패턴 적용
 
-### Phase 10: 반응형 디자인 (모바일 퍼스트)
+### Phase 11: 매직넘버 상수화
 
-37. [ ] 모바일 퍼스트 Tailwind 브레이크포인트 체계 적용 (`base` → `md` → `lg`)
-38. [ ] views 컴포넌트 반응형 재작성 (대시보드 1컬럼→2컬럼, 팝업 풀스크린→센터)
-39. [ ] 터치 인터랙션 최적화 (최소 44x44px 터치 영역)
-40. [ ] `shared/config/breakpoints.ts` 브레이크포인트 상수 생성
-
-### Phase 11: 접근성 개선 (WCAG AA)
-
-41. [ ] 시멘틱 HTML 적용 (landmark, 헤딩 계층, 올바른 대화형 태그)
-42. [ ] 키보드 네비게이션 (focus trap, skip nav, focus-visible)
-43. [ ] ARIA 속성 추가 (마이크 상태, 대화 로그, 모달, 로딩)
-44. [ ] 색상 대비 검증 (4.5:1 이상) + `prefers-reduced-motion` 대응
-45. [ ] 음성 대화 접근성 (aria-live 피드백, 자막 기본 제공)
+33. [ ] 코드베이스 매직넘버 스캔
+34. [ ] 공용 상수 → `shared/config/`
+35. [ ] feature별 상수 → `features/<feature>/config/`
 
 ### Phase 12: ESLint 강제 적용
 
-46. [ ] `eslint.config.mjs` - FSD 규칙 `"warn"` → `"error"` 변경
-47. [ ] `yarn lint` 실행하여 FSD 위반 없음 확인
+36. [ ] `eslint.config.mjs` - FSD 규칙 `"warn"` → `"error"` 변경
+37. [ ] `yarn lint` 실행하여 FSD 위반 없음 확인
 
 ### Phase 13: 미구현 기능
 
-48. [ ] 텍스트 입력 모드 구현 (언어인지 불가 시 대체 입력)
+38. [ ] 텍스트 입력 모드 구현 (언어인지 불가 시 대체 입력)
 
 ### 검증 (각 Phase 완료 후)
 
@@ -1701,7 +1820,12 @@ src/
 │   ├── error.tsx
 │   └── page.tsx   # 서버에서 데이터 패치 → views로 전달
 ├── views/         # 페이지 컴포넌트 (클라이언트, 실제 로직)
-│   └── XxxPage.tsx
+│   └── <group>/              # 그룹핑 폴더 (index.ts 없음)
+│       └── <page>/           # 페이지 슬라이스
+│           ├── ui/           # 페이지 컴포넌트
+│           ├── model/        # 페이지 타입 (Contents 인터페이스)
+│           ├── config/       # 기본값 설정
+│           └── index.ts      # Public API
 ├── widgets/       # 복합 UI 컴포넌트
 ├── features/      # 기능별 모듈
 │   └── <feature>/
