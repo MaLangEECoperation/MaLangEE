@@ -23,3 +23,5 @@ export type { ScenarioResult } from "./ScenarioResultPopup";
 export { SettingsPopup, SettingsTrigger, VOICE_OPTIONS } from "./SettingsPopup";
 export type { SettingsPopupProps, VoiceOption } from "./SettingsPopup";
 export { Tooltip } from "./Tooltip";
+export { ErrorFallback } from "./ErrorFallback";
+export type { ErrorFallbackProps } from "./ErrorFallback";

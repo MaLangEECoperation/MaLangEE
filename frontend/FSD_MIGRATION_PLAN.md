@@ -7,7 +7,7 @@
 
 ## 📊 통합 마이그레이션 현황 (ROADMAP + FSD)
 
-> **마지막 업데이트**: 2026-01-26 (Phase 5-2 Parallel Route 완료)
+> **마지막 업데이트**: 2026-01-26 (Phase 6 에러 바운더리 완료)
 > **참조**: `docs/ROADMAP.md` (기능 로드맵), 이 문서 (FSD 구조 마이그레이션)
 
 ### 전체 Phase 개요
@@ -21,7 +21,7 @@
 | **3.5** | **views 페이지 슬라이스** |  ✅  | 🔴 높음  |   12/12   |  100%   |
 |  **4**  | views 서버 컴포넌트       |  ✅  | 🟡 중간  |   13/13   |  100%   |
 |  **5**  | 라우터 구조 재편          |  ✅  | 🟡 중간  |    3/3    |  100%   |
-|  **6**  | 에러 바운더리             |  ⬜  | 🟡 중간  |    0/2    |   0%    |
+|  **6**  | 에러 바운더리             |  ✅  | 🟡 중간  |    2/2    |  100%   |
 |  **7**  | 반응형 디자인             |  ⬜  | 🟡 중간  |    0/4    |   0%    |
 |  **8**  | 접근성 개선               |  ⬜  | 🟡 중간  |    0/5    |   0%    |
 |  **9**  | Custom Hook 분리          |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
@@ -29,7 +29,7 @@
 | **11**  | 매직넘버 상수화           |  ⬜  | 🟢 낮음  |    0/3    |   0%    |
 | **12**  | ESLint FSD 강제           |  ⬜  | 🟢 낮음  |    0/2    |   0%    |
 | **13**  | 텍스트 입력 모드          |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
-|         | **전체**                  |      |          | **68/78** | **87%** |
+|         | **전체**                  |      |          | **70/78** | **90%** |
 
 ### ROADMAP 완료 기능 (Phase R)
 
@@ -1788,10 +1788,16 @@ export function SkipNavigation() {
 ~~- [ ] `subtitleEnabled` → `?subtitle=true`~~
 ~~- [ ] 시나리오 데이터 (place, partner, goal) → URL 전달~~
 
-### Phase 6: 에러 바운더리
+### Phase 6: 에러 바운더리 ✅
 
-27. [ ] `app/global-error.tsx` 생성
-28. [ ] 각 Route Group별 `error.tsx` 생성
+27. [x] `app/global-error.tsx` 생성
+    - [x] `shared/ui/ErrorFallback` 공유 컴포넌트 생성 (TDD: 11개 테스트)
+    - [x] `app/global-error.tsx` - 전역 에러 바운더리 (자체 html/body 렌더링)
+    - [x] `app/not-found.tsx` - 404 페이지
+28. [x] 각 Route Group별 `error.tsx` 생성
+    - [x] `app/(protected)/error.tsx` - 인증 페이지 에러
+    - [x] `app/(chat-flow)/error.tsx` - 대화 플로우 에러
+    - [x] `app/(public)/error.tsx` - 공개 페이지 에러
 
 ### Phase 7: 반응형 디자인
 
