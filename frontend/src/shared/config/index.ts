@@ -10,3 +10,4 @@ export {
   type AriaRole,
   type AriaLive,
 } from "./accessibility";
+export { TIME_CONSTANTS, type TimeConstants } from "./time";

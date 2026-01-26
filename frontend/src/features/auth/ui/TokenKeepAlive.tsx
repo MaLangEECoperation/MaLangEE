@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 import { debugLog, debugError, isTokenExpired, isTokenExpiringSoon } from "@/shared/lib";
 
+import { AUTH_VALIDATION } from "../config";
 import { useAuth } from "../hook";
 import { tokenStorage } from "../model";
 
@@ -55,7 +56,7 @@ export function TokenKeepAlive() {
     checkToken();
 
     // 5분마다 체크
-    const interval = setInterval(checkToken, 5 * 60 * 1000);
+    const interval = setInterval(checkToken, AUTH_VALIDATION.TOKEN.CHECK_INTERVAL_MS);
 
     return () => clearInterval(interval);
   }, [isAuthenticated, refreshUser, logout]);

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 import { checkLoginId } from "../api/check-login-id/check-login-id";
 import { checkNickname } from "../api/check-nickname/check-nickname";
+import { AUTH_VALIDATION } from "../config";
 import { nicknameValidation, registerSchema } from "../model/schema";
 
 interface UseDuplicateCheckOptions {
@@ -31,7 +32,10 @@ export function useLoginIdCheck(
   value: string,
   options: UseDuplicateCheckOptions = {}
 ): UseDuplicateCheckResult {
-  const { debounceMs = 1000, minLength = 4 } = options;
+  const {
+    debounceMs = AUTH_VALIDATION.LOGIN_ID.DEBOUNCE_MS,
+    minLength = AUTH_VALIDATION.LOGIN_ID.MIN_LENGTH,
+  } = options;
 
   const [error, setError] = useState<string | null>(null);
   const [isChecking, setIsChecking] = useState(false);
@@ -130,7 +134,10 @@ export function useNicknameCheck(
   value: string,
   options: UseDuplicateCheckOptions = {}
 ): UseDuplicateCheckResult {
-  const { debounceMs = 1000, minLength = 2 } = options;
+  const {
+    debounceMs = AUTH_VALIDATION.NICKNAME.DEBOUNCE_MS,
+    minLength = AUTH_VALIDATION.NICKNAME.MIN_LENGTH,
+  } = options;
 
   const [error, setError] = useState<string | null>(null);
   const [isChecking, setIsChecking] = useState(false);
@@ -235,7 +242,10 @@ export function usePasswordValidation(
   value: string,
   options: UseDuplicateCheckOptions = {}
 ): { error: string | null; isChecking: boolean; isValid: boolean | null } {
-  const { debounceMs = 300, minLength = 1 } = options;
+  const {
+    debounceMs = AUTH_VALIDATION.PASSWORD.DEBOUNCE_MS,
+    minLength = AUTH_VALIDATION.PASSWORD.MIN_LENGTH,
+  } = options;
 
   const [error, setError] = useState<string | null>(null);
   const [isChecking, setIsChecking] = useState(false);

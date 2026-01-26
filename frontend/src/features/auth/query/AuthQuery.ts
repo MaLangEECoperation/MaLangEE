@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getCurrentUser } from "../api/get-current-user/get-current-user";
+import { AUTH_VALIDATION } from "../config";
 
 /**
  * Auth Query Factory
@@ -18,7 +19,7 @@ export const AuthQueries = {
     queryOptions({
       queryKey: [{ scope: "auth", entity: "currentUser" }] as const,
       queryFn: () => getCurrentUser(),
-      staleTime: 5 * 60 * 1000, // 5분
+      staleTime: AUTH_VALIDATION.TOKEN.CHECK_INTERVAL_MS, // 5분
       refetchOnWindowFocus: false,
       refetchOnMount: false,
     }),

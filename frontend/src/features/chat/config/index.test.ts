@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { CHAT_QUERY_CONFIG, CHAT_PAGINATION, CHAT_VOICE_OPTIONS } from "./index";
+import { CHAT_QUERY_CONFIG, CHAT_PAGINATION, CHAT_VOICE_OPTIONS, CHAT_TIMER } from "./index";
 
 describe("features/chat/config", () => {
   describe("CHAT_QUERY_CONFIG", () => {
@@ -32,6 +32,26 @@ describe("features/chat/config", () => {
 
     it("should have 8 voice options", () => {
       expect(CHAT_VOICE_OPTIONS).toHaveLength(8);
+    });
+  });
+
+  describe("CHAT_TIMER", () => {
+    it("HINT_DELAY_MS는 15초(15000ms)이다", () => {
+      expect(CHAT_TIMER.HINT_DELAY_MS).toBe(15_000);
+    });
+
+    it("WAIT_POPUP_DELAY_MS는 5초(5000ms)이다", () => {
+      expect(CHAT_TIMER.WAIT_POPUP_DELAY_MS).toBe(5_000);
+    });
+
+    it("RESPONSE_REQUEST_DELAY_MS는 500ms이다", () => {
+      expect(CHAT_TIMER.RESPONSE_REQUEST_DELAY_MS).toBe(500);
+    });
+
+    it("모든 값은 number 타입이다", () => {
+      expect(typeof CHAT_TIMER.HINT_DELAY_MS).toBe("number");
+      expect(typeof CHAT_TIMER.WAIT_POPUP_DELAY_MS).toBe("number");
+      expect(typeof CHAT_TIMER.RESPONSE_REQUEST_DELAY_MS).toBe("number");
     });
   });
 });

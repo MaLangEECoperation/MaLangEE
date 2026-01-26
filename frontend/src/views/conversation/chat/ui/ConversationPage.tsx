@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 import { useAuth } from "@/features/auth";
 import {
+  CHAT_TIMER,
   useConversationChatNew,
   useReadHints,
   LanguageNotRecognizedDialog,
@@ -27,9 +29,6 @@ import {
 
 import { defaultConversationContents } from "../config";
 import type { ConversationPageContents } from "../model";
-
-const HINT_DELAY_MS = 15000; // 15초 후 힌트 프롬프트 표시
-const WAIT_POPUP_DELAY_MS = 5000; // 힌트 표시 후 5초 더 대기하면 종료 모달
 
 export interface ConversationPageProps {
   contents?: ConversationPageContents;
@@ -186,7 +185,7 @@ function ConversationContent({ contents }: ConversationContentProps) {
     }
 
     const elapsedTime = Date.now() - state.lastAiAudioDoneAt;
-    const remainingTime = Math.max(0, HINT_DELAY_MS - elapsedTime);
+    const remainingTime = Math.max(0, CHAT_TIMER.HINT_DELAY_MS - elapsedTime);
 
     hintTimerRef.current = setTimeout(() => {
       setShowHintPrompt(true);
@@ -208,7 +207,7 @@ function ConversationContent({ contents }: ConversationContentProps) {
 
     waitPopupTimerRef.current = setTimeout(() => {
       setShowWaitPopup(true);
-    }, WAIT_POPUP_DELAY_MS);
+    }, CHAT_TIMER.WAIT_POPUP_DELAY_MS);
 
     return clearWaitPopupTimer;
   }, [showHintPrompt, state.isUserSpeaking, clearWaitPopupTimer]);
@@ -253,7 +252,7 @@ function ConversationContent({ contents }: ConversationContentProps) {
       try {
         setIsMicEnabled(true);
         await startMicrophone();
-        setTimeout(() => requestResponse(), 500);
+        setTimeout(() => requestResponse(), CHAT_TIMER.RESPONSE_REQUEST_DELAY_MS);
       } catch (error) {
         debugError("[StartMic] Failed:", error);
         setIsMicEnabled(false);
@@ -494,13 +493,8 @@ function ConversationContent({ contents }: ConversationContentProps) {
             <div className="text-xl font-bold text-[#1F1C2B]">{contents.sessionError.title}</div>
             <p className="text-center text-sm text-gray-600">{contents.sessionError.description}</p>
             <div className="flex w-full gap-3">
-              <Button
-                variant="primary"
-                size="md"
-                fullWidth
-                onClick={() => router.push("/scenario-select")}
-              >
-                {contents.sessionError.buttonText}
+              <Button asChild variant="primary" size="md" fullWidth>
+                <Link href="/scenario-select">{contents.sessionError.buttonText}</Link>
               </Button>
             </div>
           </div>

@@ -7,7 +7,7 @@ import { useForm, type Resolver } from "react-hook-form";
 import { type LoginFormData, loginSchema, useLogin } from "@/features/auth";
 import { Button, SplitViewLayout } from "@/shared";
 
-import { defaultLoginContents } from "../config";
+import { defaultLoginContents, LOGIN_TIMER } from "../config";
 import type { LoginPageContents } from "../model";
 
 // safeParse를 사용하는 커스텀 resolver (콘솔 에러 방지)
@@ -39,17 +39,16 @@ export interface LoginPageProps {
 export function LoginPage({ contents = defaultLoginContents }: LoginPageProps) {
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [activeTitleIndex, setActiveTitleIndex] = useState(0);
-  const titleRotationMs = 4000;
 
   const titleMessages = contents.titleMessages;
 
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveTitleIndex((prev) => (prev + 1) % titleMessages.length);
-    }, titleRotationMs);
+    }, LOGIN_TIMER.TITLE_ROTATION_MS);
 
     return () => clearInterval(interval);
-  }, [titleMessages.length, titleRotationMs]);
+  }, [titleMessages.length]);
 
   const {
     register,

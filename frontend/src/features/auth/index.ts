@@ -1,3 +1,6 @@
+// Config (Validation constants)
+export { AUTH_VALIDATION, type AuthValidation } from "./config";
+
 // Model (Form validation schemas)
 export {
   // Schemas
