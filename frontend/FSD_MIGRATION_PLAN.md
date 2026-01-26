@@ -20,7 +20,7 @@
 |  **3**  | localStorage 버그         |  ✅  | 🔴 높음  |    2/2    |  100%   |
 | **3.5** | **views 페이지 슬라이스** |  ✅  | 🔴 높음  |   12/12   |  100%   |
 |  **4**  | views 서버 컴포넌트       |  ✅  | 🟡 중간  |   13/13   |  100%   |
-|  **5**  | 라우터 구조 재편          |  🔄  | 🟡 중간  |    3/4    |   75%   |
+|  **5**  | 라우터 구조 재편          |  ✅  | 🟡 중간  |    3/3    |  100%   |
 |  **6**  | 에러 바운더리             |  ⬜  | 🟡 중간  |    0/2    |   0%    |
 |  **7**  | 반응형 디자인             |  ⬜  | 🟡 중간  |    0/4    |   0%    |
 |  **8**  | 접근성 개선               |  ⬜  | 🟡 중간  |    0/5    |   0%    |
@@ -29,7 +29,7 @@
 | **11**  | 매직넘버 상수화           |  ⬜  | 🟢 낮음  |    0/3    |   0%    |
 | **12**  | ESLint FSD 강제           |  ⬜  | 🟢 낮음  |    0/2    |   0%    |
 | **13**  | 텍스트 입력 모드          |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
-|         | **전체**                  |      |          | **68/79** | **86%** |
+|         | **전체**                  |      |          | **68/78** | **87%** |
 
 ### ROADMAP 완료 기능 (Phase R)
 
@@ -1769,13 +1769,24 @@ export function SkipNavigation() {
     - [x] `views/dashboard/main/ui/` - ChatDetailModal, ChatTranscriptModal, ChatDetailPage, ChatTranscriptPage 컴포넌트
     - [x] `DashboardPage` - useState 모달 → Link 기반 URL 라우팅으로 변환
 
-**5-3. localStorage → URL searchParams 마이그레이션 (미진행)**
+**5-3. localStorage → URL searchParams 마이그레이션 (보류/스킵)**
 
-25. [ ] localStorage → URL searchParams 마이그레이션
-    - [ ] `chatSessionId` → `?sessionId=xxx`
-    - [ ] `selectedVoice` → `?voice=shimmer`
-    - [ ] `subtitleEnabled` → `?subtitle=true`
-    - [ ] 시나리오 데이터 (place, partner, goal) → URL 전달
+> ⏸️ **보류 이유**:
+>
+> - 8개 페이지, 37개 호출 수정 필요 → 회귀 버그 위험 높음
+> - 현재 localStorage 기반 시스템 정상 작동 중
+> - 핵심 기능(`sessionId`)은 이미 URL params 사용
+> - 대규모 변경 대비 실질적 이점 적음 (ROI 낮음)
+> - `voice`, `subtitle`은 사용자 선호 설정으로 localStorage가 적합
+> - 필요시 개별 기능으로 분리하여 추후 진행 가능
+>
+> **상세 분석**: `~/.claude/plans/phase-5-3-localstorage-migration.md`
+
+~~25. [ ] localStorage → URL searchParams 마이그레이션~~
+~~- [ ] `chatSessionId` → `?sessionId=xxx`~~
+~~- [ ] `selectedVoice` → `?voice=shimmer`~~
+~~- [ ] `subtitleEnabled` → `?subtitle=true`~~
+~~- [ ] 시나리오 데이터 (place, partner, goal) → URL 전달~~
 
 ### Phase 6: 에러 바운더리
 
