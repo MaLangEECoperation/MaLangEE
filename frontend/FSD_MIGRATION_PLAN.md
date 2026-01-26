@@ -7,7 +7,7 @@
 
 ## 📊 통합 마이그레이션 현황 (ROADMAP + FSD)
 
-> **마지막 업데이트**: 2026-01-26 (Phase 4 완료)
+> **마지막 업데이트**: 2026-01-26 (Phase 5-1 Route Group 완료)
 > **참조**: `docs/ROADMAP.md` (기능 로드맵), 이 문서 (FSD 구조 마이그레이션)
 
 ### 전체 Phase 개요
@@ -20,7 +20,7 @@
 |  **3**  | localStorage 버그         |  ✅  | 🔴 높음  |    2/2    |  100%   |
 | **3.5** | **views 페이지 슬라이스** |  ✅  | 🔴 높음  |   12/12   |  100%   |
 |  **4**  | views 서버 컴포넌트       |  ✅  | 🟡 중간  |   13/13   |  100%   |
-|  **5**  | 라우터 구조 재편          |  ⬜  | 🟡 중간  |    0/4    |   0%    |
+|  **5**  | 라우터 구조 재편          |  🔄  | 🟡 중간  |    2/4    |   50%   |
 |  **6**  | 에러 바운더리             |  ⬜  | 🟡 중간  |    0/2    |   0%    |
 |  **7**  | 반응형 디자인             |  ⬜  | 🟡 중간  |    0/4    |   0%    |
 |  **8**  | 접근성 개선               |  ⬜  | 🟡 중간  |    0/5    |   0%    |
@@ -29,7 +29,7 @@
 | **11**  | 매직넘버 상수화           |  ⬜  | 🟢 낮음  |    0/3    |   0%    |
 | **12**  | ESLint FSD 강제           |  ⬜  | 🟢 낮음  |    0/2    |   0%    |
 | **13**  | 텍스트 입력 모드          |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
-|         | **전체**                  |      |          | **65/79** | **82%** |
+|         | **전체**                  |      |          | **67/79** | **85%** |
 
 ### ROADMAP 완료 기능 (Phase R)
 
@@ -1749,21 +1749,30 @@ export function SkipNavigation() {
 
 ### Phase 5: 라우터 구조 재편
 
-23. [ ] Route Group 재편: `(public)`, `(protected)`, `(chat-flow)`
+**5-1. Route Group 재편 (2/2)** ✅
+
+- [x] Route Group 생성: `(public)`, `(protected)` - URL 변경 없이 라우팅 그룹화
+- [x] 각 Route Group별 layout.tsx 생성
+  - `(public)/layout.tsx` - 공개 페이지 레이아웃
+  - `(protected)/layout.tsx` - 보호 페이지 레이아웃 (현재 pass-through, DashboardPage 내부 AuthGuard 사용)
+  - `(chat-flow)/layout.tsx` - 대화 종료 확인 (기존 유지)
+
+**5-2. Parallel Route (미진행)**
+
 24. [ ] `(protected)/dashboard/` - Parallel Route (`@modal`) 구조 생성
     - [ ] `@modal/default.tsx`
     - [ ] `@modal/(.)detail/[sessionId]/page.tsx` - Intercepted Route
     - [ ] `@modal/(.)transcript/[sessionId]/page.tsx` - Intercepted Route
     - [ ] `detail/[sessionId]/page.tsx` - 직접 접근 페이지
     - [ ] `transcript/[sessionId]/page.tsx` - 직접 접근 페이지
+
+**5-3. localStorage → URL searchParams 마이그레이션 (미진행)**
+
 25. [ ] localStorage → URL searchParams 마이그레이션
     - [ ] `chatSessionId` → `?sessionId=xxx`
     - [ ] `selectedVoice` → `?voice=shimmer`
     - [ ] `subtitleEnabled` → `?subtitle=true`
     - [ ] 시나리오 데이터 (place, partner, goal) → URL 전달
-26. [ ] 각 Route Group별 layout.tsx 생성
-    - [ ] `(protected)/layout.tsx` - AuthGuard
-    - [ ] `(chat-flow)/layout.tsx` - 대화 종료 확인
 
 ### Phase 6: 에러 바운더리
 

@@ -72,8 +72,10 @@ const eslintConfig = tseslint.config(
   },
 
   // FSD Architecture Rules - Global public API enforcement
+  // Note: app/ folder is excluded as it's a routing layer outside FSD
   {
     files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/app/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
         "error",

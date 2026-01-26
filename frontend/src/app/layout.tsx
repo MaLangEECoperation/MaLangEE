@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Sans } from "next/font/google";
 
-import { GlobalPopup } from "@/features/auth";
+import { GlobalPopup } from "@/features/auth/ui";
 
 import { Providers } from "./providers";
 
