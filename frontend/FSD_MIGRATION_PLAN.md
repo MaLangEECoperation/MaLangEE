@@ -7,7 +7,7 @@
 
 ## 📊 통합 마이그레이션 현황 (ROADMAP + FSD)
 
-> **마지막 업데이트**: 2026-01-26 (Phase 8 접근성 개선 완료)
+> **마지막 업데이트**: 2026-01-27 (Phase 10 버튼/링크 리팩토링 완료)
 > **참조**: `docs/ROADMAP.md` (기능 로드맵), 이 문서 (FSD 구조 마이그레이션)
 
 ### 전체 Phase 개요
@@ -24,12 +24,12 @@
 |  **6**  | 에러 바운더리             |  ✅  | 🟡 중간  |    2/2    |  100%   |
 |  **7**  | 반응형 디자인             |  ✅  | 🟡 중간  |    4/4    |  100%   |
 |  **8**  | 접근성 개선               |  ✅  | 🟡 중간  |    4/4    |  100%   |
-|  **9**  | Custom Hook 분리          |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
-| **10**  | 버튼/링크 리팩토링        |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
+|  **9**  | Custom Hook 분리          |  ✅  | 🟢 낮음  |  30/30    |  100%   |
+| **10**  | 버튼/링크 리팩토링        |  ✅  | 🟢 낮음  |    1/1    |  100%   |
 | **11**  | 매직넘버 상수화           |  ⬜  | 🟢 낮음  |    0/3    |   0%    |
-| **12**  | ESLint FSD 강제           |  ⬜  | 🟢 낮음  |    0/2    |   0%    |
+| **12**  | ESLint FSD 강제           |  ✅  | 🟢 낮음  |    2/2    |  100%   |
 | **13**  | 텍스트 입력 모드          |  ⬜  | 🟢 낮음  |    0/1    |   0%    |
-|         | **전체**                  |      |          | **78/82** | **95%** |
+|         | **전체**                  |      |          | **81/82** | **99%** |
 
 ### ROADMAP 완료 기능 (Phase R)
 
@@ -188,9 +188,15 @@ export const CHAT_CONFIG = {
 
 ### 4. Custom Hook 분리
 
-- **연관된 로직은 반드시 custom hook으로 분리**
-- hook 파일은 `use-` prefix 사용
-- 재사용 가능하도록 추상적 네이밍
+> **상세 원칙**: [`docs/HOOK_EXTRACTION_PRINCIPLES.md`](./docs/HOOK_EXTRACTION_PRINCIPLES.md)
+> **구현 계획**: Phase 9 (30개 훅, 122개 테스트)
+
+- **비즈니스 로직이 있으면 분리**: `useState` + 조건/계산/부수효과 = Custom Hook
+- **hook 파일명**: `use-kebab-case.ts` (함수명: `useCamelCase`)
+- **위치 결정 규칙**:
+  - `shared/lib/`: 2개 이상 페이지에서 사용, 도메인 무관
+  - `views/<page>/hook/`: 해당 페이지 전용
+  - `features/<feature>/hook/`: 특정 기능 도메인 특화
 
 ```tsx
 // features/chat/hook/use-audio-recorder.ts
@@ -1635,14 +1641,15 @@ export function SkipNavigation() {
 - 자막 옵션 기본 제공 (청각 장애 사용자)
 - 힌트/피드백 텍스트를 스크린 리더가 읽을 수 있도록 aria-live 처리
 
-### Phase 12: ESLint FSD 규칙 강제 적용
+### Phase 12: ESLint FSD 규칙 강제 적용 ✅ 완료
 
 > **의존**: Phase 1~11 완료 (모든 구조 변경 완료 후)
 > **이유**: 모든 마이그레이션 완료 후 규칙 강제화해야 위반 0개 가능
 
-**12.1 eslint.config.mjs 수정**
+**12.1 eslint.config.mjs 수정** ✅
 
-- 모든 FSD 관련 `no-restricted-imports` 규칙을 `"warn"` → `"error"`로 변경
+- 모든 FSD 관련 `no-restricted-imports` 규칙이 이미 `"error"`로 설정됨
+- `yarn lint` 실행 시 FSD 위반 0개 확인
 
 ### Phase 13: 미구현 기능 (텍스트 입력 모드)
 
@@ -1812,11 +1819,78 @@ export function SkipNavigation() {
 
 ### Phase 9: Custom Hook 분리
 
-31. [ ] 각 페이지 비즈니스 로직 hook 분리
+> **상세 계획**: `~/.claude/plans/phase-9-custom-hooks.md`
+> **원칙 문서**: [`docs/HOOK_EXTRACTION_PRINCIPLES.md`](./docs/HOOK_EXTRACTION_PRINCIPLES.md)
+> **TDD 기반**: 각 훅은 RED → GREEN → REFACTOR 순서로 구현
 
-### Phase 10: 버튼/링크 리팩토링
+#### shared/lib (재사용 가능, 7개 훅) ✅ 완료
+31. [x] `useLocalStorageState` - localStorage 동기화 (4개 테스트)
+32. [x] `useTimeout` - 타이머 추상화 (4개 테스트)
+33. [x] `useInterval` - 인터벌 추상화 (4개 테스트)
+34. [x] `useInfiniteScroll` - 무한 스크롤 (5개 테스트)
+35. [x] `useAudioPlayer` - 오디오 재생 제어 (4개 테스트)
+36. [x] `useFormatDuration` - 시간 포맷팅 (4개 테스트)
+37. [x] `useSessionStorageState` - sessionStorage 동기화 (4개 테스트)
 
-32. [ ] 네비게이션 버튼 → `asChild` + `Link` 패턴 적용
+#### views/conversation/chat (대화 페이지, 6개 훅) ✅ 완료
+38. [x] `useSessionId` - 세션 ID 관리 (4개 테스트)
+39. [x] `useConversationSettings` - 대화 설정 관리 (4개 테스트)
+40. [x] `useHintTimer` - 힌트 타이머 (5개 테스트)
+41. [x] `useMalangEEStatus` - 캐릭터 상태 (5개 테스트)
+42. [x] `useLanguageErrorDetection` - 언어 인식 오류 (3개 테스트)
+43. [x] `useConnectionTracker` - 연결 상태 추적 (3개 테스트)
+
+#### views/auth (인증, 2개 훅) ✅ 완료
+44. [x] `useTitleRotation` - 제목 회전 (4개 테스트)
+45. [x] `useAutoFocus` - 자동 포커스 (3개 테스트)
+
+#### views/scenario-select (시나리오, 4개 훅) ✅ 완료
+46. [x] `useRandomScenarios` - 랜덤 시나리오 선택 (4개 테스트)
+47. [x] `useClearPreviousSession` - 이전 세션 정리 (4개 테스트)
+48. [x] `useVoicePreview` - 음성 미리듣기 (4개 테스트)
+49. [x] `useNotUnderstoodTimer` - 인식 불가 타이머 (4개 테스트)
+
+#### views/conversation (완료/환영, 2개 훅) ✅ 완료
+50. [x] `useGuestSignupPrompt` - 게스트 가입 안내 (4개 테스트)
+51. [x] `useSessionResume` - 세션 재개 (4개 테스트)
+
+#### views/dashboard (대시보드, 1개 훅) ✅ 완료
+52. [x] `useUserProfile` - 사용자 프로필 계산 (4개 테스트)
+
+#### 추가 훅 (8개 훅) ✅ 완료
+53. [x] `useConversationMessage` - 대화 메시지 상태 (7개 테스트)
+54. [x] `useSignupValidation` - 회원가입 유효성 (5개 테스트)
+55. [x] `useMuteOnMount` - 마운트 시 음소거 (4개 테스트)
+56. [x] `useEntryTypeSync` - 진입 타입 동기화 (3개 테스트)
+57. [x] `useNewChatNavigation` - 새 대화 네비게이션 (3개 테스트)
+58. [x] `useVoiceSelectionNavigation` - 음성 선택 네비게이션 (3개 테스트)
+59. [x] `useDirectSpeechMessage` - 직접 발화 메시지 (7개 테스트)
+60. [x] `useVoiceSelector` - 음성 캐러셀 선택 (6개 테스트)
+
+### Phase 10: 버튼/링크 리팩토링 ✅
+
+> **목표**: `onClick={() => router.push()}` 패턴을 시맨틱 `asChild` + `Link` 패턴으로 변환
+> **개선**: 접근성(스크린 리더), SEO(크롤러), 브라우저 동작(새 탭, 링크 복사) 향상
+
+32. [x] 네비게이션 버튼 → `asChild` + `Link` 패턴 적용
+
+**변환된 파일 목록**:
+
+| 파일 | 변환 유형 | 변경 내용 |
+|------|----------|----------|
+| `shared/lib/use-navigation-cleanup.ts` | 신규 훅 | localStorage 정리 후 네비게이션용 훅 |
+| `views/conversation/chat/ui/ConversationPage.tsx` | 단순 변환 | 시나리오 선택 버튼 |
+| `views/dashboard/main/ui/ChatDetailPage.tsx` | 단순 변환 | 뒤로가기 버튼 2개 |
+| `views/dashboard/main/ui/ChatTranscriptPage.tsx` | 단순 변환 | 뒤로가기 버튼 2개 |
+| `views/auth/signup/ui/SignupPage.tsx` | 단순 변환 | 로그인 버튼 |
+| `views/scenario-select/voice-selection/ui/VoiceSelectionPage.tsx` | 조건부 URL | sessionId 기반 채팅 경로 |
+| `views/dashboard/main/ui/DashboardPage.tsx` | 조건부 URL | 대화 기록 기반 경로 |
+| `views/conversation/complete/ui/CompletePage.tsx` | 훅 활용 | `useNavigationCleanup` 적용 |
+
+**변환하지 않은 케이스** (콜백/비동기):
+- `TopicSuggestionPage.tsx`: API 호출 후 네비게이션 (비동기)
+- `CompletePage.tsx` `handleSignup`: Dialog 콜백 기반
+- `ConversationPage.tsx` popup 콜백들: 팝업 닫기 후 네비게이션
 
 ### Phase 11: 매직넘버 상수화
 
@@ -1824,10 +1898,10 @@ export function SkipNavigation() {
 34. [ ] 공용 상수 → `shared/config/`
 35. [ ] feature별 상수 → `features/<feature>/config/`
 
-### Phase 12: ESLint 강제 적용
+### Phase 12: ESLint 강제 적용 ✅ 완료
 
-36. [ ] `eslint.config.mjs` - FSD 규칙 `"warn"` → `"error"` 변경
-37. [ ] `yarn lint` 실행하여 FSD 위반 없음 확인
+36. [x] `eslint.config.mjs` - FSD 규칙이 이미 `"error"`로 설정됨
+37. [x] `yarn lint` 실행하여 FSD 위반 없음 확인
 
 ### Phase 13: 미구현 기능
 

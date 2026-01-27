@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { SignupPromptDialog, useAuth } from "@/features/auth";
 import { useReadChatSession } from "@/features/chat";
-import { STORAGE_KEYS, Button, MalangEE } from "@/shared";
+import { STORAGE_KEYS, useNavigationCleanup, Button, MalangEE } from "@/shared";
 
 import { defaultCompleteContents } from "../config";
 import type { CompletePageContents } from "../model";
@@ -74,15 +75,10 @@ export function CompletePage({ contents = defaultCompleteContents }: CompletePag
     };
   }, []);
 
-  const handleGoHome = () => {
-    // 리포트 데이터 정리 (필요하다면)
-    localStorage.removeItem("chatReport");
-    // 세션 ID 정리
-    localStorage.removeItem(STORAGE_KEYS.CHAT_SESSION_ID);
-
-    // 대시보드로 이동
-    router.push("/dashboard");
-  };
+  // 네비게이션 전 localStorage cleanup (Link의 onClick에서 호출)
+  const { handleClick: handleHomeCleanup } = useNavigationCleanup({
+    storageKeys: ["chatReport", STORAGE_KEYS.CHAT_SESSION_ID],
+  });
 
   // 초를 "00시간 00분 00초" 형식으로 변환
   const formatTime = (seconds: number) => {
@@ -139,8 +135,10 @@ export function CompletePage({ contents = defaultCompleteContents }: CompletePag
 
       {/* Button */}
       <div className="mt-4 w-full max-w-sm">
-        <Button onClick={handleGoHome} variant="primary" size="lg" fullWidth>
-          {contents.buttons.goHome}
+        <Button asChild variant="primary" size="lg" fullWidth>
+          <Link href="/dashboard" onClick={handleHomeCleanup}>
+            {contents.buttons.goHome}
+          </Link>
         </Button>
       </div>
 

@@ -6,8 +6,7 @@ import { useForm, type Resolver } from "react-hook-form";
 import { Button, MalangEE } from "@/shared/ui";
 import { Dialog } from "@/shared/ui/Dialog";
 
-import { useNicknameCheck } from "../hook";
-import { type NicknameUpdateFormData, nicknameUpdateSchema } from "../model";
+import { type NicknameUpdateFormData, nicknameUpdateSchema, useNicknameCheck } from "../model";
 import { useCurrentUser, useUpdateUser } from "../query";
 
 // safeParse를 사용하는 커스텀 resolver (콘솔 에러 방지)

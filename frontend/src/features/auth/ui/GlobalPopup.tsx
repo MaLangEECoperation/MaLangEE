@@ -3,7 +3,7 @@
 import { usePopupStore } from "@/shared";
 import { Button, Dialog, MalangEE } from "@/shared/ui";
 
-import { useAuth } from "../hook/use-auth";
+import { useAuth } from "../model";
 import { useDeleteUser } from "../query";
 
 export const GlobalPopup = () => {

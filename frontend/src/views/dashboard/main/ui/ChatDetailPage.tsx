@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { type FC, useMemo } from "react";
 
 import { useReadChatSession } from "@/features/chat";
@@ -28,7 +27,6 @@ interface TranscriptMessage {
  * - 뒤로가기로 대시보드로 이동
  */
 export const ChatDetailPage: FC<ChatDetailPageProps> = ({ sessionId }) => {
-  const router = useRouter();
   const contents = defaultDashboardContents;
 
   // 실제 API에서 세션 상세 정보 조회
@@ -75,7 +73,7 @@ export const ChatDetailPage: FC<ChatDetailPageProps> = ({ sessionId }) => {
     return messages.filter((m) => m.isFeedback);
   }, [messages]);
 
-  const handleBack = () => router.push("/dashboard");
+  // 네비게이션은 asChild + Link 패턴 사용
 
   const hasScenarioInfo =
     sessionDetail?.scenario_partner ||
@@ -100,8 +98,8 @@ export const ChatDetailPage: FC<ChatDetailPageProps> = ({ sessionId }) => {
             <br />
             {error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다."}
           </p>
-          <Button variant="solid" onClick={handleBack}>
-            대시보드로 돌아가기
+          <Button asChild variant="solid">
+            <Link href="/dashboard">대시보드로 돌아가기</Link>
           </Button>
         </GlassCard>
       </div>
@@ -124,8 +122,8 @@ export const ChatDetailPage: FC<ChatDetailPageProps> = ({ sessionId }) => {
                 <span>{durationString}</span>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={handleBack}>
-              뒤로가기
+            <Button asChild variant="outline" size="sm">
+              <Link href="/dashboard">뒤로가기</Link>
             </Button>
           </div>
 

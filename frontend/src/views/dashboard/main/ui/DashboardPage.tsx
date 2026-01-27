@@ -2,7 +2,6 @@
 
 import { Pencil } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { AuthGuard, NicknameChangePopup, useCurrentUser } from "@/features/auth";
@@ -26,7 +25,6 @@ export interface DashboardPageProps {
 }
 
 export function DashboardPage({ contents = defaultDashboardContents }: DashboardPageProps) {
-  const router = useRouter();
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [showNicknamePopup, setShowNicknamePopup] = useState(false);
   const { openPopup } = usePopupStore();
@@ -132,7 +130,17 @@ export function DashboardPage({ contents = defaultDashboardContents }: Dashboard
     openPopup("deleteUser");
   };
 
-  const handleNewChatClick = () => {
+  // 조건부 URL: 대화 기록 유무에 따라 다른 경로
+  const newChatHref = useMemo(() => {
+    if (allSessions.length > 0) {
+      const lastSession = allSessions[0]; // 최신순 정렬 가정
+      return `/chat/welcome-back?sessionId=${lastSession.id}`;
+    }
+    return "/scenario-select";
+  }, [allSessions]);
+
+  // 네비게이션 전 localStorage 설정 (Link의 onClick에서 호출)
+  const handleNewChatSetup = () => {
     // 공통 저장 정보 (회원 진입)
     localStorage.setItem(STORAGE_KEYS.ENTRY_TYPE, "member");
     if (currentUser?.login_id) {
@@ -140,15 +148,12 @@ export function DashboardPage({ contents = defaultDashboardContents }: Dashboard
     }
 
     if (allSessions.length > 0) {
-      // 대화 기록이 있으면 마지막 세션 ID 저장 후 welcome-back으로 이동
-      const lastSession = allSessions[0]; // 최신순 정렬 가정
+      // 대화 기록이 있으면 마지막 세션 ID 저장
+      const lastSession = allSessions[0];
       localStorage.setItem(STORAGE_KEYS.CHAT_SESSION_ID, lastSession.id);
-      router.push("/chat/welcome-back?sessionId=" + lastSession.id);
     } else {
-      // 대화 기록이 없으면 시나리오 선택으로 이동
-      // 이전 세션 ID가 남아있을 수 있으므로 제거
+      // 대화 기록이 없으면 이전 세션 ID 제거
       localStorage.removeItem(STORAGE_KEYS.CHAT_SESSION_ID);
-      router.push("/scenario-select");
     }
   };
 
@@ -186,8 +191,10 @@ export function DashboardPage({ contents = defaultDashboardContents }: Dashboard
           </span>
         </div>
       </div>
-      <Button variant="solid" size="lg" fullWidth className="mt-10" onClick={handleNewChatClick}>
-        {contents.profile.newChatButton}
+      <Button asChild variant="solid" size="lg" fullWidth className="mt-10">
+        <Link href={newChatHref} onClick={handleNewChatSetup}>
+          {contents.profile.newChatButton}
+        </Link>
       </Button>
 
       {/* 회원탈퇴 버튼 추가 */}

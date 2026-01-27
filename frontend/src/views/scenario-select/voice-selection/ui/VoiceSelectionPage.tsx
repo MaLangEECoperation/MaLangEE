@@ -1,8 +1,9 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, Volume2 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useState, useRef, useEffect, useMemo } from "react";
 
 import { STORAGE_KEYS, debugError, Button, MalangEE } from "@/shared";
 
@@ -34,7 +35,6 @@ interface VoiceSelectionContentProps {
 }
 
 function VoiceSelectionContent({ contents }: VoiceSelectionContentProps) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [currentVoiceIndex, setCurrentVoiceIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -82,16 +82,17 @@ function VoiceSelectionContent({ contents }: VoiceSelectionContentProps) {
     setIsPlaying(false);
   };
 
-  const handleNextStep = () => {
+  // 조건부 URL: sessionId 유무에 따라 다른 경로
+  const chatHref = useMemo(
+    () => (sessionId ? `/chat?sessionId=${sessionId}` : "/chat"),
+    [sessionId]
+  );
+
+  // 네비게이션 전 실행할 로직 (Link의 onClick에서 호출)
+  const handleVoiceSelect = () => {
     stopSample();
     const selectedVoice = currentVoice?.id || "alloy";
     localStorage.setItem(STORAGE_KEYS.SELECTED_VOICE, selectedVoice);
-
-    if (sessionId) {
-      router.push(`/chat?sessionId=${sessionId}`);
-    } else {
-      router.push("/chat");
-    }
   };
 
   // 컴포넌트 언마운트 시 오디오 정리
@@ -162,8 +163,10 @@ function VoiceSelectionContent({ contents }: VoiceSelectionContentProps) {
         </div>
 
         <div className="mt-10 w-full max-w-md">
-          <Button onClick={handleNextStep} variant="primary" size="lg" fullWidth>
-            {contents.startButton}
+          <Button asChild variant="primary" size="lg" fullWidth>
+            <Link href={chatHref} onClick={handleVoiceSelect}>
+              {contents.startButton}
+            </Link>
           </Button>
         </div>
       </div>

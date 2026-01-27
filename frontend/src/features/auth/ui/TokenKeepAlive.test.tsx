@@ -8,17 +8,14 @@ const mockRefreshUser = vi.fn();
 const mockLogout = vi.fn();
 let mockIsAuthenticated = true;
 
-vi.mock("../hook", () => ({
+// Mock model (hooks + tokenStorage)
+let mockToken: string | null = "valid-token";
+vi.mock("../model", () => ({
   useAuth: () => ({
     refreshUser: mockRefreshUser,
     logout: mockLogout,
     isAuthenticated: mockIsAuthenticated,
   }),
-}));
-
-// Mock tokenStorage
-let mockToken: string | null = "valid-token";
-vi.mock("../model", () => ({
   tokenStorage: {
     get: () => mockToken,
   },

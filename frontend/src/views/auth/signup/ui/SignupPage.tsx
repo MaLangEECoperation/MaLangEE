@@ -138,10 +138,7 @@ export function SignupPage({ contents = defaultSignupContents }: SignupPageProps
     });
   };
 
-  const handleLoginClick = () => {
-    setLoginError(null);
-    window.location.href = "/auth/login";
-  };
+  // 네비게이션은 asChild + Link 패턴 사용
 
   const isSubmitDisabled =
     registerPending ||
@@ -295,8 +292,8 @@ export function SignupPage({ contents = defaultSignupContents }: SignupPageProps
           <div className="flex flex-col items-center gap-6 py-2">
             <MalangEE size={120} />
             <div className="text-primary text-xl font-bold">{contents.successDialog.title}</div>
-            <Button variant="primary" size="md" fullWidth onClick={handleLoginClick}>
-              {contents.successDialog.loginButton}
+            <Button asChild variant="primary" size="md" fullWidth>
+              <Link href="/auth/login">{contents.successDialog.loginButton}</Link>
             </Button>
           </div>
         </Dialog>

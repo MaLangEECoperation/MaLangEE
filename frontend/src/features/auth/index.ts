@@ -1,7 +1,7 @@
 // Config (Validation constants)
 export { AUTH_VALIDATION, type AuthValidation } from "./config";
 
-// Model (Form validation schemas)
+// Model (Form validation schemas + Hooks)
 export {
   // Schemas
   loginSchema,
@@ -15,6 +15,11 @@ export {
   type User,
   // Token utilities
   tokenStorage,
+  // Hooks
+  useAuth,
+  useLoginIdCheck,
+  useNicknameCheck,
+  usePasswordValidation,
 } from "./model";
 
 // API (Response/Request schemas - collocated)
@@ -32,9 +37,6 @@ export {
   useUpdateUser,
   useCurrentUser,
 } from "./query";
-
-// Hooks
-export { useAuth, useLoginIdCheck, useNicknameCheck, usePasswordValidation } from "./hook";
 
 // UI
 export {

@@ -17,7 +17,7 @@ vi.mock("@/shared", () => ({
 }));
 
 const mockLogout = vi.fn();
-vi.mock("../hook/use-auth", () => ({
+vi.mock("../model", () => ({
   useAuth: () => ({
     logout: mockLogout,
   }),

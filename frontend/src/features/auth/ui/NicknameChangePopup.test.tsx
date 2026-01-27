@@ -44,16 +44,13 @@ vi.mock("../query", () => ({
   }),
 }));
 
-vi.mock("../hook", () => ({
+vi.mock("../model", () => ({
   useNicknameCheck: () => ({
     isChecking: false,
     isAvailable: true,
     error: null,
     trigger: vi.fn(),
   }),
-}));
-
-vi.mock("../model", () => ({
   nicknameUpdateSchema: {
     safeParse: (data: unknown) => ({ success: true, data }),
   },

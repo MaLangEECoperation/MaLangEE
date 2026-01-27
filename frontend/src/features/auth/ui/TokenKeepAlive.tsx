@@ -5,8 +5,7 @@ import { useEffect } from "react";
 import { debugLog, debugError, isTokenExpired, isTokenExpiringSoon } from "@/shared/lib";
 
 import { AUTH_VALIDATION } from "../config";
-import { useAuth } from "../hook";
-import { tokenStorage } from "../model";
+import { tokenStorage, useAuth } from "../model";
 
 /**
  * 토큰 유지 컴포넌트
