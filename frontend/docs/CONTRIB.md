@@ -1,7 +1,7 @@
 # CONTRIB.md - 개발자 가이드
 
 > **Source of Truth**: `frontend/package.json`, `.env.example`
-> **Last Updated**: 2025-01-22
+> **Last Updated**: 2026-01-23
 
 ---
 
@@ -162,11 +162,13 @@ frontend/src/
 
 ## 6. 관련 문서
 
-| 문서             | 경로                        | 설명            |
-| ---------------- | --------------------------- | --------------- |
-| 프로젝트 정보    | `docs/00-PROJECT_INFO.md`   | 서버/접속 정보  |
-| 로컬 개발 가이드 | `docs/01-DEV_GUIDE.md`      | 상세 개발 환경  |
-| 서버 운영        | `docs/02-SERVER_OPS.md`     | 배포/관리       |
-| REST API         | `frontend/docs/api.md`      | API 명세        |
-| WebSocket        | `frontend/docs/ws.md`       | WS 명세         |
-| 디자인 시스템    | `frontend/docs/tailwind.md` | Tailwind 가이드 |
+| 문서             | 경로                         | 설명           |
+| ---------------- | ---------------------------- | -------------- |
+| 프로젝트 정보    | `docs/00-PROJECT_INFO.md`    | 서버/접속 정보 |
+| 로컬 개발 가이드 | `docs/01-DEV_GUIDE.md`       | 상세 개발 환경 |
+| REST API         | `frontend/docs/api.md`       | API 명세       |
+| WebSocket        | `frontend/docs/WEBSOCKET.md` | WS 명세        |
+| 디자인 시스템    | `frontend/docs/DESIGN.md`    | 디자인 가이드  |
+| 페이지 구조      | `frontend/docs/PAGES.md`     | 페이지별 로직  |
+| 운영 런북        | `frontend/docs/RUNBOOK.md`   | 배포/운영      |
+| 로드맵           | `frontend/docs/ROADMAP.md`   | Phase별 계획   |

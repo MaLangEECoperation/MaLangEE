@@ -1,6 +1,4 @@
-import { tokenStorage } from "@/features/auth";
-
-import { config } from "./config";
+import { API_BASE_URL, API_BASE_PATH } from "@/shared/api";
 
 export type WebSocketMessageType =
   | "ready"
@@ -29,6 +27,8 @@ export interface WebSocketClientConfig {
   onClose?: () => void;
   onError?: (error: Event) => void;
   requireAuth?: boolean;
+  /** 토큰을 가져오는 함수 (requireAuth가 true일 때 사용) */
+  getToken?: () => string | null;
 }
 
 /**
@@ -53,9 +53,9 @@ export class WebSocketClient {
     // WebSocket URL 구성
     let wsUrl: string;
 
-    if (isDevelopment && config.apiBaseUrl) {
+    if (isDevelopment && API_BASE_URL) {
       // 개발 환경: HTTP/HTTPS URL을 WebSocket URL로 변환
-      const httpUrl = config.apiBaseUrl;
+      const httpUrl = API_BASE_URL;
       // https:// -> wss://, http:// -> ws://
       wsUrl = httpUrl.replace(/^https/, "wss").replace(/^http/, "ws");
     } else if (typeof window !== "undefined") {
@@ -67,11 +67,11 @@ export class WebSocketClient {
     }
 
     // 엔드포인트 추가
-    const fullUrl = `${wsUrl}${config.apiBasePath}${this.config.endpoint}`;
+    const fullUrl = `${wsUrl}${API_BASE_PATH}${this.config.endpoint}`;
 
     // 인증이 필요한 경우 토큰 추가
-    if (this.config.requireAuth) {
-      const token = tokenStorage.get();
+    if (this.config.requireAuth && this.config.getToken) {
+      const token = this.config.getToken();
       if (token) {
         return `${fullUrl}?token=${encodeURIComponent(token)}`;
       }

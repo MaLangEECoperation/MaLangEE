@@ -3,10 +3,9 @@
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useState } from "react";
 
-import { ConfirmPopup } from "@/shared/ui";
-import { FullLayout } from "@/shared/ui/FullLayout";
+import { ConfirmPopup, FullLayout } from "@/shared";
 
-import "@/shared/styles/scenario.css";
+import "@/shared/ui/scenario.css";
 
 interface ChatFlowLayoutProps {
   children: ReactNode;

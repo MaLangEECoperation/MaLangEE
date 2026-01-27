@@ -4,7 +4,7 @@ import { MapPin, Users, Target } from "lucide-react";
 import type { FC } from "react";
 
 import { Button } from "./Button";
-import { PopupLayout } from "./PopupLayout";
+import { Dialog } from "./Dialog";
 
 export interface ScenarioResult {
   /** 대화 장소 */
@@ -42,7 +42,7 @@ export const ScenarioResultPopup: FC<ScenarioResultPopupProps> = ({
   subtitle = "연습할 시나리오 정보를 확인해주세요.",
 }) => {
   return (
-    <PopupLayout onClose={onCancel} maxWidth="md" showCloseButton={false}>
+    <Dialog onClose={onCancel} maxWidth="md" showCloseButton={false} ariaLabel="시나리오 결과 확인">
       <div className="flex flex-col items-center gap-8 py-6">
         <div className="w-full space-y-6">
           <div className="text-center">
@@ -105,6 +105,6 @@ export const ScenarioResultPopup: FC<ScenarioResultPopupProps> = ({
           </Button>
         </div>
       </div>
-    </PopupLayout>
+    </Dialog>
   );
 };

@@ -74,7 +74,7 @@ export const SettingsPopup: FC<SettingsPopupProps> = ({
 }) => {
   const [mounted, setMounted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [_isPlaying, setIsPlaying] = useState(false);
 
   const currentVoiceIndex = VOICE_OPTIONS.findIndex((v) => v.id === selectedVoice);
   const currentVoice = VOICE_OPTIONS[currentVoiceIndex >= 0 ? currentVoiceIndex : 0];

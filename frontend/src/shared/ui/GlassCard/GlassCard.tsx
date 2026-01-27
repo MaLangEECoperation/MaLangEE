@@ -1,15 +1,8 @@
 "use client";
 
-import { History, LogOut } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { FC, ReactNode, useState } from "react";
-
-import { useAuth } from "@/features/auth/hook/use-auth";
-
-import { Button } from "../Button";
-import { MalangEE } from "../MalangEE";
-import { PopupLayout } from "../PopupLayout";
+import { FC, ReactNode } from "react";
 
 interface GlassCardProps {
   children: ReactNode;

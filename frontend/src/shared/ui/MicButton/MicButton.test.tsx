@@ -1,5 +1,7 @@
-import { render, fireEvent } from "@testing-library/react";
+import { render, fireEvent, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
+
+import { MIC_BUTTON_LABELS } from "@/shared/config";
 
 import { MicButton } from "./MicButton";
 
@@ -108,5 +110,96 @@ describe("MicButton", () => {
     expect(container).toHaveClass("is-listening");
     expect(container).toHaveClass("is-muted");
     expect(container).toHaveClass("extra-class");
+  });
+
+  // === Accessibility Tests ===
+  describe("Accessibility", () => {
+    it("renders as a button element for keyboard accessibility", () => {
+      render(<MicButton isListening={false} onClick={() => {}} />);
+
+      const button = screen.getByRole("button");
+      expect(button).toBeInTheDocument();
+    });
+
+    it("has aria-pressed=false when not listening", () => {
+      render(<MicButton isListening={false} onClick={() => {}} />);
+
+      const button = screen.getByRole("button");
+      expect(button).toHaveAttribute("aria-pressed", "false");
+    });
+
+    it("has aria-pressed=true when listening", () => {
+      render(<MicButton isListening={true} onClick={() => {}} />);
+
+      const button = screen.getByRole("button");
+      expect(button).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("has correct aria-label when idle", () => {
+      render(<MicButton isListening={false} onClick={() => {}} />);
+
+      const button = screen.getByRole("button");
+      expect(button).toHaveAttribute("aria-label", MIC_BUTTON_LABELS.IDLE);
+    });
+
+    it("has correct aria-label when listening", () => {
+      render(<MicButton isListening={true} onClick={() => {}} />);
+
+      const button = screen.getByRole("button");
+      expect(button).toHaveAttribute("aria-label", MIC_BUTTON_LABELS.LISTENING);
+    });
+
+    it("has correct aria-label when muted", () => {
+      render(<MicButton isListening={false} onClick={() => {}} isMuted={true} />);
+
+      const button = screen.getByRole("button");
+      expect(button).toHaveAttribute("aria-label", MIC_BUTTON_LABELS.MUTED);
+    });
+
+    it("supports keyboard activation with Enter key", () => {
+      const handleClick = vi.fn();
+      render(<MicButton isListening={false} onClick={handleClick} />);
+
+      const button = screen.getByRole("button");
+      fireEvent.keyDown(button, { key: "Enter" });
+
+      expect(handleClick).toHaveBeenCalledTimes(1);
+    });
+
+    it("supports keyboard activation with Space key", () => {
+      const handleClick = vi.fn();
+      render(<MicButton isListening={false} onClick={handleClick} />);
+
+      const button = screen.getByRole("button");
+      fireEvent.keyDown(button, { key: " " });
+
+      expect(handleClick).toHaveBeenCalledTimes(1);
+    });
+
+    it("has type=button to prevent form submission", () => {
+      render(<MicButton isListening={false} onClick={() => {}} />);
+
+      const button = screen.getByRole("button");
+      expect(button).toHaveAttribute("type", "button");
+    });
+
+    it("is disabled when disabled prop is true", () => {
+      const handleClick = vi.fn();
+      render(<MicButton isListening={false} onClick={handleClick} disabled={true} />);
+
+      const button = screen.getByRole("button");
+      expect(button).toBeDisabled();
+
+      // Click should not trigger onClick when disabled
+      fireEvent.click(button);
+      expect(handleClick).not.toHaveBeenCalled();
+    });
+
+    it("applies is-disabled class when disabled", () => {
+      render(<MicButton isListening={false} onClick={() => {}} disabled={true} />);
+
+      const container = document.querySelector(".mic-container");
+      expect(container).toHaveClass("is-disabled");
+    });
   });
 });

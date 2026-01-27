@@ -3,7 +3,7 @@
 import { FC } from "react";
 
 import { cn } from "@/shared/lib";
-import { Button, MalangEE, PopupLayout } from "@/shared/ui";
+import { Button, MalangEE, Dialog } from "@/shared/ui";
 
 export interface LanguageNotRecognizedDialogProps {
   /** 다이얼로그 표시 여부 */
@@ -39,16 +39,9 @@ export const LanguageNotRecognizedDialog: FC<LanguageNotRecognizedDialogProps> =
     return null;
   }
 
-  const dialogTitleId = "language-not-recognized-title";
-
   return (
-    <PopupLayout onClose={onClose} showCloseButton={false} maxWidth="sm">
-      <div
-        role="dialog"
-        aria-labelledby={dialogTitleId}
-        aria-modal="true"
-        className="flex flex-col items-center gap-6 py-4"
-      >
+    <Dialog onClose={onClose} showCloseButton={false} maxWidth="sm" title={title}>
+      <div className="flex flex-col items-center gap-6 py-4">
         {/* MalangEE 캐릭터 */}
         <div data-testid="malangee-character">
           <MalangEE status="sad" size={120} />
@@ -56,13 +49,7 @@ export const LanguageNotRecognizedDialog: FC<LanguageNotRecognizedDialogProps> =
 
         {/* 메시지 영역 */}
         <div className="text-center">
-          <h2
-            id={dialogTitleId}
-            className={cn("text-xl font-bold leading-relaxed", "text-[#1F1C2B]")}
-          >
-            {title}
-          </h2>
-          <p className={cn("mt-2 text-sm", "text-gray-600")}>{description}</p>
+          <p className={cn("text-sm", "text-gray-600")}>{description}</p>
         </div>
 
         {/* 버튼 영역 */}
@@ -75,7 +62,7 @@ export const LanguageNotRecognizedDialog: FC<LanguageNotRecognizedDialogProps> =
           </Button>
         </div>
       </div>
-    </PopupLayout>
+    </Dialog>
   );
 };
 

@@ -1,12 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import {
-  loginSchema,
-  registerSchema,
-  tokenSchema,
-  userSchema,
-  checkAvailabilitySchema,
-} from "./schema";
+import { loginSchema, registerSchema, userSchema } from "./schema";
 
 describe("Auth Schemas", () => {
   describe("loginSchema", () => {
@@ -119,25 +113,6 @@ describe("Auth Schemas", () => {
     });
   });
 
-  describe("tokenSchema", () => {
-    it("should validate valid token response", () => {
-      const validToken = {
-        access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-        token_type: "bearer",
-      };
-      const result = tokenSchema.safeParse(validToken);
-      expect(result.success).toBe(true);
-    });
-
-    it("should reject missing access_token", () => {
-      const invalidToken = {
-        token_type: "bearer",
-      };
-      const result = tokenSchema.safeParse(invalidToken);
-      expect(result.success).toBe(false);
-    });
-  });
-
   describe("userSchema", () => {
     it("should validate valid user data", () => {
       const validUser = {
@@ -171,20 +146,6 @@ describe("Auth Schemas", () => {
         login_id: "test@example.com",
       };
       const result = userSchema.safeParse(validUser);
-      expect(result.success).toBe(true);
-    });
-  });
-
-  describe("checkAvailabilitySchema", () => {
-    it("should validate availability response", () => {
-      const validResponse = { is_available: true };
-      const result = checkAvailabilitySchema.safeParse(validResponse);
-      expect(result.success).toBe(true);
-    });
-
-    it("should validate unavailable response", () => {
-      const validResponse = { is_available: false };
-      const result = checkAvailabilitySchema.safeParse(validResponse);
       expect(result.success).toBe(true);
     });
   });

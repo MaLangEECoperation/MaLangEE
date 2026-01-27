@@ -93,7 +93,7 @@ describe("AuthGuard", () => {
     mockTokenExists.mockReturnValue(true);
     mockUserStorageExists.mockReturnValue(true);
 
-    const { container } = render(
+    const { container: _container } = render(
       <AuthGuard fallback={<div>Custom Loading...</div>}>
         <div>Protected Content</div>
       </AuthGuard>

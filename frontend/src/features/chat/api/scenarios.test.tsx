@@ -3,6 +3,8 @@ import { renderHook, waitFor } from "@testing-library/react";
 import React, { ReactNode } from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+import { fetchClient } from "@/shared/api";
+
 import {
   useScenarios,
   useScenario,
@@ -11,15 +13,13 @@ import {
   scenarioKeys,
 } from "./scenarios";
 
-// Mock apiClient
-vi.mock("@/shared/lib/api-client", () => ({
-  apiClient: {
+// Mock fetchClient
+vi.mock("@/shared/api", () => ({
+  fetchClient: {
     get: vi.fn(),
     post: vi.fn(),
   },
 }));
-
-import { apiClient } from "@/shared/lib/api-client";
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -64,7 +64,7 @@ describe("useScenarios", () => {
       { id: "1", title: "Scenario 1", description: "Desc 1" },
       { id: "2", title: "Scenario 2", description: "Desc 2" },
     ];
-    vi.mocked(apiClient.get).mockResolvedValue(mockScenarios);
+    vi.mocked(fetchClient.get).mockResolvedValue(mockScenarios);
 
     const { result } = renderHook(() => useScenarios(), {
       wrapper: createWrapper(),
@@ -74,7 +74,7 @@ describe("useScenarios", () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(apiClient.get).toHaveBeenCalledWith("/scenarios");
+    expect(fetchClient.get).toHaveBeenCalledWith("/scenarios");
     expect(result.current.data).toEqual(mockScenarios);
   });
 });
@@ -86,7 +86,7 @@ describe("useScenario", () => {
 
   it("should fetch single scenario", async () => {
     const mockScenario = { id: "123", title: "Test Scenario" };
-    vi.mocked(apiClient.get).mockResolvedValue(mockScenario);
+    vi.mocked(fetchClient.get).mockResolvedValue(mockScenario);
 
     const { result } = renderHook(() => useScenario("123"), {
       wrapper: createWrapper(),
@@ -96,7 +96,7 @@ describe("useScenario", () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(apiClient.get).toHaveBeenCalledWith("/scenarios/123");
+    expect(fetchClient.get).toHaveBeenCalledWith("/scenarios/123");
     expect(result.current.data).toEqual(mockScenario);
   });
 
@@ -106,7 +106,7 @@ describe("useScenario", () => {
     });
 
     expect(result.current.isLoading).toBe(false);
-    expect(apiClient.get).not.toHaveBeenCalled();
+    expect(fetchClient.get).not.toHaveBeenCalled();
   });
 });
 
@@ -126,7 +126,7 @@ describe("useCreateScenario", () => {
       level: 1,
       category: "daily",
     };
-    vi.mocked(apiClient.post).mockResolvedValue(newScenario);
+    vi.mocked(fetchClient.post).mockResolvedValue(newScenario);
 
     const { result } = renderHook(() => useCreateScenario(), {
       wrapper: createWrapper(),
@@ -138,7 +138,7 @@ describe("useCreateScenario", () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(apiClient.post).toHaveBeenCalledWith("/scenarios", newScenario);
+    expect(fetchClient.post).toHaveBeenCalledWith("/scenarios", newScenario);
   });
 });
 
@@ -149,7 +149,7 @@ describe("useScenarioAnalytics", () => {
 
   it("should fetch scenario analytics", async () => {
     const mockAnalytics = { wordCount: 100, topWords: ["hello", "world"] };
-    vi.mocked(apiClient.get).mockResolvedValue(mockAnalytics);
+    vi.mocked(fetchClient.get).mockResolvedValue(mockAnalytics);
 
     const { result } = renderHook(() => useScenarioAnalytics("123"), {
       wrapper: createWrapper(),
@@ -159,7 +159,7 @@ describe("useScenarioAnalytics", () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(apiClient.get).toHaveBeenCalledWith("/analytics/scenario/123");
+    expect(fetchClient.get).toHaveBeenCalledWith("/analytics/scenario/123");
     expect(result.current.data).toEqual(mockAnalytics);
   });
 
@@ -169,6 +169,6 @@ describe("useScenarioAnalytics", () => {
     });
 
     expect(result.current.isLoading).toBe(false);
-    expect(apiClient.get).not.toHaveBeenCalled();
+    expect(fetchClient.get).not.toHaveBeenCalled();
   });
 });

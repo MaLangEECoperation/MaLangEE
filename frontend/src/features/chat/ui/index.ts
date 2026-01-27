@@ -1,3 +1,5 @@
+export { ChatDetailPopup } from "./ChatDetailPopup";
+export { ChatTranscriptPopup } from "./ChatTranscriptPopup";
 export {
   LanguageNotRecognizedDialog,
   type LanguageNotRecognizedDialogProps,

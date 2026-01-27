@@ -1,9 +1,9 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
-import { useGetChatSessions } from "@/features/chat/api/use-chat-sessions";
-import { useConversationChatNew } from "@/features/chat/hook/useConversationChatNew";
+import { useConversationChatNew, ChatQueries } from "@/features/chat";
 
 export default function ConversationTestPage() {
   const [sessionId, setSessionId] = useState("");
@@ -16,7 +16,7 @@ export default function ConversationTestPage() {
     data: sessionsData,
     isLoading: loadingSessions,
     refetch: fetchSessions,
-  } = useGetChatSessions(0, 20);
+  } = useQuery(ChatQueries.sessions({ skip: 0, limit: 20 }));
   const sessions = sessionsData?.items || [];
 
   const {

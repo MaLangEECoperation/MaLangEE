@@ -114,18 +114,18 @@ test.describe("로그아웃 - 스피너 표시", () => {
     await setAuthStorage(page, MOCK_USER);
 
     // 페이지 이동 중에 스피너 캡처
-    const [response] = await Promise.all([
+    const [_response] = await Promise.all([
       page.waitForNavigation({ waitUntil: "domcontentloaded" }),
       page.goto("/auth/logout"),
     ]);
 
     // 스피너 또는 로딩 텍스트 확인
     // 빠른 리다이렉트로 인해 보이지 않을 수 있음
-    const hasSpinner = await page
+    const _hasSpinner = await page
       .locator(".animate-spin")
       .isVisible()
       .catch(() => false);
-    const hasLoadingText = await page
+    const _hasLoadingText = await page
       .getByText("로그아웃 중...")
       .isVisible()
       .catch(() => false);

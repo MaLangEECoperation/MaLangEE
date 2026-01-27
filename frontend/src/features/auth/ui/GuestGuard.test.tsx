@@ -14,15 +14,11 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-// Mock useAuth hook
+// Mock model (hooks + tokenStorage)
 const mockUseAuth = vi.fn();
-vi.mock("../hook", () => ({
-  useAuth: () => mockUseAuth(),
-}));
-
-// Mock tokenStorage
 const mockTokenExists = vi.fn();
 vi.mock("../model", () => ({
+  useAuth: () => mockUseAuth(),
   tokenStorage: {
     exists: () => mockTokenExists(),
   },

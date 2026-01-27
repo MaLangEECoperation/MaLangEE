@@ -36,8 +36,8 @@ describe("ChatMicButton", () => {
     );
     const micButton = getMicButton(container);
 
-    expect(micButton.className).toContain("opacity-50");
-    expect(micButton.className).toContain("pointer-events-none");
+    expect(micButton).toBeDisabled();
+    expect(micButton.className).toContain("is-disabled");
   });
 
   it("should be disabled when hasStarted and AI is speaking", () => {
@@ -46,8 +46,8 @@ describe("ChatMicButton", () => {
     );
     const micButton = getMicButton(container);
 
-    expect(micButton.className).toContain("opacity-50");
-    expect(micButton.className).toContain("pointer-events-none");
+    expect(micButton).toBeDisabled();
+    expect(micButton.className).toContain("is-disabled");
   });
 
   it("should be disabled when hasStarted and isPaused", () => {
@@ -56,7 +56,8 @@ describe("ChatMicButton", () => {
     );
     const micButton = getMicButton(container);
 
-    expect(micButton.className).toContain("opacity-50");
+    expect(micButton).toBeDisabled();
+    expect(micButton.className).toContain("is-disabled");
   });
 
   it("should not be disabled when hasStarted is false", () => {
@@ -65,7 +66,8 @@ describe("ChatMicButton", () => {
     );
     const micButton = getMicButton(container);
 
-    expect(micButton.className).not.toContain("opacity-50");
+    expect(micButton).not.toBeDisabled();
+    expect(micButton.className).not.toContain("is-disabled");
   });
 
   it("should show waves when isListening and not muted", () => {

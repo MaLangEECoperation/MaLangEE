@@ -74,7 +74,7 @@ export const SplitViewLayout = ({
                   <Image src="/images/logo.png" alt="MalangEE Logo" width={100} height={50} />
                 </Link>
               </div>
-              <div className="flex w-full items-center justify-center sm:p-10 md:justify-start md:p-0  ">
+              <div className="flex w-full items-center justify-center md:justify-start md:p-0">
                 <MalangEE size={120} />
               </div>
             </>
@@ -90,8 +90,9 @@ export const SplitViewLayout = ({
             )}
           </div>
 
-          {/* Right Content Section */}
-          <div
+          {/* Right Content Section - Main Content */}
+          <main
+            id="main-content"
             className={`flex items-start justify-center gap-6 md:items-center ${colSpans[rightColSpan] || "md:col-span-6"} ${rightClassName}`}
           >
             <GlassCard
@@ -100,7 +101,7 @@ export const SplitViewLayout = ({
             >
               {rightChildren}
             </GlassCard>
-          </div>
+          </main>
         </div>
       </div>
     </div>

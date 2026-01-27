@@ -7,7 +7,7 @@ describe("ConfirmPopup", () => {
   let portalRoot: HTMLDivElement;
 
   beforeEach(() => {
-    // Create portal root for PopupLayout
+    // Create portal root for Dialog
     portalRoot = document.createElement("div");
     portalRoot.id = "portal-root";
     document.body.appendChild(portalRoot);

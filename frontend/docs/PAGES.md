@@ -18,11 +18,12 @@
 
 ```
 시나리오 선택 (/scenario-select)
-  ├─ Step1: 주제 선택 (AI 대화 또는 추천 주제)
-  ├─ Step2: 자막 설정
-  └─ Step3: 음성 선택
+  ├─ 주제 선택: 추천 주제 (/scenario-select/topic-suggestion)
+  │            또는 직접 말하기 (/scenario-select/direct-speech)
+  ├─ 자막 설정 (/scenario-select/subtitle-settings)
+  └─ 음성 선택 (/scenario-select/voice-selection)
         ↓
-대화 페이지 (/chat/conversation)
+대화 페이지 (/chat)
   └─ 실시간 AI 영어 회화
 ```
 
@@ -59,7 +60,7 @@ WebSocket   AudioContext
 
 ## 시나리오 선택 페이지
 
-**파일 위치**: `src/app/scenario-select/page.tsx`
+**파일 위치**: `src/app/(chat-flow)/scenario-select/page.tsx`
 
 ### 페이지 플로우
 
@@ -75,7 +76,7 @@ WebSocket   AudioContext
   ↓
 [Step2: 자막 설정] → [Step3: 음성 선택]
   ↓
-대화 페이지로 이동 (/chat/conversation)
+대화 페이지로 이동 (/chat)
 ```
 
 ### 상태 관리
@@ -135,7 +136,7 @@ const getCurrentMessage = () => messageStates.find((s) => s.condition()) || mess
 
 ### TopicSuggestion 컴포넌트
 
-**파일**: `src/app/scenario-select/steps/TopicSuggestion.tsx`
+**파일**: `src/views/scenario-select/ui/TopicSuggestionPage.tsx`
 
 - 20개 추천 주제 중 랜덤 5개 표시
 - "다른 주제 더보기" 클릭 시 다시 랜덤 5개 선택
@@ -168,16 +169,16 @@ useEffect(() => {
 
 ### Step2/Step3
 
-| Step  | 파일              | 기능                                    | 저장                           |
-| ----- | ----------------- | --------------------------------------- | ------------------------------ |
-| Step2 | `steps/Step2.tsx` | 자막 켜기/끄기 선택                     | `localStorage.subtitleEnabled` |
-| Step3 | `steps/Step3.tsx` | 음성 선택 (Shimmer, Alloy, Echo, Fable) | `localStorage.selectedVoice`   |
+| 단계      | 라우트                               | 기능                                    | 저장                           |
+| --------- | ------------------------------------ | --------------------------------------- | ------------------------------ |
+| 자막 설정 | `/scenario-select/subtitle-settings` | 자막 켜기/끄기 선택                     | `localStorage.subtitleEnabled` |
+| 음성 선택 | `/scenario-select/voice-selection`   | 음성 선택 (Shimmer, Alloy, Echo, Fable) | `localStorage.selectedVoice`   |
 
 ---
 
 ## 대화 페이지
 
-**파일 위치**: `src/app/chat/conversation/page.tsx`
+**파일 위치**: `src/app/(chat-flow)/chat/page.tsx`
 
 ### 페이지 로드 시퀀스
 
@@ -395,20 +396,23 @@ const handleMuteToggle = () => {
 
 ### 시나리오 선택 페이지
 
-| 파일            | 경로                                                |
-| --------------- | --------------------------------------------------- |
-| 페이지          | `src/app/scenario-select/page.tsx`                  |
-| Step1           | `src/app/scenario-select/steps/Step1.tsx`           |
-| Step2           | `src/app/scenario-select/steps/Step2.tsx`           |
-| Step3           | `src/app/scenario-select/steps/Step3.tsx`           |
-| TopicSuggestion | `src/app/scenario-select/steps/TopicSuggestion.tsx` |
-| Hook            | `src/features/chat/hook/useScenarioChatNew.ts`      |
+| 파일            | 경로                                                             |
+| --------------- | ---------------------------------------------------------------- |
+| 메인 페이지     | `src/app/(chat-flow)/scenario-select/page.tsx`                   |
+| 주제 추천       | `src/app/(chat-flow)/scenario-select/topic-suggestion/page.tsx`  |
+| 직접 말하기     | `src/app/(chat-flow)/scenario-select/direct-speech/page.tsx`     |
+| 자막 설정       | `src/app/(chat-flow)/scenario-select/subtitle-settings/page.tsx` |
+| 음성 선택       | `src/app/(chat-flow)/scenario-select/voice-selection/page.tsx`   |
+| TopicSuggestion | `src/views/scenario-select/ui/TopicSuggestionPage.tsx`           |
+| Hook            | `src/features/chat/hook/useScenarioChatNew.ts`                   |
 
 ### 대화 페이지
 
 | 파일        | 경로                                               |
 | ----------- | -------------------------------------------------- |
-| 페이지      | `src/app/chat/conversation/page.tsx`               |
+| 페이지      | `src/app/(chat-flow)/chat/page.tsx`                |
+| 대화 완료   | `src/app/(chat-flow)/chat/complete/page.tsx`       |
+| 재방문      | `src/app/(chat-flow)/chat/welcome-back/page.tsx`   |
 | Hook        | `src/features/chat/hook/useConversationChatNew.ts` |
 | 마이크 버튼 | `src/shared/ui/MicButton/ChatMicButton.tsx`        |
 

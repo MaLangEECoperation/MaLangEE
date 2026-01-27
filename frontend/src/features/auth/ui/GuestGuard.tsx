@@ -3,8 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, type FC, type ReactNode } from "react";
 
-import { useAuth } from "../hook";
-import { tokenStorage } from "../model";
+import { tokenStorage, useAuth } from "../model";
 
 interface GuestGuardProps {
   children: ReactNode;

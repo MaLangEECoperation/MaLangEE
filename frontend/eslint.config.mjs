@@ -72,17 +72,30 @@ const eslintConfig = tseslint.config(
   },
 
   // FSD Architecture Rules - Global public API enforcement
-  // NOTE: Set to "warn" for gradual migration. Change to "error" once migration complete
+  // Note: app/ folder is excluded as it's a routing layer outside FSD
   {
     files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/app/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
-        "warn",
+        "error",
         {
           patterns: [
             // Enforce public API for shared (allow @/shared, @/shared/server)
+            // Note: @/shared/styles/* is allowed for CSS imports
             {
-              group: ["@/shared/*/*", "@/shared/**/*"],
+              group: [
+                "@/shared/api/*",
+                "@/shared/api/**/*",
+                "@/shared/config/*",
+                "@/shared/config/**/*",
+                "@/shared/hooks/*",
+                "@/shared/hooks/**/*",
+                "@/shared/lib/*",
+                "@/shared/lib/**/*",
+                "@/shared/ui/*",
+                "@/shared/ui/**/*",
+              ],
               message:
                 "Use public API: import from '@/shared' or '@/shared/server' instead of internal modules",
             },
@@ -115,7 +128,7 @@ const eslintConfig = tseslint.config(
     files: ["src/shared/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
-        "warn",
+        "error",
         {
           patterns: [
             {
@@ -141,7 +154,7 @@ const eslintConfig = tseslint.config(
     files: ["src/entities/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
-        "warn",
+        "error",
         {
           patterns: [
             {
@@ -163,7 +176,7 @@ const eslintConfig = tseslint.config(
     files: ["src/features/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
-        "warn",
+        "error",
         {
           patterns: [
             {

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { apiClient } from "@/shared/lib/api-client";
+import { fetchClient } from "@/shared/api";
 
 // 시나리오 타입 정의
 export interface Scenario {
@@ -46,22 +46,22 @@ export const scenarioKeys = {
 const scenarioApi = {
   // 모든 시나리오 목록 조회
   getScenarios: () => {
-    return apiClient.get<Scenario[]>("/scenarios");
+    return fetchClient.get<Scenario[]>("/scenarios");
   },
 
   // 새로운 시나리오 등록
   createScenario: (data: CreateScenarioRequest) => {
-    return apiClient.post<Scenario>("/scenarios", data);
+    return fetchClient.post<Scenario>("/scenarios", data);
   },
 
   // 특정 시나리오 상세 정보 조회
   getScenario: (id: string) => {
-    return apiClient.get<Scenario>(`/scenarios/${id}`);
+    return fetchClient.get<Scenario>(`/scenarios/${id}`);
   },
 
   // 특정 시나리오 통계 조회
   getScenarioAnalytics: (id: string) => {
-    return apiClient.get<ScenarioAnalytics>(`/analytics/scenario/${id}`);
+    return fetchClient.get<ScenarioAnalytics>(`/analytics/scenario/${id}`);
   },
 };
 

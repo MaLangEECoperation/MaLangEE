@@ -28,7 +28,7 @@ async function fillLoginForm(page: Page, email: string, password: string) {
 }
 
 // 헬퍼 함수: 회원가입 폼 채우기
-async function fillSignupForm(page: Page, email: string, password: string, nickname: string) {
+async function _fillSignupForm(page: Page, email: string, password: string, nickname: string) {
   await page.fill('input[id="login_id"]', email);
   await page.fill('input[id="password"]', password);
   await page.fill('input[id="nickname"]', nickname);

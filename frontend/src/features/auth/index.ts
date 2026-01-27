@@ -1,43 +1,49 @@
-// Model
+// Config (Validation constants)
+export { AUTH_VALIDATION, type AuthValidation } from "./config";
+
+// Model (Form validation schemas + Hooks)
 export {
   // Schemas
   loginSchema,
   registerSchema,
   nicknameUpdateSchema,
-  tokenSchema,
   userSchema,
   // Types
   type LoginFormData,
   type RegisterFormData,
   type NicknameUpdateFormData,
-  type Token,
   type User,
-  type CheckAvailabilityResponse,
   // Token utilities
   tokenStorage,
+  // Hooks
+  useAuth,
+  useLoginIdCheck,
+  useNicknameCheck,
+  usePasswordValidation,
 } from "./model";
 
-// API
+// API (Response/Request schemas - collocated)
+export { loginResponseSchema as tokenSchema, type LoginResponse, type Token, signup } from "./api";
+
+// Query (React Query hooks)
 export {
-  authApi,
+  AuthQueries,
   useLogin,
-  useRegister,
+  useSignup,
   useLogout,
-  useDeleteAccount,
+  useDeleteUser,
   useCheckLoginId,
   useCheckNickname,
-  useUpdateNickname,
+  useUpdateUser,
   useCurrentUser,
-  useDeleteUser,
-} from "./api";
-
-// Hooks
-export { useAuth, useLoginIdCheck, useNicknameCheck, usePasswordValidation } from "./hook";
+} from "./query";
 
 // UI
 export {
   AuthGuard,
+  GlobalPopup,
   GuestGuard,
+  NicknameChangePopup,
   SignupPromptDialog,
   type SignupPromptDialogProps,
   TokenKeepAlive,
