@@ -96,7 +96,8 @@ test.describe("대화 페이지", () => {
     // 세션 에러 팝업 확인
     await expect(page.getByText("세션을 찾을 수 없어요")).toBeVisible({ timeout: 10000 });
     await expect(page.getByText("주제를 먼저 선택해주세요")).toBeVisible();
-    await expect(page.getByRole("button", { name: "주제 선택하기" })).toBeVisible();
+    // Button asChild로 Link로 렌더링됨
+    await expect(page.getByRole("link", { name: "주제 선택하기" })).toBeVisible();
   });
 
   test("에러 팝업에서 주제 선택하기 클릭 시 시나리오 선택 페이지로 이동해야 함", async ({
@@ -104,7 +105,8 @@ test.describe("대화 페이지", () => {
   }) => {
     await page.goto("/chat", { waitUntil: "domcontentloaded" });
 
-    await page.getByRole("button", { name: "주제 선택하기" }).click();
+    // Button asChild로 Link로 렌더링됨
+    await page.getByRole("link", { name: "주제 선택하기" }).click();
 
     await expect(page).toHaveURL(/\/scenario-select/, { timeout: 10000 });
   });
@@ -198,8 +200,8 @@ test.describe("대화 완료 페이지", () => {
     await expect(page.getByText("총 대화 시간")).toBeVisible();
     await expect(page.getByText("내가 말한 시간")).toBeVisible();
 
-    // 처음으로 돌아가기 버튼 확인
-    await expect(page.getByRole("button", { name: "처음으로 돌아가기" })).toBeVisible();
+    // 처음으로 돌아가기 버튼 확인 (Button asChild로 Link로 렌더링됨)
+    await expect(page.getByRole("link", { name: "처음으로 돌아가기" })).toBeVisible();
   });
 
   test("처음으로 돌아가기 버튼 클릭 시 대시보드로 이동해야 함", async ({ page }) => {
@@ -208,7 +210,8 @@ test.describe("대화 완료 페이지", () => {
 
     await page.goto("/chat/complete");
 
-    await page.getByRole("button", { name: "처음으로 돌아가기" }).click();
+    // Button asChild로 Link로 렌더링됨
+    await page.getByRole("link", { name: "처음으로 돌아가기" }).click();
 
     // 대시보드 또는 로그인 페이지로 이동 (인증 상태에 따라)
     await page.waitForURL(/\/(dashboard|auth\/login)/, { timeout: 10000 });

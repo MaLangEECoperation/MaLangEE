@@ -131,7 +131,8 @@ test.describe("목소리 선택 페이지", () => {
     await page.goto("/scenario-select/voice-selection");
 
     await expect(page.getByText("말랭이 목소리 톤을 선택해 주세요.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "대화 시작하기" })).toBeVisible();
+    // Button asChild로 Link로 렌더링됨
+    await expect(page.getByRole("link", { name: "대화 시작하기" })).toBeVisible();
   });
 });
 

@@ -282,8 +282,8 @@ test.describe("시나리오 선택 - 목소리 선택 페이지", () => {
     // 기본 목소리 표시 확인
     await expect(page.getByText("Echo")).toBeVisible();
 
-    // 대화 시작하기 버튼 확인
-    await expect(page.getByRole("button", { name: "대화 시작하기" })).toBeVisible();
+    // 대화 시작하기 버튼 확인 (Button asChild로 Link로 렌더링됨)
+    await expect(page.getByRole("link", { name: "대화 시작하기" })).toBeVisible();
   });
 
   test("목소리 선택 화살표 버튼이 작동해야 함", async ({ page }) => {
@@ -321,7 +321,8 @@ test.describe("시나리오 선택 - 목소리 선택 페이지", () => {
   test("대화 시작하기 버튼 클릭 시 대화 페이지로 이동해야 함", async ({ page }) => {
     await page.goto("/scenario-select/voice-selection");
 
-    await page.getByRole("button", { name: "대화 시작하기" }).click();
+    // Button asChild로 Link로 렌더링됨
+    await page.getByRole("link", { name: "대화 시작하기" }).click();
 
     // 대화 페이지로 이동 확인
     await expect(page).toHaveURL(/\/chat(\?|$)/);
