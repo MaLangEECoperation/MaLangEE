@@ -33,3 +33,5 @@ export { useInfiniteScroll } from "./use-infinite-scroll";
 export { useAudioPlayer } from "./use-audio-player";
 export { useFormatDuration } from "./use-format-duration";
 export { useNavigationCleanup } from "./use-navigation-cleanup";
+export { useAudioRecorder } from "./use-audio-recorder";
+export { useInactivityTimer } from "./use-inactivity-timer";

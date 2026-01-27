@@ -12,7 +12,7 @@ import {
   STORAGE_KEYS,
   useInactivityTimer,
 } from "@/shared";
-import "@/shared/styles/scenario.css";
+import "@/shared/ui/scenario.css";
 
 import { defaultDirectSpeechContents } from "../config";
 import type { DirectSpeechPageContents } from "../model";
